@@ -1,0 +1,597 @@
+%\documentclass[12pt]{article}
+\documentclass[reprint]{revtex4-1}
+\usepackage{amsmath}
+\begin{document}
+
+
+
+\title{Adaptive velocity rescaling for an asymptotic
+microcanonical ensemble}
+\author{}
+%\date{\vspace{-7ex}}
+\maketitle
+
+
+
+Velocity scaling is a temperature control scheme
+for molecular dynamics (MD) simulations.
+%
+In a common implementation,
+the velocity is regularly scaled such that the average
+kinetic energy of the past few steps, $\bar K$,
+can match the expected value,
+$K^* = \frac{1}{2} N_f \, k_B \, T$,
+where $N_f$, $k_B$, and $T$ are the number of degrees of freedom,
+the Boltzmann constant, and temperature, respectively.
+%
+A somewhat gentler modification, the Berendsen thermostat\cite{berendsen1984},
+modifies the scaling scheme, such that
+the kinetic energy approaches the target value at a rate of
+$(K^* - \bar K)/\tau$,
+with $\tau^{-1}$ being the rate of damping.
+
+The above schemes, albeit effective,
+do not result in exact sampling for the microcanonical ensemble,
+because they cause the total energy fluctuate continually.
+%
+Thus, they are often regarded as expedient protocols
+suitable only for parameter tuning in preliminary runs,
+but not for rigorous MD simulations in the microcanonical ensemble.
+%
+However, the energy fluctuation of velocity scaling
+can be used to design thermostat algorithms,
+such as the Nos\'e-Hoover\cite{nose1984, nose1984mp, hoover1985, martyna1992}
+and Langevin-style velocity scaling\cite{bussi2007} thermostats,
+for the canonical ensemble, in which the total energy
+is intrinsically fluctuating.
+%
+Nonetheless, the thermostat algorithms may introduce
+somewhat artificial time scales that are foreign to the natural time evolution.
+ 
+Here we present a modified velocity scaling scheme
+for an asymptotic microcanonical ensemble,
+in which
+the temperature gradually approaches the desired value with increasing precision.
+%
+Our modification is inspired by the $1/t$ scheme\cite{
+  belardinelli2007, belardinelli2007jcp, belardinelli2008,
+  zhou2005, zhou2008, morozov2007}
+for improving the convergence of the Wang-Landau algorithm\cite{
+  wang2001, wang2001pre}.
+The WL algorithm,
+which falls in a larger class of free energy methods
+called metadynamics\cite{
+  laio2002, laio2008, marsili2006},
+has parameters for the entropy that need to be
+determined adaptively,
+and the $1/t$ scheme determines the optimal updating magnitude
+for the convergence of the process.
+%
+Similarly, we may compare the total energy here
+to a parameter in the WL algorithm,
+and argue that the optimal magnitude
+of velocity scaling should be inversely proportional
+to the number of steps.
+%
+Besides, we adopt a slightly different definition of temperature\cite{rugh1997}
+from twice the kinetic energy per degree of freedom
+to make the algorithm more suitable for the microcanonical ensemble.
+
+
+
+\section{Methods}
+
+
+
+\subsection{Background in Statistical Mechanics}
+
+
+
+Our aim is to obtain a temperature control scheme
+for a plain MD simulation in the microcanonical ensemble.
+%
+This must be achieved by adjusting the total energy, $E$,
+which is conserved by Newton's equation of motion.
+
+
+An MD trajectory generated from
+Newton's equation of motion
+can be thought as a realization
+of a microcanonical ensemble,
+or a collection of configurations,
+with the same total energy.
+%
+Below we shall denote a configuration in the trajectory
+by a vector $\mathbf x$,
+specifying the coordinates and velocities.
+%
+Under the ergodicity hypothesis,
+Newton's equation will populate configurations
+that spread evenly over
+the isoenergetic hypersurface in the phase space,
+defined by 
+$H(\mathbf x) = E$,
+where $H(\mathbf x)$ is the Hamiltonian function.
+%
+The area of the hypersurface gives the density of states,
+%
+\begin{equation}
+  \Omega(E)
+  =
+  \int
+    \delta\bigl( H(\mathbf x) - E \bigr)
+    \, d\mathbf x
+  ,
+  \label{eq:omegaE}
+\end{equation}
+%
+and the inverse temperature, $\beta = 1/(k_B T)$
+is the logarithmic derivative
+%
+\begin{equation}
+  \beta(E)
+  =
+  \frac{ d }{ dE }
+  \ln \Omega(E)
+  =
+  \frac{ \Omega'(E) }
+       { \Omega(E)  }
+  ,
+  \label{eq:betaE_def}
+\end{equation}
+%
+and, therefore, a function of $E$.
+%
+
+By velocity scaling, we want to
+find a value of the total energy, $E^*$,
+such that the microcanonical temperature
+is equal to the target value, $\beta^*$,
+i.e., the solution of
+%
+\begin{equation}
+  \beta(E^*)
+  =
+  \beta^*
+  .
+  \label{eq:beta_star}
+\end{equation}
+%
+Unfortunately, the function $\beta(E)$
+is usually unknown in advance
+and must be learned gradually from simulation.
+%
+So is the solution of Eq. \eqref{eq:beta_star}.
+%
+The adaptive averaging scheme offers a way
+to gradually improve the knowledge of temperature function,
+and hence the precision of velocity scaling.
+
+
+
+\subsection{Adaptive averaging}
+
+
+
+Suppose that in each MD step, $t$,
+we may form an independent estimate of $E^*$,
+$\mathcal E_t$,
+then a more reliable estimate of $E^*$
+can be obtained from averaging
+all previous independent estimates,
+%
+\begin{equation}
+  \bar{\mathcal E}_t
+  =
+  \sum_{\tau = 1}^t
+    \mathcal E_\tau
+  .
+  \label{eq:Epsave}
+\end{equation}
+%
+This is a runtime average,
+and its precision improves over the simulation course.
+
+
+The modified velocity scaling based on adaptive averaging
+differs from the traditional version
+in that it uses $\bar{\mathcal E}_t$
+instead of $\mathcal E_t$
+to guide the amount of energy change in each step.
+%
+That is, we want
+the total energy of the system
+at the end of each step
+to be given by
+the runtime average, $\bar{\mathcal E}_t$.
+%
+This condition specifies the amount of energy increment
+by velocity scaling in step $t$
+%
+\begin{equation}
+  \delta E_t
+  =
+  \bar{\mathcal E}_t - \bar{\mathcal E}_{t - 1}
+  .
+  \label{eq:dE_adaptive}
+\end{equation}
+
+As the runtime average from Eq. \eqref{eq:Epsave}
+stabilizes, the magnitude of velocity scaling
+naturally decreases.
+%
+This can be seen by rewriting Eq. \eqref{eq:Epsave}
+as a recurrence relation
+%
+\begin{align}
+  \bar{\mathcal E}_t
+  &=
+  \frac{1}{t}
+  \left[
+    (t - 1) \, \bar{\mathcal E}_{t - 1}
+    + \mathcal E_t
+  \right]
+  \notag \\
+  &=
+  \bar{\mathcal E}_{t - 1}
+  +
+  \frac{
+    \mathcal E_t - \bar{\mathcal E}_{t - 1}
+  }
+  {
+    t
+  }
+  .
+\label{eq:Epsave_recur}
+\end{align}
+%
+Here we may understand $\mathcal E_t - \bar{\mathcal E}_{t - 1}$
+as the independent correction
+to the current average $\bar{\mathcal E}_{t - 1}$
+from the configuration at step $t$,
+and Eq. \eqref{eq:Epsave_recur} shows that
+the correction is absorbed in the runtime average
+with a weight of $1/t$.
+%
+From Eqs. \eqref{eq:dE_adaptive} and \eqref{eq:Epsave_recur},
+we obtain the optimal amount of energy change
+\begin{align}
+  \delta E_t
+  =
+  \frac{ \mathcal E_t - \bar{\mathcal E}_{t - 1} }
+       { t }
+  .
+  \label{eq:dE_opt}
+\end{align}
+%
+
+
+\subsection{Linearization}
+
+
+
+To form an independent estimate of
+$\mathcal E_t$ of $E^*$,
+%
+we shall form
+an independent estimate of temperature, $\beta_t$
+(detailed in the next subsection)
+and solve Eq. \eqref{eq:beta_star}.
+
+Linearizing Eq. \eqref{eq:beta_star} around the solution
+yields
+%
+\begin{equation*}
+\beta^*
+\approx
+\beta( E )
++
+\beta'( E^* ) \, ( E^* - E )
+,
+%\label{eq:beta_linear}
+\end{equation*}
+%
+or
+%
+\begin{equation}
+E^*
+\approx
+E
++
+\frac{ \beta^* - \beta(E) }
+     { \beta'(E^*) }
+.
+\label{eq:E_inversion}
+\end{equation}
+%
+In our adaptive velocity scaling scheme,
+we require the total energy at the beginning of every step
+(before scaling) to stay at the average $\mathcal E_{t - 1}$.
+%
+Thus, we may use $\mathcal E_{t - 1}$ for $E$
+and $\beta_t$ for $\beta(E)$
+in Eq. \eqref{eq:E_inversion},
+and $E^*$ would be the independent estimate
+$\mathcal E_{t}$ at step $t$:
+%
+%
+\begin{equation}
+\mathcal E_t
+=
+\bar{\mathcal E}_{t - 1}
++
+\frac{ \beta^* - \beta_t }
+     { \beta'(E^*) }
+.
+\label{eq:Eps}
+\end{equation}
+%
+Thus, the optimal energy increment,
+from Eqs. \eqref{eq:dE_opt} and \eqref{eq:Eps},
+is
+%
+\begin{equation}
+\delta E_t
+=
+\frac{ 1 } { t }
+\cdot
+\frac{ \beta^* - \beta_t }
+     { \beta'(E^*) }
+.
+\label{eq:dE_beta}
+\end{equation}
+%
+
+
+
+\subsection{Microcanonical temperature}
+
+
+Next, we shall specify formulas for $\beta_t$
+and $\beta'(E)$ required in Eq. \eqref{eq:dE_beta}.
+%
+It can be shown that both the microcanonical temperature, $\beta(E)$,
+and $\beta'(E)$ can be evaluated as
+averages in the microcanonical ensemble\cite{rugh1997}.
+%
+The usual definition of temperature from twice the kinetic energy
+per degree of freedom is, however,
+derived from the canonical ensemble and
+inexact for the microcanonical ensemble.
+
+We start by defining a vector field, $\mathbf u$,
+such that
+%
+\begin{equation}
+  \mathbf u \cdot \nabla H = 1
+  ,
+  \label{eq:unormalization}
+\end{equation}
+%
+anywhere, then
+%
+\begin{align}
+  \Omega'(E)
+  &= -\int \delta'(H(\mathbf x) - E) \, d\mathbf x
+     \notag \\
+  &= -\int (\mathbf u \cdot \nabla H) \,
+           \delta'(H(\mathbf x) - E) \, d\mathbf x
+     \notag \\
+  &= -\int \mathbf u \cdot
+           \nabla \delta(H(\mathbf x) - E) \, d\mathbf x
+     \notag \\
+  &= \int \nabla \cdot \mathbf u \,
+     \delta(H(\mathbf x) - E) \, d\mathbf x
+  .
+  \notag
+  %\label{eq:dOmegaE}
+\end{align}
+%
+where we have integrated by parts in the last step.
+%
+Thus, we have from Eq. \eqref{eq:betaE_def} that
+%
+\begin{equation}
+  \beta(E)
+  =
+  \left\langle
+    \nabla \cdot \mathbf u
+  \right\rangle_E
+  .
+  \label{eq:betaE_average}
+\end{equation}
+%
+Although the vector field $\mathbf u$ may involve both coordinates and velocities,
+a convenient choice of $\mathbf u$ that satisfies
+Eq. \eqref{eq:unormalization}
+is one derived entirely from the velocities
+%
+\begin{equation}
+  \mathbf u
+  =
+  \frac{ \mathbf v }
+       {  2 \, K }
+  ,
+  \label{eq:u_def}
+\end{equation}
+where $\mathbf v$ is the velocity vector in the phase space
+with the components for coordinates being zeroes,
+and $K = \frac 1 2 \mathbf v \cdot \mathbf M \cdot \mathbf v$
+is the kinetic energy.
+%
+Equation \eqref{eq:unormalization} is satisfied
+because
+$\mathbf u \cdot \nabla H
+= (\mathbf v \cdot \nabla K)/(2 \, K)
+= \mathbf v \cdot (\mathbf M \cdot \mathbf v) / (2 \, K) = 1$.
+%
+Using Eq. \eqref{eq:u_def} in Eq. \eqref{eq:betaE_average} yields
+%
+\begin{equation}
+  \beta(E)
+  =
+  \left\langle
+    \frac{ N_f - 2 }
+         { 2 \, K }
+  \right\rangle_E
+  ,
+  \label{eq:betaE_invK}
+\end{equation}
+%
+where $N_f$ is the number of degrees of freedom.
+
+In a similar manner, we have
+%
+\begin{align}
+  \frac
+  {
+    d \beta(E)
+  }
+  {
+    d E
+  }
+  &=
+  \frac
+  {
+    \Omega''(E)
+  }
+  {
+    \Omega(E)
+  }
+  -
+  \left[
+    \frac
+    {
+      \Omega'(E)
+    }
+    {
+      \Omega(E)
+    }
+  \right]^2
+  \notag \\
+  &=
+  - \left\langle
+      \frac{ N_f - 2 }
+           { 2 \, K^2 }
+    \right\rangle_E
+  + \left\langle
+      \Delta\left(
+        \frac{ N_f - 2 }
+             { 2 \, K }
+      \right)^2
+    \right\rangle_E
+  ,
+  \label{eq:dbetadE}
+\end{align}
+%
+where
+$\langle \Delta A^2 \rangle = \langle A^2 \rangle - \langle A \rangle^2$
+means the variance of quantity $A$.
+%
+%We will use Eq. \eqref{eq:dbetadE} to gauge
+%the magnitude of adjusting the velocity-rescaling factor.
+
+
+
+Now if we use Eq. \eqref{eq:betaE_invK} and 
+the one-step estimate for the inverse temperature
+$\beta_t$,
+then the optimal energy increment is given by
+Eq. \eqref{eq:dE_beta}:
+\begin{equation}
+\delta E_t
+=
+\frac{ 1 } { t } \cdot
+\frac{ 1 } { \beta'(E^*) }
+\left[
+ \beta^* - 
+ \frac{ N_f - 2 }
+ { 2 \, K_t }
+\right]
+,
+\label{eq:dE_final}
+\end{equation}
+where
+$K_t$ is the kinetic energy before velocity scaling at step $t$,
+and $\beta'(E^*)$ can be approximated
+as the time average
+%
+\begin{align}
+  \beta'(E^*)
+  \approx
+  - \overline{
+    \left(
+      \frac{ N_f - 2 }
+           { 2 \, K_t^2 }
+    \right)
+    }
+    + 
+    \operatorname{Var}
+    \left(
+        \frac{ N_f - 2 }
+             { 2 \, K_t }
+    \right)
+  .
+  \label{eq:dbeta}
+\end{align}
+
+
+%To reach the optimal estimate of $E^*$,
+%we shall first give an estimate its value
+%from the information in each step.
+%%
+%We then time average these estimates
+%to improve the figure.
+
+\section{Discussion}
+
+
+As time $t$ increases, the scaling tends to $1$,
+and this gradually decreased magnitude of velocity change
+allows the ensemble to asymptotically approach a
+microcanonical one with conserved total energy.
+%
+Thus, the approach differs from the Langevin-style
+velocity scaling and Nos\'e-Hoover thermostats,
+which target a canonical ensemble.
+
+
+In practice, velocity scaling is often implemented every few,
+say $m$ ($m > 1$), MD steps.
+%
+Then $t$ should be understood as the number of
+such velocity-scaling operations so far instead of
+the number of MD steps, and $K_t$ in Eq. \eqref{eq:dE_final} is understood
+as the block average of the kinetic energy of the $m$ steps
+before the scaling operation.
+
+
+\section{Results}
+
+
+[
+Compare the fluctuation of energy caused by velocity scaling to
+that caused by numerical integration of the equation of motion.
+
+%Relation to the $1/t$ recipe for Wang-Landau dynamics.
+
+Show that the optimal convergence to the right total energy.
+]
+
+As shown in Fig. 1,
+the adaptive velocity scaling yielded a narrower distribution
+of the kinetic energy than the canonical counterpart
+with the same center.
+%
+The canonical ensemble, as a superposition
+of microcanonical ones,
+tends to broaden distributions.
+%
+More interestingly,
+Fig. 2 shows that the adaptive velocity scaling
+yields shorter correlation for the kinetic energy.
+
+
+%\bibliographystyle{abbrv}
+\bibliography{simul}
+\end{document}
