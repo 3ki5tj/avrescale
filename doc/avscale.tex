@@ -27,7 +27,7 @@ the Boltzmann constant, and temperature, respectively.
 A somewhat gentler modification, the Berendsen thermostat\cite{berendsen1984},
 modifies the scaling scheme, such that
 the kinetic energy approaches the target value at a rate of
-$(K^* - \bar K)/\tau$,
+$\left( K^* - \bar K \right)/\tau$,
 with $\tau^{-1}$ being the rate of damping.
 
 The above schemes, albeit effective,
@@ -47,7 +47,7 @@ is intrinsically fluctuating.
 %
 Nonetheless, the thermostat algorithms may introduce
 somewhat artificial time scales that are foreign to the natural time evolution.
- 
+
 Here we present a modified velocity scaling scheme
 for an asymptotic microcanonical ensemble,
 in which
@@ -109,7 +109,7 @@ Under the ergodicity hypothesis,
 Newton's equation will populate configurations
 that spread evenly over
 the isoenergetic hypersurface in the phase space,
-defined by 
+defined by
 $H(\mathbf x) = E$,
 where $H(\mathbf x)$ is the Hamiltonian function.
 %
@@ -352,80 +352,7 @@ and $\beta'(E)$ required in Eq. \eqref{eq:dE_beta}.
 %
 It can be shown that both the microcanonical temperature, $\beta(E)$,
 and $\beta'(E)$ can be evaluated as
-averages in the microcanonical ensemble\cite{rugh1997}.
-%
-The usual definition of temperature from twice the kinetic energy
-per degree of freedom is, however,
-derived from the canonical ensemble and
-inexact for the microcanonical ensemble.
-
-We start by defining a vector field, $\mathbf u$,
-such that
-%
-\begin{equation}
-  \mathbf u \cdot \nabla H = 1
-  ,
-  \label{eq:unormalization}
-\end{equation}
-%
-anywhere, then
-%
-\begin{align}
-  \Omega'(E)
-  &= -\int \delta'(H(\mathbf x) - E) \, d\mathbf x
-     \notag \\
-  &= -\int (\mathbf u \cdot \nabla H) \,
-           \delta'(H(\mathbf x) - E) \, d\mathbf x
-     \notag \\
-  &= -\int \mathbf u \cdot
-           \nabla \delta(H(\mathbf x) - E) \, d\mathbf x
-     \notag \\
-  &= \int \nabla \cdot \mathbf u \,
-     \delta(H(\mathbf x) - E) \, d\mathbf x
-  .
-  \notag
-  %\label{eq:dOmegaE}
-\end{align}
-%
-where we have integrated by parts in the last step.
-%
-Thus, we have from Eq. \eqref{eq:betaE_def} that
-%
-\begin{equation}
-  \beta(E)
-  =
-  \left\langle
-    \nabla \cdot \mathbf u
-  \right\rangle_E
-  .
-  \label{eq:betaE_average}
-\end{equation}
-%
-Although the vector field $\mathbf u$ may involve both coordinates and velocities,
-a convenient choice of $\mathbf u$ that satisfies
-Eq. \eqref{eq:unormalization}
-is one derived entirely from the velocities
-%
-\begin{equation}
-  \mathbf u
-  =
-  \frac{ \mathbf v }
-       {  2 \, K }
-  ,
-  \label{eq:u_def}
-\end{equation}
-where $\mathbf v$ is the velocity vector in the phase space
-with the components for coordinates being zeroes,
-and $K = \frac 1 2 \mathbf v \cdot \mathbf M \cdot \mathbf v$
-is the kinetic energy.
-%
-Equation \eqref{eq:unormalization} is satisfied
-because
-$\mathbf u \cdot \nabla H
-= (\mathbf v \cdot \nabla K)/(2 \, K)
-= \mathbf v \cdot (\mathbf M \cdot \mathbf v) / (2 \, K) = 1$.
-%
-Using Eq. \eqref{eq:u_def} in Eq. \eqref{eq:betaE_average} yields
+averages in the microcanonical ensemble\cite{rugh1997}:
 %
 \begin{equation}
   \beta(E)
@@ -438,38 +365,11 @@ Using Eq. \eqref{eq:u_def} in Eq. \eqref{eq:betaE_average} yields
   \label{eq:betaE_invK}
 \end{equation}
 %
-where $N_f$ is the number of degrees of freedom.
-
-In a similar manner, we have
+and
 %
-\begin{align}
-  \frac
-  {
-    d \beta(E)
-  }
-  {
-    d E
-  }
-  &=
-  \frac
-  {
-    \Omega''(E)
-  }
-  {
-    \Omega(E)
-  }
-  -
-  \left[
-    \frac
-    {
-      \Omega'(E)
-    }
-    {
-      \Omega(E)
-    }
-  \right]^2
-  \notag \\
-  &=
+\begin{equation}
+  \beta'(E)
+  =
   - \left\langle
       \frac{ N_f - 2 }
            { 2 \, K^2 }
@@ -482,7 +382,7 @@ In a similar manner, we have
     \right\rangle_E
   ,
   \label{eq:dbetadE}
-\end{align}
+\end{equation}
 %
 where
 $\langle \Delta A^2 \rangle = \langle A^2 \rangle - \langle A \rangle^2$
@@ -490,10 +390,14 @@ means the variance of quantity $A$.
 %
 %We will use Eq. \eqref{eq:dbetadE} to gauge
 %the magnitude of adjusting the velocity-rescaling factor.
+Note that the usual definition of temperature from twice the kinetic energy
+per degree of freedom is, however,
+derived from the canonical ensemble and
+inexact for the microcanonical ensemble.
 
 
 
-Now if we use Eq. \eqref{eq:betaE_invK} and 
+Now if we use Eq. \eqref{eq:betaE_invK} and
 the one-step estimate for the inverse temperature
 $\beta_t$,
 then the optimal energy increment is given by
@@ -503,18 +407,18 @@ Eq. \eqref{eq:dE_beta}:
 =
 \frac{ 1 } { t } \cdot
 \frac{ 1 } { \beta'(E^*) }
-\left[
- \beta^* - 
+\left(
+ \beta^* -
  \frac{ N_f - 2 }
  { 2 \, K_t }
-\right]
+\right)
 ,
 \label{eq:dE_final}
 \end{equation}
 where
 $K_t$ is the kinetic energy before velocity scaling at step $t$,
 and $\beta'(E^*)$ can be approximated
-as the time average
+as
 %
 \begin{align}
   \beta'(E^*)
@@ -525,15 +429,21 @@ as the time average
            { 2 \, K_t^2 }
     \right)
     }
-    + 
+    +
     \operatorname{Var}
     \left(
         \frac{ N_f - 2 }
              { 2 \, K_t }
     \right)
-  .
+  ,
   \label{eq:dbeta}
 \end{align}
+%
+where
+$\overline A$ means the trajectory average of $A$,
+and
+$\operatorname{Var}(A) = \overline{ A^2 } - {\overline A}^2$
+is the corresponding variance.
 
 
 %To reach the optimal estimate of $E^*$,
@@ -591,6 +501,257 @@ More interestingly,
 Fig. 2 shows that the adaptive velocity scaling
 yields shorter correlation for the kinetic energy.
 
+\appendix
+
+
+\section{Derivation of the microcanonical temperature}
+
+
+Here we derive Eqs. \eqref{eq:betaE_invK} and \eqref{eq:dbetadE}.
+We start by defining a vector field, $\mathbf u$,
+such that
+%
+\begin{equation}
+  \mathbf u \cdot \nabla H = 1
+  ,
+  \label{eq:unormalization}
+\end{equation}
+%
+anywhere, then
+%
+\begin{align}
+  \Omega'(E)
+  &= -\int \delta'\bigl( H(\mathbf x) - E \bigr) \, d\mathbf x
+     \notag \\
+  &= -\int (\mathbf u \cdot \nabla H) \,
+           \delta'\bigl( H(\mathbf x) - E \bigr) \, d\mathbf x
+     \notag \\
+  &= -\int \mathbf u \cdot
+           \nabla \delta\bigl( H(\mathbf x) - E \bigr) \, d\mathbf x
+     \notag \\
+  &= \int \nabla \cdot \mathbf u \,
+     \delta\bigl( H(\mathbf x) - E \bigr) \, d\mathbf x
+  .
+  \notag
+  %\label{eq:dOmegaE}
+\end{align}
+%
+where we have integrated by parts in the last step.
+%
+Thus, we have from Eq. \eqref{eq:betaE_def} that
+%
+\begin{equation}
+  \beta(E)
+  =
+  \left\langle
+    \nabla \cdot \mathbf u
+  \right\rangle_E
+  .
+  \label{eq:betaE_average}
+\end{equation}
+%
+Although the vector field $\mathbf u$ may involve both coordinates and velocities,
+a convenient choice of $\mathbf u$ that satisfies
+Eq. \eqref{eq:unormalization}
+is one derived entirely from the velocities
+%
+\begin{equation}
+  \mathbf u
+  =
+  \frac{ \mathbf v }
+       {  2 \, K }
+  ,
+  \label{eq:u_def}
+\end{equation}
+where $\mathbf v$ is the velocity vector in the phase space
+with the components for coordinates being zeroes,
+and $K = \frac 1 2 \mathbf v \cdot \mathbf M \cdot \mathbf v$
+is the kinetic energy.
+%
+Equation \eqref{eq:unormalization} is satisfied
+because
+$\mathbf u \cdot \nabla H
+= (\mathbf v \cdot \nabla K)/(2 \, K)
+= \mathbf v \cdot (\mathbf M \cdot \mathbf v) / (2 \, K) = 1$.
+%
+Using Eq. \eqref{eq:u_def} in Eq. \eqref{eq:betaE_average} yields Eq. \eqref{eq:betaE_invK}
+
+In a similar manner, we have
+%
+\begin{align*}
+  \frac
+  {
+    d \beta(E)
+  }
+  {
+    d E
+  }
+  =
+  \frac
+  {
+    \Omega''(E)
+  }
+  {
+    \Omega(E)
+  }
+  -
+  \left[
+    \frac
+    {
+      \Omega'(E)
+    }
+    {
+      \Omega(E)
+    }
+  \right]^2
+  ,
+\end{align*}
+%
+and
+%
+\begin{align*}
+  \Omega''(E)
+  &= -\int \nabla \cdot \mathbf u \,
+     \delta'\bigl( H(\mathbf x) - E \bigr) \, d\mathbf x
+  \\
+  &= \int
+     \nabla \cdot \bigl( (\nabla \cdot \mathbf u) \, \mathbf u \bigr) \,
+     \delta\bigl( H(\mathbf x) - E \bigr) \, d\mathbf x
+  \\
+  &= \int
+     \left[
+     \mathbf u \cdot \nabla (\nabla \cdot \mathbf u)
+     +
+     (\nabla \cdot \mathbf u)^2
+     \right]
+     \delta\bigl( H(\mathbf x) - E \bigr) \, d\mathbf x
+  .
+\end{align*}
+%
+This means
+%
+\begin{align*}
+  \beta'(E)
+  =
+  \left\langle
+     \mathbf u \cdot \nabla (\nabla \cdot \mathbf u)
+  \right\rangle_E
+  +
+  \left\langle
+    \Delta (\nabla \cdot \mathbf u)^2
+  \right\rangle_E
+  .
+\end{align*}
+%
+With Eq. \eqref{eq:u_def},
+this yields Eq. \eqref{eq:dbetadE}.
+
+
+
+\subsection{Model system}
+
+
+Consider the model Hamiltonian of $\mathbf x = (\mathbf r, \mathbf v)$,
+\begin{equation}
+  H(\mathbf x)
+  =
+  \frac{\mathbf v^2} { 2 }
+  +
+  \left( \frac{\mathbf r^2} { 2 } \right)^\theta
+  ,
+\end{equation}
+%
+where $K = \frac 1 2 {\mathbf v}^2$ and
+$U = \frac 1 2 {\mathbf r}^2$
+are the kinetic and potential energy, respectively,
+and $\theta$ is a positive free parameter.
+Then
+\begin{align*}
+  \Omega(E)
+  &=
+  C^2
+  \int
+    \delta\left( K + U^\theta - E \right) \,
+    K^{\frac{ N_f } 2 - 1} \, dK \, U^{\frac{ N_f } 2 - 1} \, dU
+  \\
+  &=
+  \frac{ C^2 } { \theta }
+  \int
+  K^{\frac{ N_f } 2 - 1} \, (E - K)^{\frac{ N_f }{ 2 \, \theta } - 1}
+    \, dK
+  \\
+  &=
+  \frac{ C^2 }{ \theta } \,
+  B\left( \frac{ N_f } {2 \, \theta}, \frac{ N_f } 2 \right)
+  E^{ \frac{ N_f }{2 \, \theta} + \frac{N_f}{2} - 1 }
+  ,
+\end{align*}
+where
+%
+$C = 2 \, \pi^{N_f/2} / \Gamma\left( \frac{ N_f } 2 \right)$,
+and
+$B(a, b) = \frac{ \Gamma(a) \, \Gamma(b) } { \Gamma(a+b) }$
+is the beta function.
+%
+Then, we have
+\begin{align*}
+\beta(E)
+&=
+\frac{ \frac{ N_f } { 2 \, \theta } + \frac{ N_f } 2 - 1 }
+     { E }
+,
+\\
+\beta'(E)
+&=
+-
+\frac{ \frac{ N_f } { 2 \, \theta } + \frac{ N_f } 2 - 1 }
+     { E^2 }
+\\
+\left\langle
+  \frac{
+    N_f - 2
+  }
+  {
+    2 \, K^2
+  }
+\right\rangle
+&=
+\frac{
+  B\left( \frac{ N_f } { 2  \, \theta } - 2, \frac{ N_f } { 2 } \right)
+}
+{
+  E^2 \, B\left( \frac{ N_f } { 2  \, \theta }, \frac{ N_f } { 2 } \right)
+}
+\\
+&=
+\frac{ \frac{ N_f } 2 + \frac{ N_f }{2 \, \theta} - 1 }
+     { E^2 }
+\frac{ \frac{ N_f } 2 + \frac{ N_f }{2 \, \theta} - 2 }
+     { \frac{ N_f } 2 - 2 }
+.
+\end{align*}
+This means the ratio
+$$
+\frac
+{
+  \beta'(E)
+}
+{
+  -\left\langle
+    \frac{ N_f - 2 } { 2 \, K^2 }
+  \right\rangle
+}
+=
+\frac
+{
+  \frac{ N_f } 2 - 2
+}
+{
+  \frac{ N_f } 2 + \frac{N_f}{2 \, \theta} - 2
+}
+,
+$$
+which lies between $0$ and $1$.
 
 %\bibliographystyle{abbrv}
 \bibliography{simul}

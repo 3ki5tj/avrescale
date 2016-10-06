@@ -13,7 +13,7 @@ double dt = 0.002;
 const char *fnpos = "lj.pos";
 
 int adaptive = 1; /* adaptive velocity scaling */
-double fixene = -255.56;
+double fixene = -255.7;
 double sfactor = 1.0; /* scaling factor */
 
 
@@ -165,7 +165,7 @@ void accumbeta(lj_t *lj, betacm_t *acm)
 }
 
 
-/* scale velocity */
+/* adaptively scale velocity */
 void avscale(lj_t *lj, const betacm_t *acm,
     double *pdbde, double *pdbdk)
 {
@@ -180,7 +180,7 @@ void avscale(lj_t *lj, const betacm_t *acm,
     dbde = dbdk;
   } else {
     dbde = dbdk + betvar;
-    if ( dbde > 0.5 * dbdk ) dbde = 0.5 * dbdk;
+    if ( dbde > 0.1 * dbdk ) dbde = 0.1 * dbdk;
   }
   de = dbet / dbde;
   *pdbde = dbde;
@@ -235,10 +235,10 @@ int main(int argc, char **argv)
   etsm /= cnt;
   et2sm = et2sm / cnt - etsm * etsm;
   fprintf(stderr, "rho %g, tp %g(%g), ep %g (ref. %g), "
-      "etot %g, ave %g, var %g, dbde %g, dbdk %g\n",
+      "etot %g, ave %g, var %g, dbde %g, dbdk %g, ratio %g\n",
       rho, tp, acm->cnt/acm->bsm, epsm/cnt/n,
       ljeos3d_get(rho, tp, NULL, NULL, NULL),
-      etot, etsm, et2sm, dbde, dbdk);
+      etot, etsm, et2sm, dbde, dbdk, dbde/dbdk);
   return 0;
 }
 
