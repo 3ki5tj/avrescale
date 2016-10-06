@@ -444,14 +444,47 @@ $\overline A$ means the trajectory average of $A$,
 and
 $\operatorname{Var}(A) = \overline{ A^2 } - {\overline A}^2$
 is the corresponding variance.
+%
+
+In practice, the second or variance term on the right-hand side
+of Eq. \eqref{eq:dbeta} may time to achieve convergence.
+%
+For a physical system, its magnitude cannot exceed
+the first term, because we must have $\beta'(E) \le 0$.
+%
+Further, since the variance is nonnegative, we have
+%
+\begin{equation}
+  - \overline{
+    \left(
+      \frac{ N_f - 2 }
+           { 2 \, K_t^2 }
+    \right)
+    }
+  \le
+  \beta'(E^*)
+  \le
+  0.
+\end{equation}
+%
+An expedient measure to control error of $\beta'(E)$
+in an early stage of simulation
+is to use the lesser of the value from Eq. \eqref{eq:dbeta}
+or
+%
+\begin{equation*}
+  -\gamma \overline{
+    \left(
+      \frac{ N_f - 2 }
+           { 2 \, K_t^2 }
+    \right)
+    }
+  ,
+\end{equation*}
+%
+where $\gamma = 0.1$.
 
 
-%To reach the optimal estimate of $E^*$,
-%we shall first give an estimate its value
-%from the information in each step.
-%%
-%We then time average these estimates
-%to improve the figure.
 
 \section{Discussion}
 
