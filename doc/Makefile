@@ -1,4 +1,4 @@
-prj=avscale
+prj=avrescale
 
 ver=3.0
 
@@ -63,5 +63,5 @@ $(prj)doc.zip: $(prj).tex $(prj).pdf \
 	zip -r $@ $^
 
 Bossman: zip
-	cp $(prj)docV$(ver).zip /Bossman/cz1/avscale/doc/
-	#rsync -avL $(prj)docV$(ver).zip cz1@129.109.88.204:/Bossman/cz1/avscale/doc/
+	cp $(prj)docV$(ver).zip /Bossman/cz1/avrescale/doc/
+	#rsync -avL $(prj)docV$(ver).zip cz1@129.109.88.204:/Bossman/cz1/avrescale/doc/
