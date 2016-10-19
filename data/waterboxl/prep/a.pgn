@@ -1,0 +1,6 @@
+package require psfgen	 
+topology top_all27_prot_lipid.inp	 
+segment U {pdb a.pdb}	 
+coordpdb a.pdb U	 
+writepdb water.pdb 
+writepsf water.psf 

@@ -1,10 +1,10 @@
-This test system contains 798 TIP3p water molecules in an 30A x 30A x 30A box.
+This test system contains 798 TIP3p water molecules in a 30A x 30A x 30A box.
 
 File               | Description
 -------------------|------------------------------------------------------------
 300K.conf          | Adaptive velocity scaling, asymptotic microcanonical ensemble
 300Kcan.conf       | Canonical ensemble
-
+300Kfix.conf       | Fixed total energy
 
 ```
 make clean && ~/lwork/NAMD_mods/NAMD_2.11_thstat/Linux-x86_64-g++/namd2 +p4 300K.conf
