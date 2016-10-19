@@ -402,6 +402,7 @@ the one-step estimate for the inverse temperature
 $\beta_t$,
 then the optimal energy increment is given by
 Eq. \eqref{eq:dE_beta}:
+%
 \begin{equation}
 \delta E_t
 =
@@ -409,12 +410,13 @@ Eq. \eqref{eq:dE_beta}:
 \frac{ 1 } { \beta'(E^*) }
 \left(
  \beta^* -
- \frac{ N_f - 2 }
- { 2 \, K_t }
+ \frac{ N_f - 2  }
+      { 2 \, K_t }
 \right)
 ,
 \label{eq:dE_final}
 \end{equation}
+%
 where
 $K_t$ is the kinetic energy before velocity scaling at step $t$,
 and $\beta'(E^*)$ can be approximated
@@ -522,29 +524,6 @@ to be around $0.33$.
 
 
 
-\section{Discussion}
-
-
-%As time $t$ increases, the scaling tends to $1$,
-%and this gradually decreased magnitude of velocity change
-%allows the ensemble to asymptotically approach a
-%microcanonical one with conserved total energy.
-%%
-%Thus, the approach differs from the Langevin-style
-%velocity scaling and Nos\'e-Hoover thermostats,
-%which target a canonical ensemble.
-
-
-In practice, velocity scaling is often implemented every few,
-say $m$ ($m > 1$), MD steps.
-%
-Then $t$ should be understood as the number of
-such velocity-scaling operations so far instead of
-the number of MD steps, and $K_t$ in Eq. \eqref{eq:dE_final} is understood
-as the block average of the kinetic energy of the $m$ steps
-before the scaling operation.
-
-
 \section{Results}
 
 
@@ -569,6 +548,47 @@ tends to broaden distributions.
 More interestingly,
 Fig. 2 shows that the adaptive velocity scaling
 yields shorter correlation for the kinetic energy.
+
+Use
+\begin{equation}
+\delta E_t
+=
+\frac{ 1 } { t } \cdot
+\frac{ \eta } { \beta'(E^*) }
+\left(
+ \beta^* -
+ \frac{ N_f - 2 }
+ { 2 \, K_t }
+\right)
+,
+\label{eq:dE_eta}
+\end{equation}
+%
+instead of Eq. \eqref{eq:dE_final}.
+
+
+\section{Discussion}
+
+
+%As time $t$ increases, the scaling tends to $1$,
+%and this gradually decreased magnitude of velocity change
+%allows the ensemble to asymptotically approach a
+%microcanonical one with conserved total energy.
+%%
+%Thus, the approach differs from the Langevin-style
+%velocity scaling and Nos\'e-Hoover thermostats,
+%which target a canonical ensemble.
+
+
+In practice, velocity scaling is often implemented every few,
+say $m$ ($m > 1$), MD steps.
+%
+Then $t$ should be understood as the number of
+such velocity-scaling operations so far instead of
+the number of MD steps, and $K_t$ in Eq. \eqref{eq:dE_final} is understood
+as the block average of the kinetic energy of the $m$ steps
+before the scaling operation.
+
 
 \appendix
 

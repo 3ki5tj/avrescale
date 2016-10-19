@@ -11,3 +11,5 @@ make clean && ~/lwork/NAMD_mods/NAMD_2.11_thstat/Linux-x86_64-g++/namd2 +p4 300K
 ```
 
 `make clean` is essential to clear old data
+
+300K -6141.2
