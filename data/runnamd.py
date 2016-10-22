@@ -135,11 +135,11 @@ def geterror(result):
 def dosimul(eta, build = True):
   global fncfg, fnout, cmdopt 
 
+  # build the program
+  progdir = "../../NAMD_mods/NAMD_2.11_thstat/Linux-x86_64-g++"
+  if not os.path.isdir(progdir):
+    progdir = "../" + progdir
   if build:
-    # build the program
-    progdir = "../../NAMD_mods/NAMD_2.11_thstat/Linux-x86_64-g++"
-    if not os.path.isdir(progdir):
-      progdir = "../" + progdir
     zcom.runcmd("make -C %s" % progdir)
 
   # copy files from the source directory
@@ -223,14 +223,17 @@ def doscan():
     sout += ln
     print ln,
     eta += etadel
-  open("scan.out", "w").write(sout)
+  fn = "etascan.dat"
+  open(fn, "w").write(sout)
+  print "saving results to", fn
 
 
 
 if __name__ == "__main__":
   doargs()
   if etarange:
+    print etarange
     doscan()
   else:
-    dosimul()
+    dosimul(eta)
 

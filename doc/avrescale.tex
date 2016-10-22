@@ -258,12 +258,27 @@ we obtain the optimal amount of energy change
 \begin{align}
   \delta E_t
   =
-  \frac{ \mathcal E_t - \bar{\mathcal E}_{t - 1} }
-       { t }
+  \frac{ 1 } { t }
+  \cdot
+  \left( \mathcal E_t - \bar{\mathcal E}_{t - 1} \right)
   .
   \label{eq:dE_opt}
 \end{align}
 %
+This formula gives the ideal amount of energy change for velocity rescaling
+in every MD step.
+%
+Equation \eqref{eq:dE_opt} is analogous to the $1/t$, prescription\cite{
+  belardinelli2007, belardinelli2007jcp, belardinelli2008,
+  zhou2005, zhou2008, morozov2007}
+of controlling the updating magnitude
+for the Wang-Landau algorithm\cite{wang2001, wang2001pre},
+and the above derivation results from its close connection\cite{
+  marsili2006, barducci2008}
+to the adaptive biasing force method\cite{darve2001, darve2008}.
+%
+In Appendix \ref{sec:error}, we shall give an alternative derivation of the result.
+
 
 
 \subsection{Linearization}
@@ -452,28 +467,29 @@ is the corresponding variance.
 \subsection{Practical issues}
 
 
-The magnitude of the second variance term on the right-hand side
-of Eq. \eqref{eq:dbeta}
-cannot exceed the first term,
-because $\beta'(E) \le 0$ for a physical system.
+Ideally, we should have $\beta'(E) \le 0$
+as the temperature $T$ increases the total energy $E$.
 %
-Further, since the variance is nonnegative, we have
+This, however, may not be true in practice
+because of the numerical error of the second variance term on the right-hand side
+of Eq. \eqref{eq:dbeta}.
 %
-\begin{equation*}
-  - \overline{
-    \left(
-      \frac{ N_f - 2 }
-           { 2 \, K_t^2 }
-    \right)
-    }
-  \le
-  \beta'(E^*)
-  \le
-  0,
-\end{equation*}
+%Further, since the variance is nonnegative, we have
+%%
+%\begin{equation*}
+%  - \overline{
+%    \left(
+%      \frac{ N_f - 2 }
+%           { 2 \, K_t^2 }
+%    \right)
+%    }
+%  \le
+%  \beta'(E^*)
+%  \le
+%  0,
+%\end{equation*}
 %
-This prompts us to use the approximation
-that avoids the variance:
+A useful approximation that avoids the variance is the following
 %
 \begin{equation}
   \beta'(E^*)
@@ -488,7 +504,25 @@ that avoids the variance:
   \label{eq:dbeta_approx}
 \end{equation}
 %
-where $0 \le \gamma \le 1$.
+where we have defined the ratio $\gamma$ as
+%
+\begin{equation}
+  \gamma
+  \equiv
+  \frac
+  {
+    -\beta'(E^*)
+  }
+  {
+    \overline{
+      \left( \frac 1 2 N_f - 1  \right) / K_t^2
+    }
+  }
+  .
+  \label{eq:gamma_def}
+\end{equation}
+%
+For for a physical system, we expect $0 \le \gamma \le 1$.
 
 
 We may use Eq. \eqref{eq:dbeta_approx} in two ways.
@@ -591,6 +625,162 @@ before the scaling operation.
 
 
 \appendix
+
+
+\section{\label{sec:error}
+  Alternative derivation of Eq. \eqref{eq:dE_opt}
+}
+
+
+Here, we present an alternative derivation of Eq. \eqref{eq:dE_opt},
+which shows that if in each step, we can form an independent correction
+to the total energy, such a correction should be optimally used
+in velocity scaling with an ever-decreasing weight of $1/t$.
+
+Let $E_t$ be the total energy at step $t$,
+then the aim of velocity scaling is to converge $E_t$
+to the desired value of $E^*$.
+%
+We assume that we can form an independent estimate of $E^*$
+in step $t$, $\mathcal E_t$,
+which means, equivalently, an independent correction
+to the current total energy, $\mathcal E_t - E_{t-1}$.
+%
+The correction can be used to guide the amount of
+energy change, $\Delta E_t = E_t - E_{t-1}$,
+for velocity rescaling.
+%
+If the independent correction were exact,
+then velocity rescaling only needs to be done once,
+with the change $\Delta E_t$ to be identical to the correction.
+%
+But since the independent correction contains random error,
+velocity rescaling must be done continually,
+and as we shall see,
+if we accept the correction with some
+optimal time-dependent magnitude, $\alpha(t)$, as
+%
+\begin{equation}
+  \Delta E_t = \alpha(t) \, \left( \mathcal E_t - E_{t - 1} \right)
+  ,
+  \label{eq:Eupdate}
+\end{equation}
+%
+the expected error of the total energy, $E_T$,
+at the end of the simulation, $t = T$, can be minimized.
+
+To find the optimal $\alpha(t)$,
+it is more convenient to use the continuous-time framework.
+%
+We introduce the error of the total energy at step $t$ as
+$x(t) = E_{t-1} - E^*$,
+then $\dot x(t) \approx \Delta E_t$,
+and Eq. \eqref{eq:Eupdate} can be approximated as
+%
+\begin{equation}
+  \dot x(t)
+  =
+  -\alpha(t) \, x(t) + \alpha(t) \, \xi(t)
+  ,
+  \label{eq:x_diffeq}
+\end{equation}
+%
+where $\xi(t) \equiv \mathcal E_t - E^*$
+denotes the random fluctuation of the independent estimate at step $t$.
+For simplicity, we will further approximate $\xi(t)$ as a white noise,
+such that $\langle \xi(t) \, \xi(t') \rangle = \Gamma \, \delta(t - t')$.
+%
+The solution of Eq. \eqref{eq:x_diffeq} is
+%
+\begin{equation}
+  x(t)
+  =
+  x(0) \, e^{ -\int_0^t \alpha(\tau) \, d\tau }
+  +
+  \int_0^t \dot u_t(\tau) \, \xi(\tau) \, d\tau
+  ,
+  \label{eq:x_sol}
+\end{equation}
+%
+where
+\begin{equation}
+  u_t(\tau) = \exp\left(
+    -\int_\tau^t \alpha(s) \, ds
+  \right)
+  .
+\end{equation}
+%
+Thus, the error at the end of simulation $t = T$,
+can be measured as expectation of $x^2(T)$,
+%
+\begin{equation}
+  \left\langle
+    x^2(T)
+  \right\rangle
+  =
+  \left\langle
+    x^2(0)
+  \right\rangle
+  \, e^{ -2 \, A(t) }
+  +
+  \Gamma
+  \int_0^T
+    \dot u_T^2(t) \, dt
+  ,
+  \label{eq:error_functional}
+\end{equation}
+where
+$A(t) = \int_0^t \alpha(t) \, dt$.
+%
+%the total energy change induced by velocity scaling
+%is
+%
+This expression is a functional of $\alpha(t)$,
+or equivalently, a functional of $u_T(t)$.
+%
+To minimize it under a fixed value of $A(T)$,
+which implies fixed values of $u_T(0)$ and $u_T(T)$,
+we get the condition
+$$
+\dot u_T(t) = \mathrm{const},
+$$
+which leads to the solution of
+$u_T(t) = (t + t_0) / (T + t_0)$,
+with $c$ and $t_0$ being two constants.
+%
+As a result, we get the optimal schedule
+%
+\begin{equation}
+  \alpha(t) = \frac{ 1 } { t + t_0 }
+  ,
+  \label{eq:alpha_opt}
+\end{equation}
+%
+and the error under this schedule is
+%
+\begin{equation}
+  \left\langle
+  x^2(T)
+  \right\rangle
+  =
+  \frac{
+    \langle x^2(0) \rangle \, t_0^2
+    + \Gamma \, T
+  }
+  {
+    (T + t_0)^2
+  }
+  ,
+\end{equation}
+%
+For a long simulation, the influence of $t_0$
+is relatively small,
+and we may approximately use
+$$
+\alpha(t) \approx \frac 1 t,
+$$
+This result recovers Eq. \eqref{eq:dE_opt}.
+
 
 
 \section{Derivation of the microcanonical temperature}
