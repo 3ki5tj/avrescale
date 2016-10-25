@@ -103,7 +103,7 @@ with the same total energy.
 %
 Below we shall denote a configuration in the trajectory
 by a vector $\mathbf x$,
-specifying the coordinates and velocities.
+specifying the coordinates and momenta.
 %
 Under the ergodicity hypothesis,
 Newton's equation will populate configurations
@@ -585,17 +585,17 @@ yields shorter correlation for the kinetic energy.
 
 Use
 \begin{equation}
-\delta E_t
-=
-\frac{ 1 } { t } \cdot
-\frac{ \eta } { \beta'(E^*) }
-\left(
- \beta^* -
- \frac{ N_f - 2 }
- { 2 \, K_t }
-\right)
-,
-\label{eq:dE_eta}
+  \delta E_t
+  =
+  \frac{ 1 } { t } \cdot
+  \frac{ z } { \beta'(E^*) }
+  \left(
+   \beta^* -
+   \frac{ N_f - 2 }
+   { 2 \, K_t }
+  \right)
+  ,
+  \label{eq:dE_mod}
 \end{equation}
 %
 instead of Eq. \eqref{eq:dE_final}.
@@ -695,9 +695,9 @@ The solution of Eq. \eqref{eq:x_diffeq} is
 \begin{equation}
   x(t)
   =
-  x(0) \, e^{ -\int_0^t \alpha(\tau) \, d\tau }
+  x(1) \, e^{ -\int_1^t \alpha(\tau) \, d\tau }
   +
-  \int_0^t \dot u_t(\tau) \, \xi(\tau) \, d\tau
+  \int_1^t \dot u_t(\tau) \, \xi(\tau) \, d\tau
   ,
   \label{eq:x_sol}
 \end{equation}
@@ -719,18 +719,18 @@ can be measured as expectation of $x^2(T)$,
   \right\rangle
   =
   \left\langle
-    x^2(0)
+    x^2(1)
   \right\rangle
   \, e^{ -2 \, A(t) }
   +
   \Gamma
-  \int_0^T
+  \int_1^T
     \dot u_T^2(t) \, dt
   ,
   \label{eq:error_functional}
 \end{equation}
 where
-$A(t) = \int_0^t \alpha(t) \, dt$.
+$A(t) = \int_1^t \alpha(t) \, dt$.
 %
 %the total energy change induced by velocity scaling
 %is
@@ -739,12 +739,12 @@ This expression is a functional of $\alpha(t)$,
 or equivalently, a functional of $u_T(t)$.
 %
 To minimize it under a fixed value of $A(T)$,
-which implies fixed values of $u_T(0)$ and $u_T(T)$,
+which implies fixed values of $u_T(1)$ and $u_T(T)$,
 we get the condition
 $$
 \dot u_T(t) = \mathrm{const},
 $$
-which leads to the solution of
+which leads to the solution,
 $u_T(t) = (t + t_0) / (T + t_0)$,
 with $c$ and $t_0$ being two constants.
 %
@@ -764,8 +764,9 @@ and the error under this schedule is
   \right\rangle
   =
   \frac{
-    \langle x^2(0) \rangle \, t_0^2
-    + \Gamma \, T
+    \left\langle x^2(1) \right\rangle
+    \, (1 + t_0)^2
+    + \Gamma \, (T - 1)
   }
   {
     (T + t_0)^2
@@ -774,12 +775,33 @@ and the error under this schedule is
 \end{equation}
 %
 For a long simulation, the influence of $t_0$
-is relatively small,
-and we may approximately use
+is small, and we may approximately use
 $$
 \alpha(t) \approx \frac 1 t,
 $$
 This result recovers Eq. \eqref{eq:dE_opt}.
+
+We can further show that Eq. \eqref{eq:dE_mod}
+corresponds to a modified schedule
+$\alpha(t) = z/t$,
+which results in an expected error of
+$$
+  \left\langle
+  x^2(T)
+  \right\rangle
+  =
+  \frac{ \langle x^2(1) \rangle } { T^{2z} }
+  +
+  \frac{ \Gamma \, z^2 } { 2 \, z - 1 }
+  \frac{
+    T^{2 \, z - 1} - 1
+  }
+  {
+    T^{2 \, z}
+  }
+  ,
+$$
+which is minimal at $z = 1$ for a long simulation.
 
 
 
@@ -829,29 +851,29 @@ Thus, we have from Eq. \eqref{eq:betaE_def} that
   \label{eq:betaE_average}
 \end{equation}
 %
-Although the vector field $\mathbf u$ may involve both coordinates and velocities,
+Although the vector field $\mathbf u$ may involve both coordinates and momenta,
 a convenient choice of $\mathbf u$ that satisfies
 Eq. \eqref{eq:unormalization}
-is one derived entirely from the velocities
+is one derived entirely from the momenta
 %
 \begin{equation}
   \mathbf u
   =
-  \frac{ \mathbf v }
+  \frac{ \mathbf p }
        {  2 \, K }
   ,
   \label{eq:u_def}
 \end{equation}
 where $\mathbf v$ is the velocity vector in the phase space
 with the components for coordinates being zeroes,
-and $K = \frac 1 2 \mathbf v \cdot \mathbf M \cdot \mathbf v$
-is the kinetic energy.
+and $K = \frac 1 2 \mathbf p \cdot \mathbf M^{-1} \cdot \mathbf p$
+is the kinetic energy ($\mathbf M$ is the diagonal mass matrix).
 %
 Equation \eqref{eq:unormalization} is satisfied
 because
 $\mathbf u \cdot \nabla H
-= (\mathbf v \cdot \nabla K)/(2 \, K)
-= \mathbf v \cdot (\mathbf M \cdot \mathbf v) / (2 \, K) = 1$.
+= (\mathbf p \cdot \nabla_{\mathbf p} K)/(2 \, K)
+= \mathbf p \cdot (\mathbf M^{-1} \cdot \mathbf p) / (2 \, K) = 1$.
 %
 Using Eq. \eqref{eq:u_def} in Eq. \eqref{eq:betaE_average} yields Eq. \eqref{eq:betaE_invK}
 
@@ -924,6 +946,15 @@ This means
 %
 With Eq. \eqref{eq:u_def},
 this yields Eq. \eqref{eq:dbetadE}.
+
+Note that in the above derivation
+we have, for simplicity, ignored the conservation
+of total momenta\cite{shirts2006, uline2008},
+which gives additional constraints satisfied in a typical MD simulation.
+%
+Fortunately, with the particular choice given by Eq. \eqref{eq:u_def},
+one can show that this effect is negligible for a system
+with zero total momenta\cite{uline2008}.
 
 
 

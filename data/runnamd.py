@@ -17,8 +17,8 @@ cmdopt = ""
 nsteps = 10000
 ntrials = 100
 nproc = 4
-eta = 1.0
-etarange = None
+zoom = 1.0
+zrange = None
 dKdE = 0
 verbose = 0
 
@@ -31,7 +31,7 @@ def usage():
     %s [OPTIONS]""" % sys.argv[0]
 
   print """
-  Compute the error over a range of eta 
+  Compute the error over a range of zoom factors 
 
   OPTIONS:
 
@@ -39,8 +39,8 @@ def usage():
     -M                  set the number of trials
     -p, --np=           set the number of processors
     --dKdE=             set the explicit value of dKdE
-    --eta=              set the multiplier
-    -S, --scan=         set the range of the scanning eta, format xmin:dx:xmax
+    -Z, --zoom=         set the zooming factor, z
+    -S, --scan=         set the range of the scanning z, format xmin:dx:xmax
     --opt=              set options to be passed to the command line
     -v                  be verbose
     --verbose=          set verbosity
@@ -54,10 +54,10 @@ def doargs():
   ''' handle input arguments '''
   try:
     opts, args = getopt.gnu_getopt(sys.argv[1:],
-        "t:M:p:S:hvo:",
+        "t:M:p:Z:S:hvo:",
         [
           "np=",
-          "dKdE=", "eta=", "scan=", "nsteps=",
+          "dKdE=", "zoom=", "scan=", "nsteps=",
           "output=", "opt=",
           "help", "verbose=",
         ] )
@@ -65,7 +65,7 @@ def doargs():
     print str(err)
     usage()
 
-  global nsteps, ntrials, nproc, dKdE, eta, etarange
+  global nsteps, ntrials, nproc, dKdE, zoom, zrange
   global fnout, cmdopt, verbose
 
   for o, a in opts:
@@ -77,10 +77,10 @@ def doargs():
       nproc = int(a)
     elif o in ("--dKdE",):
       dKdE = float(a)
-    elif o in ("--eta",):
-      eta = float(a)
+    elif o in ("-Z", "--zoom",):
+      zoom = float(a)
     elif o in ("-S", "--scan",):
-      etarange = [float(x) for x in a.strip().split(":")]
+      zrange = [float(x) for x in a.strip().split(":")]
     elif o in ("-v",):
       verbose += 1  # such that -vv gives verbose = 2
     elif o in ("--verbose",):
@@ -132,7 +132,7 @@ def geterror(result):
 
 
 
-def dosimul(eta, build = True):
+def dosimul(zoom, build = True):
   global fncfg, fnout, cmdopt 
 
   # build the program
@@ -173,12 +173,12 @@ def dosimul(eta, build = True):
     fnene = "ene0.log"
     strcfg = scfg + '''
 rescaleAdaptive           on
-rescaleAdaptiveEta        %s
+rescaleAdaptiveZoom       %s
 rescaleAdaptiveFileFreq   1000
 energyLogFile             %s
 energyLogFreq             10
 energyLogTotal            on
-''' % (eta, fnene)
+''' % (zoom, fnene)
     if dKdE > 0:
       strcfg += "rescaleAdaptiveDKdE %s\n" % dKdE
     strcfg += "run %s\n" % nsteps
@@ -209,31 +209,31 @@ energyLogTotal            on
 
 
 
-def doscan():
-  ''' scan the values of eta '''
-  global etarange
-  etamin = etarange[0]
-  etadel = etarange[1]
-  etamax = etarange[2]
-  eta = etamin
+def dozscan():
+  ''' scan the values of zoom factor '''
+  global zrange
+  zmin = zrange[0]
+  zdel = zrange[1]
+  zmax = zrange[2]
+  zoom = zmin
   sout = ""
-  while eta < etamax + etadel * 0.5:
-    cnt, eave, evar = dosimul(eta, eta == etamin)
-    ln = "%s %s %s %s\n" % (eta, eave, evar, cnt)
+  fnscan = "zscan.dat"
+  while zoom < zmax + zdel * 0.5:
+    cnt, eave, evar = dosimul(zoom, zoom == zmin)
+    ln = "%s %s %s %s\n" % (zoom, eave, evar, cnt)
     sout += ln
     print ln,
-    eta += etadel
-  fn = "etascan.dat"
-  open(fn, "w").write(sout)
-  print "saving results to", fn
+    zoom += zdel
+    open(fnscan, "w").write(sout)
+  print "saving results to", fnscan
 
 
 
 if __name__ == "__main__":
   doargs()
-  if etarange:
-    print etarange
-    doscan()
+  if zrange:
+    print zrange
+    dozscan()
   else:
-    dosimul(eta)
+    dosimul(zoom)
 
