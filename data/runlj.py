@@ -7,7 +7,7 @@
 
 
 
-import sys, os, getopt, shutil, re, math, glob
+import sys, os, getopt, shutil, re, math
 import zcom
 
 
@@ -16,7 +16,6 @@ fnout = None
 cmdopt = ""
 nsteps = 10000
 ntrials = 100
-nproc = 4
 zoom = 1.0
 zrange = None
 dKdE = 0
@@ -31,16 +30,15 @@ def usage():
     %s [OPTIONS]""" % sys.argv[0]
 
   print """
-  Compute the error over a range of zooming factor
+  Compute the error over a range of the zooming factor, z
 
   OPTIONS:
 
     -t                  set the number of steps
     -M                  set the number of trials
-    -p, --np=           set the number of processors
     -G, --dKdE=         set the explicit value of dKdE
     -Z, --zoom=         set the zooming factor, z
-    -S, --scan=         set the range of the scanning z, format xmin:dx:xmax
+    -S, --scan=         set the range of scanning z, format xmin:dx:xmax
     --opt=              set options to be passed to the command line
     -v                  be verbose
     --verbose=          set verbosity
@@ -54,10 +52,9 @@ def doargs():
   ''' handle input arguments '''
   try:
     opts, args = getopt.gnu_getopt(sys.argv[1:],
-        "t:M:p:G:Z:S:hvo:",
+        "t:M:G:Z:S:hvo:",
         [
-          "np=",
-          "dKdE=", "zoom=", "scan=", "nsteps=",
+          "dKdE=", "zoom=", "scan=",
           "output=", "opt=",
           "help", "verbose=",
         ] )
@@ -65,16 +62,14 @@ def doargs():
     print str(err)
     usage()
 
-  global nsteps, ntrials, nproc, dKdE, zoom, zrange
+  global nsteps, ntrials, dKdE, zoom, zrange
   global fnout, cmdopt, verbose
 
   for o, a in opts:
-    if o in ("-t", "--nsteps="):
+    if o in ("-t",):
       nsteps = int(a)
     elif o in ("-M",):
       ntrials = int(a)
-    elif o in ("-p", "--np",):
-      nproc = int(a)
     elif o in ("-G", "--dKdE",):
       dKdE = float(a)
     elif o in ("-Z", "--zoom",):
@@ -91,30 +86,6 @@ def doargs():
       fnout = a
     elif o in ("-h", "--help"):
       usage()
-
-
-
-def getfiles(initdir):
-  if not os.path.exists(initdir):
-    initdir = "../" + initdir
-  fnpsf = os.path.abspath( glob.glob(initdir + "/*.psf")[0] )
-  fnpdb = fnpsf[:-3] + "pdb"
-  fnprm = os.path.abspath( glob.glob(initdir + "/par_*")[0] )
-  # get 300K.conf not 300Kcan.conf or 300Kfix.conf
-  fncfg = glob.glob(initdir + "/*K.conf")[0]
-  scfg = open(fncfg).readlines()
-  for i in range(len(scfg)):
-    ln = scfg[i].strip()
-    if ( ln.startswith("rescaleAdaptive") or
-         ln.startswith("langevin") or
-         ln.startswith("energyLog") or
-         ln.startswith("reinitvels") or
-         ln.startswith("run") ):
-      scfg[i] = "\n"
-    if scfg[i].strip() == "":
-      scfg[i] = ""
-  scfg = ''.join(scfg)
-  return fnpsf, fnpdb, fnprm, scfg
 
 
 
@@ -137,62 +108,32 @@ def dosimul(zoom, build = True):
   global fncfg, fnout, cmdopt
 
   # build the program
-  progdir = "../../NAMD_mods/NAMD_2.11_thstat/Linux-x86_64-g++"
+  progdir = "../prog/lj"
   if not os.path.isdir(progdir):
     progdir = "../" + progdir
   if build:
     zcom.runcmd("make -C %s" % progdir)
 
-  # copy files from the source directory
-  fnpsf, fnpdb, fnprm, scfg = getfiles("waterbox")
-
-  # create a temporary directory
-  rundir = "tmprun"
-  if not os.path.exists(rundir):
-    os.mkdir(rundir)
-  # move to the running directory
-  os.chdir(rundir)
-
-  # program directory
-  prog = "../" + progdir + "/namd2 +p%s" % nproc
-
-  # copy files
-  os.system("cp %s ." % fnpsf)
-  os.system("cp %s ." % fnpdb)
-  os.system("cp %s ." % fnprm)
+  prog = "md"
+  try:
+    # make a copy of the program in case
+    # it gets modified or deleted later
+    shutil.copy("%s/%s" % (progdir, prog), "./%s" % prog)
+  except:
+    pass
 
   cnt = 0
   esum = 0
   e2sum = 0
-  # multiple trials
   for i in range(ntrials):
-    # clear the directory
-    os.system("rm -rf *.dat *.BAK *.old *.log *.vel *.xsc *.xst *.coor")
-
-    # write the configuration file
-    fncfg = "run.conf"
-    fnene = "ene0.log"
-    strcfg = scfg + '''
-rescaleAdaptive           on
-rescaleAdaptiveZoom       %s
-rescaleAdaptiveFileFreq   1000
-energyLogFile             %s
-energyLogFreq             10
-energyLogTotal            on
-''' % (zoom, fnene)
-    if dKdE > 0:
-      strcfg += "rescaleAdaptiveDKdE %s\n" % dKdE
-    strcfg += "run %s\n" % nsteps
-    open(fncfg, "w").write(strcfg)
-
-    # command line
-    cmd = "%s %s %s" % (prog, cmdopt, fncfg)
+    cmd = "./%s -t%s -Z%s %s" % (prog, nsteps, zoom, cmdopt)
+    if dKdE > 0: cmd += "-G%s" % dKdE
     if i == 0: print cmd
 
     ret, out, err = zcom.runcmd(cmd, capture = True, verbose = 0)
-    # extract the energy
-    arr = open(fnene).readlines()[-1].split()
-    etot = float(arr[2])
+    # get the last line of the output
+    result = err.strip().split('\n')[-1]
+    etot = geterror(result)
 
     # print results
     cnt += 1
@@ -203,15 +144,10 @@ energyLogTotal            on
     print "count %s, total energy %s, ave %s, var %s" % (
         cnt, etot, eave, evar)
 
-  # go back to the parent directory
-  os.chdir("..")
-
   return cnt, eave, evar
 
 
-
 def dozscan():
-  ''' scan the values of zoom factor '''
   global zrange
   zmin, zdel, zmax = zrange[0], zrange[1], zrange[2]
   sout = ""
@@ -227,11 +163,9 @@ def dozscan():
   print "saved results to", fnscan
 
 
-
 if __name__ == "__main__":
   doargs()
   if zrange:
     dozscan()
   else:
     dosimul(zoom)
-

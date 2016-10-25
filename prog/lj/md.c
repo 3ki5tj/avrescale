@@ -14,7 +14,8 @@ const char *fnpos = "lj.pos";
 
 int adaptive = 1; /* adaptive velocity scaling */
 double fixene = -255.7;
-double sfactor = 1.0; /* scaling factor */
+double zfactor = 1.0; /* zooming factor */
+double dKdE = 0.0;
 
 
 
@@ -25,7 +26,8 @@ static void help(void)
   fprintf(stderr, "Options:\n");
   fprintf(stderr, "  -n:        set the number of particles, %d\n", n);
   fprintf(stderr, "  -E:        set the initial total energy, %g\n", fixene);
-  fprintf(stderr, "  -S:        set the scaling factor, %g\n", sfactor);
+  fprintf(stderr, "  -Z:        set the zooming factor for the scaling magnitude, %g\n", zfactor);
+  fprintf(stderr, "  -G:        set the explicit value of dKdE, %g\n", dKdE);
   fprintf(stderr, "  -r:        set the density, %g\n", rho);
   fprintf(stderr, "  -T:        set the temperature, %g\n", tp);
   fprintf(stderr, "  -t:        set the number of steps, %d\n", nsteps);
@@ -65,7 +67,7 @@ static int doargs(int argc, char **argv)
 
     /* this is a short option */
     for ( j = 1; (ch = argv[i][j]) != '\0'; j++ ) {
-      if ( strchr("nESrTtc", ch) != NULL ) {
+      if ( strchr("nEZGrTtc", ch) != NULL ) {
         q = p = argv[i] + j + 1;
         if ( *p != '\0' ) {
           /* the argument follows the option immediately
@@ -84,8 +86,10 @@ static int doargs(int argc, char **argv)
         } else if ( ch == 'E' ) {
           fixene = atof(q);
           adaptive = 0;
-        } else if ( ch == 'S' ) {
-          sfactor = atof(q);
+        } else if ( ch == 'Z' ) {
+          zfactor = atof(q);
+        } else if ( ch == 'G' ) {
+          dKdE = atof(q);
         } else if ( ch == 'r' ) {
           rho = atof(q);
         } else if ( ch == 'T' ) {
@@ -123,6 +127,7 @@ void matchetot(lj_t *lj, int cycles, int stepspercycle)
   } else {
     etarget = fixene;
   }
+  fprintf(stderr, "matching %s energy %g\n", (adaptive ? "random" : "fixed"), etarget);
   for ( c = 1; c <= cycles; c++ ) {
     /* compute the average total energy over a few steps */
     etot0 = 0;
@@ -182,12 +187,15 @@ void avscale(lj_t *lj, const betacm_t *acm,
     dbde = dbdk + betvar;
     if ( dbde > 0.1 * dbdk ) dbde = 0.1 * dbdk;
   }
+  if ( dKdE > 0 ) {
+    dbde = -dKdE/(0.5*lj->dof + dKdE - 2)/(tp*tp);
+  }
   de = dbet / dbde;
   *pdbde = dbde;
   *pdbdk = dbdk;
 
   /* compute the scaling factor */
-  s = sfactor * (de / lj->ekin) / acm->cnt;
+  s = zfactor * (de / lj->ekin) / acm->cnt;
   if ( s > 0.5 ) s = 0.5;
   else if ( s < -0.5 ) s = -0.5;
   s = sqrt(1 + s);
@@ -207,7 +215,7 @@ int main(int argc, char **argv)
 
   doargs(argc, argv);
 
-  mtscramble(time(NULL));
+  mtscramble(clock());
   lj = lj_open(n, rho, rcdef);
   lj->dof = n * 3 - 3;
   matchetot(lj, 3, 100);
@@ -228,7 +236,6 @@ int main(int argc, char **argv)
     /* adaptive velocity scaling */
     if ( adaptive ) avscale(lj, acm, &dbde, &dbdk);
   }
-  lj_writepos(lj, lj->x, lj->v, fnpos);
   lj_close(lj);
 
   etot = lj->epot + lj->ekin;
