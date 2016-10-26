@@ -161,6 +161,17 @@ def dosimul(zoom, build = True):
   os.system("cp %s ." % fnpdb)
   os.system("cp %s ." % fnprm)
 
+  # command line
+  fncfg = "run.conf"
+  cmd = "%s %s %s" % (prog, cmdopt, fncfg)
+
+  fnlog = "ez%s.log" % zoom
+  ln = "# zoom %s, nsteps %s, dKdE %s\n" % (
+      zoom, nsteps, dKdE)
+  open(fnlog, "a").write(ln)
+  
+  print "CMD: %s; LOG %s" % (cmd, fnlog)
+
   cnt = 0
   esum = 0
   e2sum = 0
@@ -170,7 +181,6 @@ def dosimul(zoom, build = True):
     os.system("rm -rf *.dat *.BAK *.old *.log *.vel *.xsc *.xst *.coor")
 
     # write the configuration file
-    fncfg = "run.conf"
     fnene = "ene0.log"
     strcfg = scfg + '''
 rescaleAdaptive           on
@@ -185,10 +195,6 @@ energyLogTotal            on
     strcfg += "run %s\n" % nsteps
     open(fncfg, "w").write(strcfg)
 
-    # command line
-    cmd = "%s %s %s" % (prog, cmdopt, fncfg)
-    if i == 0: print cmd
-
     ret, out, err = zcom.runcmd(cmd, capture = True, verbose = 0)
     # extract the energy
     arr = open(fnene).readlines()[-1].split()
@@ -202,6 +208,9 @@ energyLogTotal            on
     evar = e2sum / cnt - eave * eave
     print "count %s, total energy %s, ave %s, var %s" % (
         cnt, etot, eave, evar)
+
+    ln = "%d %s\n" % (etot, etav)
+    open(fnlog, "a").write(ln)
 
   # go back to the parent directory
   os.chdir("..")

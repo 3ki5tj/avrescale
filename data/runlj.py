@@ -100,7 +100,7 @@ def geterror(result):
     print "cannot find error information"
     exit(1)
   #print m.group(1), m.group(2), m.group(3)
-  return float( m.group(1) )
+  return float( m.group(1) ), float( m.group(2) )
 
 
 
@@ -122,18 +122,25 @@ def dosimul(zoom, build = True):
   except:
     pass
 
+  cmd = "./%s -t%s -Z%s %s" % (prog, nsteps, zoom, cmdopt)
+  if dKdE > 0: cmd += "-G%s" % dKdE
+  cmd = cmd.strip()
+
+  fnlog = "ez%s.log" % zoom
+  ln = "# zoom %s, nsteps %s, dKdE %s\n" % (
+      zoom, nsteps, dKdE)
+  open(fnlog, "w").write(ln) # empty the log
+  
+  print "CMD: %s; LOG %s" % (cmd, fnlog)
+
   cnt = 0
   esum = 0
   e2sum = 0
   for i in range(ntrials):
-    cmd = "./%s -t%s -Z%s %s" % (prog, nsteps, zoom, cmdopt)
-    if dKdE > 0: cmd += "-G%s" % dKdE
-    if i == 0: print cmd
-
     ret, out, err = zcom.runcmd(cmd, capture = True, verbose = 0)
     # get the last line of the output
     result = err.strip().split('\n')[-1]
-    etot = geterror(result)
+    etot, etav = geterror(result)
 
     # print results
     cnt += 1
@@ -144,13 +151,17 @@ def dosimul(zoom, build = True):
     print "count %s, total energy %s, ave %s, var %s" % (
         cnt, etot, eave, evar)
 
+    ln = "%d %s %s\n" % (cnt, etot, etav)
+    open(fnlog, "a").write(ln)
+
   return cnt, eave, evar
 
 
 def dozscan():
   global zrange
   zmin, zdel, zmax = zrange[0], zrange[1], zrange[2]
-  sout = ""
+  sout = "# nsteps %d dKdE %s %s\n" % (
+      nsteps, dKdE, cmdopt)
   fnscan = "zscan.dat"
   zoom = zmin
   while zoom < zmax + zdel * 0.5:

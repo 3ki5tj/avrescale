@@ -215,7 +215,7 @@ int main(int argc, char **argv)
 
   doargs(argc, argv);
 
-  mtscramble(clock());
+  mtscramble(time(NULL) + 314159 * clock());
   lj = lj_open(n, rho, rcdef);
   lj->dof = n * 3 - 3;
   matchetot(lj, 3, 100);
