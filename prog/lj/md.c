@@ -13,7 +13,8 @@ double dt = 0.002;
 const char *fnpos = "lj.pos";
 
 int adaptive = 1; /* adaptive velocity scaling */
-double fixene = -255.7;
+double initene = 0; /* -255.7; */
+double initdev = 0;
 double zfactor = 1.0; /* zooming factor */
 double dKdE = 0.0;
 
@@ -25,7 +26,9 @@ static void help(void)
   fprintf(stderr, "Adaptive velocity rescaling on a Lennard-Jones fluid\n");
   fprintf(stderr, "Options:\n");
   fprintf(stderr, "  -n:        set the number of particles, %d\n", n);
-  fprintf(stderr, "  -E:        set the initial total energy, %g\n", fixene);
+  fprintf(stderr, "  -F:        turn off adaptive averaging, %d\n", !adaptive);
+  fprintf(stderr, "  -E:        set the initial total energy, %g\n", initene);
+  fprintf(stderr, "  -D:        set the standard deviation of the initial total energy, %g\n", initdev);
   fprintf(stderr, "  -Z:        set the zooming factor for the scaling magnitude, %g\n", zfactor);
   fprintf(stderr, "  -G:        set the explicit value of dKdE, %g\n", dKdE);
   fprintf(stderr, "  -r:        set the density, %g\n", rho);
@@ -67,7 +70,7 @@ static int doargs(int argc, char **argv)
 
     /* this is a short option */
     for ( j = 1; (ch = argv[i][j]) != '\0'; j++ ) {
-      if ( strchr("nEZGrTtc", ch) != NULL ) {
+      if ( strchr("nFEDZGrTtc", ch) != NULL ) {
         q = p = argv[i] + j + 1;
         if ( *p != '\0' ) {
           /* the argument follows the option immediately
@@ -83,9 +86,12 @@ static int doargs(int argc, char **argv)
 
         if ( ch == 'n' ) {
           n = atoi(q);
-        } else if ( ch == 'E' ) {
-          fixene = atof(q);
+        } else if ( ch == 'F' ) {
           adaptive = 0;
+        } else if ( ch == 'E' ) {
+          initene = atof(q);
+        } else if ( ch == 'D' ) {
+          initdev = atof(q);
         } else if ( ch == 'Z' ) {
           zfactor = atof(q);
         } else if ( ch == 'G' ) {
@@ -114,20 +120,28 @@ static int doargs(int argc, char **argv)
 
 
 /* scale the velocities to reach the desired total energy */
-void matchetot(lj_t *lj, int cycles, int stepspercycle)
+static void matchetot(lj_t *lj, int cycles, int stepspercycle)
 {
-  double ekin0 = 0, etot0, etot, etarget, de, s;
+  double ekin0 = 0, etot0, etot, etarget, de, s, std = 0;
   int i, c, t;
 
-  if ( adaptive ) {
+  if ( initene != 0 ) {
+    etarget = initene;
+  } else {
     etarget = ljeos3d_get(rho, tp, NULL, NULL, NULL) * n
             + 0.5 * tp * lj->dof;
-    /* add a random component */
-    etarget += tp * sqrt(lj->dof) * randgaus();
-  } else {
-    etarget = fixene;
   }
-  fprintf(stderr, "matching %s energy %g\n", (adaptive ? "random" : "fixed"), etarget);
+  if ( initdev != 0 ) {
+    std = initdev;
+  } else {
+    std = tp * sqrt(lj->dof);
+  }
+  /* add a random component */
+  etarget += std * randgaus();
+
+  fprintf(stderr, "matching %s energy %g, std %g, var %g; ",
+      (adaptive ? "random" : "fixed"), etarget, std, std * std);
+  fprintf(stderr, "n %d, dof %d, rho %g, T %g\n", n, lj->dof, rho, tp);
   for ( c = 1; c <= cycles; c++ ) {
     /* compute the average total energy over a few steps */
     etot0 = 0;
@@ -210,7 +224,7 @@ int main(int argc, char **argv)
   int t;
   lj_t *lj;
   double cnt = 0, etot = 0, dbde = 0, dbdk = 0;
-  double epsm = 0, etsm = 0, et2sm = 0;
+  double epsm = 0, etsm = 0, et2sm = 0, eitot;
   betacm_t acm[1] = {{0, 0, 0, 0}};
 
   doargs(argc, argv);
@@ -219,6 +233,7 @@ int main(int argc, char **argv)
   lj = lj_open(n, rho, rcdef);
   lj->dof = n * 3 - 3;
   matchetot(lj, 3, 100);
+  eitot = lj->epot + lj->ekin;
 
   for ( t = 1; t <= nsteps; t++ ) {
     lj_vv(lj, dt);
@@ -242,10 +257,10 @@ int main(int argc, char **argv)
   etsm /= cnt;
   et2sm = et2sm / cnt - etsm * etsm;
   fprintf(stderr, "rho %g, tp %g(%g), ep %g (ref. %g), "
-      "etot %g, ave %g, var %g, dbde %g, dbdk %g, ratio %g\n",
+      "etot %g, ave %g, var %g, dbde %g, dbdk %g, ratio %g, einit %g\n",
       rho, tp, acm->cnt/acm->bsm, epsm/cnt/n,
       ljeos3d_get(rho, tp, NULL, NULL, NULL),
-      etot, etsm, et2sm, dbde, dbdk, dbde/dbdk);
+      etot, etsm, et2sm, dbde, dbdk, dbde/dbdk, eitot);
   return 0;
 }
 
