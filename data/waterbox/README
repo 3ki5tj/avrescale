@@ -5,6 +5,9 @@ File               | Description
 300K.conf          | Adaptive velocity scaling, asymptotic microcanonical ensemble
 300Kcan.conf       | Canonical ensemble
 300Kfix.conf       | Fixed total energy
+300Krand.conf      | Template for batch tests, with random initial total energy
+300Kmag.conf       | Fixed updating magnitude
+
 
 ```
 make clean && ~/lwork/NAMD_mods/NAMD_2.11_thstat/Linux-x86_64-g++/namd2 +p4 300K.conf

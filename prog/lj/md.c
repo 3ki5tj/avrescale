@@ -16,6 +16,7 @@ int adaptive = 1; /* adaptive velocity scaling */
 double initene = 0; /* -255.7; */
 double initdev = 0;
 double zfactor = 1.0; /* zooming factor */
+double mag = 0.0;
 double dKdE = 0.0;
 
 
@@ -31,6 +32,7 @@ static void help(void)
   fprintf(stderr, "  -D:        set the standard deviation of the initial total energy, %g\n", initdev);
   fprintf(stderr, "  -Z:        set the zooming factor for the scaling magnitude, %g\n", zfactor);
   fprintf(stderr, "  -G:        set the explicit value of dKdE, %g\n", dKdE);
+  fprintf(stderr, "  -A:        set the fixed scaling magnitude, %g\n", mag);
   fprintf(stderr, "  -r:        set the density, %g\n", rho);
   fprintf(stderr, "  -T:        set the temperature, %g\n", tp);
   fprintf(stderr, "  -t:        set the number of steps, %d\n", nsteps);
@@ -70,7 +72,7 @@ static int doargs(int argc, char **argv)
 
     /* this is a short option */
     for ( j = 1; (ch = argv[i][j]) != '\0'; j++ ) {
-      if ( strchr("nFEDZGrTtc", ch) != NULL ) {
+      if ( strchr("nFEDZAGrTtc", ch) != NULL ) {
         q = p = argv[i] + j + 1;
         if ( *p != '\0' ) {
           /* the argument follows the option immediately
@@ -96,6 +98,8 @@ static int doargs(int argc, char **argv)
           zfactor = atof(q);
         } else if ( ch == 'G' ) {
           dKdE = atof(q);
+        } else if ( ch == 'A' ) {
+          mag = atof(q);
         } else if ( ch == 'r' ) {
           rho = atof(q);
         } else if ( ch == 'T' ) {
@@ -209,7 +213,11 @@ void avscale(lj_t *lj, const betacm_t *acm,
   *pdbdk = dbdk;
 
   /* compute the scaling factor */
-  s = zfactor * (de / lj->ekin) / acm->cnt;
+  if ( mag > 0 ) {
+    s = mag * (de / lj->ekin);
+  } else {
+    s = zfactor * (de / lj->ekin) / acm->cnt;
+  }
   if ( s > 0.5 ) s = 0.5;
   else if ( s < -0.5 ) s = -0.5;
   s = sqrt(1 + s);
@@ -234,6 +242,7 @@ int main(int argc, char **argv)
   lj->dof = n * 3 - 3;
   matchetot(lj, 3, 100);
   eitot = lj->epot + lj->ekin;
+  printf("%8d\t%8.3f\t%8.3f\t%8.3f\n", 0, lj->epot, lj->ekin, lj->epot + lj->ekin);
 
   for ( t = 1; t <= nsteps; t++ ) {
     lj_vv(lj, dt);
@@ -257,10 +266,12 @@ int main(int argc, char **argv)
   etsm /= cnt;
   et2sm = et2sm / cnt - etsm * etsm;
   fprintf(stderr, "rho %g, tp %g(%g), ep %g (ref. %g), "
-      "etot %g, ave %g, var %g, dbde %g, dbdk %g, ratio %g, einit %g\n",
+      "etot %g, ave %g, var %g, dbde %g, dbdk %g, ratio %g, einit %g",
       rho, tp, acm->cnt/acm->bsm, epsm/cnt/n,
       ljeos3d_get(rho, tp, NULL, NULL, NULL),
       etot, etsm, et2sm, dbde, dbdk, dbde/dbdk, eitot);
+  if ( mag > 0 ) fprintf(stderr, ", Gamma %g", 2*et2sm/mag);
+  fprintf(stderr, "\n");
   return 0;
 }
 

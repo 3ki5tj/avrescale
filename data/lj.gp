@@ -8,6 +8,6 @@ aval = 722.25
 Tval = 2000
 
 # estimated value
-gval = 6000
+gval = 6400
 
 plot f(x,Tval,aval,gval), "lj3/zscan2.dat" u 1:3

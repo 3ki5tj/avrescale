@@ -1,2 +1,7 @@
 The gamma (dKdE) value is 0.717 from a 100000000 simulation
-The target energy value should be 255.7 
+The target energy value should be -255.7 
+
+Command to find Gamma (correlation integral)
+./md -A 0.01 -G0.72 -t 1000000 -E-255.7 -D1e-100 > mag0.01.log
+./md -A 0.001 -G0.72 -t 100000000 -E-255.7 -D1e-100 > mag0.001.log
+
