@@ -19,6 +19,7 @@ colE = -1
 fnrst = ""
 t0 = 0
 tpinterp = 10
+drop1 = False
 
 
 
@@ -39,18 +40,19 @@ def showhelp():
   print "  --tm=:         set the number of subdivisions for each temperature bin (for WHAM)"
   print "  --colE=:       set the column for energy (for reweighting)"
   print "  --dE=:         set the bin size for the energy grid (for reweighting)"
+  print "  -1, --drop1    drop the last frame"
   exit(1)
 
 
 
 def doargs():
-  global fnins, fnout, dx, dE, dT, T, col, colT, colE, fnrst, t0, tpinterp
+  global fnins, fnout, dx, dE, dT, T, col, colT, colE, fnrst, t0, tpinterp, drop1
 
   try:
     opts, args = getopt.gnu_getopt(sys.argv[1:],
-        "hd:T:o:i:c:",
+        "hd:T:o:i:c:1",
         ["dx=", "dE=", "de=", "dT=", "dt=", "tp=", "input=", "output=",
-         "col=", "colT=", "colE=", "rst=", "t0=", "tm=" ])
+         "col=", "colT=", "colE=", "rst=", "t0=", "tm=", "drop=" ])
   except:
     print "Error parsing the command line"
     sys.exit(1)
@@ -83,6 +85,8 @@ def doargs():
       t0 = float(a)
     elif o in ("--tm",):
       tm = int(a)
+    elif o in ("-1", "--drop1",):
+      drop1 = True
 
   if len(fnins) == 0:
     fnins = glob.glob("e*.log")
@@ -278,7 +282,8 @@ class WHAM:
 
 
 def mkhist_simple(s, fnout):
-  n = len(s) - 1 # drop the last frame
+  n = len(s)
+  if drop1: n -= 1 # drop the last frame
   hist = None
   for i in range(n):
     ln = s[i].strip()
