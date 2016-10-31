@@ -18,13 +18,14 @@ aval = 722.25
 # if the var is 1.6, then Gamma = 2*1.6/0.0005 = 6400
 gval = 6400
 
+unset logscale
 #set logscale y
 
-plot [0.4:] [3:30]\
-  f(x,1000,aval,gval), "lj1/zscan.dat" u 1:3, \
-  f(x,2000,aval,gval), "lj3/zscan.dat" u 1:3
+#plot [0.4:] [3:30]\
+#  f(x,1000,aval,gval), "lj1/zscan.dat" u 1:3, \
+#  f(x,2000,aval,gval), "lj3/zscan.dat" u 1:3
 
-# To show the relative accuracy
-#plot [] \
-#  "lj1/zscan.dat" u 1:($3/f($1,1000,aval,gval)) w lp, \
-#  "lj3/zscan.dat" u 1:($3/f($1,2000,aval,gval)) w lp, 1
+# To show the relative accuracy of the prediction
+plot [][0:] \
+  "lj1/zscan.dat" u 1:($3/f($1,1000,aval,gval)) w lp, \
+  "lj3/zscan.dat" u 1:($3/f($1,2000,aval,gval)) w lp, 1

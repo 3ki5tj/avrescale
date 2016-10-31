@@ -1,14 +1,52 @@
 %\documentclass[12pt]{article}
 \documentclass[reprint]{revtex4-1}
 \usepackage{amsmath}
+\usepackage{mathtools}
+\usepackage{upgreek}
+\usepackage[table,usenames,dvipsnames]{xcolor}
+\usepackage{hyperref}
+
+\hypersetup{
+  colorlinks,
+  linkcolor={red!30!black},
+  citecolor={green!20!black},
+  urlcolor={blue!80!black}
+}
+
+
+\definecolor{DarkBlue}{RGB}{0,0,64}
+\definecolor{DarkBrown}{RGB}{64,20,10}
+\definecolor{DarkGreen}{RGB}{0,64,0}
+\definecolor{DarkPurple}{RGB}{64,0,42}
+\definecolor{LightGray}{gray}{0.85}
+% annotation macros
+\newcommand{\repl}[2]{{\color{gray} [#1] }{\color{blue} #2}}
+\newcommand{\add}[1]{{\color{blue} #1}}
+\newcommand{\del}[1]{{\color{gray} [#1]}}
+\newcommand{\note}[1]{{\color{DarkGreen}\footnotesize \textsc{Note.} #1}}
+\newcommand{\answer}[1]{{\color{DarkBlue}\footnotesize \textsc{Answer.} #1}}
+\newcommand{\summary}[1]{{\color{DarkPurple}\footnotesize \textsc{Summary.} #1}}
+
+
+
 \begin{document}
 
 
 
-\title{Adaptive velocity rescaling for an asymptotic
+\title{Adaptive velocity scaling for an asymptotic
 microcanonical ensemble}
 \author{}
 %\date{\vspace{-7ex}}
+\begin{abstract}
+  We present a modification of the commonly-used
+  temperature control scheme: velocity scaling.
+  %
+  Unlike the usual implementation of velocity scaling,
+  which does produce neither a canonical nor microcanonical ensemble,
+  the modification will produce an asymptotic microcanonical ensemble
+  with optimal convergence toward the target temperature.
+\end{abstract}
+
 \maketitle
 
 
@@ -31,7 +69,7 @@ $\left( K^* - \bar K \right)/\tau$,
 with $\tau^{-1}$ being the rate of damping.
 
 The above schemes, albeit effective,
-do not result in exact sampling for the microcanonical ensemble,
+do not result in exact sampling for the microcanonical ensemble\cite{hermansson1988},
 because they cause the total energy fluctuate continually.
 %
 Thus, they are often regarded as expedient protocols
@@ -122,7 +160,8 @@ The area of the hypersurface gives the density of states,
     \delta\bigl( H(\mathbf x) - E \bigr)
     \, d\mathbf x
   ,
-  \label{eq:omegaE}
+  \notag
+  %\label{eq:omegaE}
 \end{equation}
 %
 and the inverse temperature, $\beta = 1/(k_B T)$
@@ -265,7 +304,7 @@ we obtain the optimal amount of energy change
   \label{eq:dE_opt}
 \end{align}
 %
-This formula gives the ideal amount of energy change for velocity rescaling
+This formula gives the ideal amount of energy change for velocity scaling
 in every MD step.
 %
 Equation \eqref{eq:dE_opt} is analogous to the $1/t$, prescription\cite{
@@ -277,7 +316,7 @@ and the above derivation results from its close connection\cite{
   marsili2006, barducci2008}
 to the adaptive biasing force method\cite{darve2001, darve2008}.
 %
-In Appendix \ref{sec:error}, we shall give an alternative derivation of the result.
+In Appendix \ref{sec:error}, we give an alternative derivation of the result.
 
 
 
@@ -404,7 +443,7 @@ $\langle \Delta A^2 \rangle = \langle A^2 \rangle - \langle A \rangle^2$
 means the variance of quantity $A$.
 %
 %We will use Eq. \eqref{eq:dbetadE} to gauge
-%the magnitude of adjusting the velocity-rescaling factor.
+%the magnitude of adjusting the velocity-scaling factor.
 Note that the usual definition of temperature from twice the kinetic energy
 per degree of freedom is, however,
 derived from the canonical ensemble and
@@ -464,7 +503,7 @@ is the corresponding variance.
 %
 
 
-\subsection{Practical issues}
+\subsection{Approximations on $\beta'(E^*)$}
 
 
 Ideally, we should have $\beta'(E) \le 0$
@@ -558,16 +597,42 @@ to be around $0.33$.
 
 
 
+\subsection{Scaling frequency}
+
+
+In practice, velocity scaling is often implemented every few,
+say $m$ ($m > 1$), MD steps.
+%
+Then,
+%$t$ should be understood as the number of
+%such velocity-scaling operations so far instead of
+%the number of MD steps, and
+$K_t$ in Eq. \eqref{eq:dE_final} is understood
+as the block average of the kinetic energy of the $m$ steps
+before the scaling operation.
+
+
+
 \section{Results}
 
+
+
+We coded the adaptive velocity scaling scheme to NAMD\cite{NAMD},
+and tested it on a $30 \times 30\times 30 \, \mathrm{\AA}^3$ cubic box
+of $798$ water molecules.
+%
+The MD time step was $2$ femtosecond;
+the temperature was $300$ K.
+%
+Velocity scaling was conducted every $10$ steps.
+%
+Particle-meshed Ewald method\cite{essmann1995} was used to
+compute the electrostatic interaction,
+with a spacing of $1 \, \mathrm{\AA}$.
 
 [
 Compare the fluctuation of energy caused by velocity scaling to
 that caused by numerical integration of the equation of motion.
-
-%Relation to the $1/t$ recipe for Wang-Landau dynamics.
-
-Show that the optimal convergence to the right total energy.
 ]
 
 As shown in Fig. 1,
@@ -583,7 +648,9 @@ More interestingly,
 Fig. 2 shows that the adaptive velocity scaling
 yields shorter correlation for the kinetic energy.
 
-Use
+To test the optimality of Eq. \eqref{eq:dE_final},
+we studied a generalized velocity scaling scheme,
+whose the energy change in each step is given by
 \begin{equation}
   \delta E_t
   =
@@ -598,7 +665,58 @@ Use
   \label{eq:dE_mod}
 \end{equation}
 %
-instead of Eq. \eqref{eq:dE_final}.
+with a free parameter, $z$;
+and Eq. \eqref{eq:dE_final} is the $z = 1$ case.
+%
+For each value of $z$,
+we performed multiple independent simulations of $T = 10^5$ steps,
+and used the variance of the total energy at the simulation end
+to represent the error.
+%
+For $\beta'(E^*)$,
+Eq. \eqref{eq:dbeta_approx2} was used with the heuristic value of $0.33$.
+%
+As shown in Fig. \ref{fig:errz},
+the value of $z = 1$
+indeed gives the lowest error.
+%
+The deviation from the analytical prediction,
+Eq. \eqref{eq:err_zovert},
+is likely due to the relatively short simulation time,
+which does not completely justify the assumption
+on the fluctuation of the total energy, Eq. \eqref{eq:noise_corr}.
+
+\begin{figure}[h]
+\begin{center}
+  \makebox[\linewidth][c]{
+    \includegraphics[angle=0, width=1.0\linewidth]{fig/errz.pdf}
+  }
+  \caption{
+    \label{fig:errz}
+    Error of the total energy,
+    $\left\langle \Delta E^2(T) \right\rangle$,
+    at the end of a simulation of $T = 10^5$ steps,
+    versus parameter $z$
+    for the modified velocity scaling scheme,
+    Eq. \eqref{eq:dE_mod}.
+    %
+    The points are results from averaging over $20$ independent runs;
+    the curve is the analytical prediction from
+    Eq. \eqref{eq:err_zovert}.
+    The value of $\Gamma$ used in the latter was deduced
+    using Eq. \eqref{eq:Gamma_alpha0} from
+    a long simulation under regular velocity scaling
+    with $\alpha_0 = 0.001$.
+    %
+    \note{The figure was produced by \texttt{doc/fig/errz.gp}.
+      The raw data were saved in \texttt{data/wb\_t100000.dat}
+      (see the \texttt{Makefile} there).
+    }%
+  }
+\end{center}
+\end{figure}
+
+
 
 
 \section{Discussion}
@@ -613,15 +731,6 @@ instead of Eq. \eqref{eq:dE_final}.
 %velocity scaling and Nos\'e-Hoover thermostats,
 %which target a canonical ensemble.
 
-
-In practice, velocity scaling is often implemented every few,
-say $m$ ($m > 1$), MD steps.
-%
-Then $t$ should be understood as the number of
-such velocity-scaling operations so far instead of
-the number of MD steps, and $K_t$ in Eq. \eqref{eq:dE_final} is understood
-as the block average of the kinetic energy of the $m$ steps
-before the scaling operation.
 
 
 \appendix
@@ -648,14 +757,14 @@ to the current total energy, $\mathcal E_t - E_{t-1}$.
 %
 The correction can be used to guide the amount of
 energy change, $\Delta E_t = E_t - E_{t-1}$,
-for velocity rescaling.
+for velocity scaling.
 %
 If the independent correction were exact,
-then velocity rescaling only needs to be done once,
+then velocity scaling only needs to be done once,
 with the change $\Delta E_t$ to be identical to the correction.
 %
 But since the independent correction contains random error,
-velocity rescaling must be done continually,
+velocity scaling must be done continually,
 and as we shall see,
 if we accept the correction with some
 optimal time-dependent magnitude, $\alpha(t)$, as
@@ -687,8 +796,16 @@ and Eq. \eqref{eq:Eupdate} can be approximated as
 %
 where $\xi(t) \equiv \mathcal E_t - E^*$
 denotes the random fluctuation of the independent estimate at step $t$.
+%
 For simplicity, we will further approximate $\xi(t)$ as a white noise,
-such that $\langle \xi(t) \, \xi(t') \rangle = \Gamma \, \delta(t - t')$.
+such that
+\begin{equation}
+  \langle \xi(t) \, \xi(t') \rangle = \Gamma \, \delta(t - t').
+  \label{eq:noise_corr}
+\end{equation}
+%
+Note that we may only justify this approximation
+for a simulation much longer than the autocorrelation time of $\xi(t)$.
 %
 The solution of Eq. \eqref{eq:x_diffeq} is
 %
@@ -699,7 +816,8 @@ The solution of Eq. \eqref{eq:x_diffeq} is
   +
   \int_1^t \dot u_t(\tau) \, \xi(\tau) \, d\tau
   ,
-  \label{eq:x_sol}
+  %\label{eq:x_sol}
+  \notag
 \end{equation}
 %
 where
@@ -708,6 +826,7 @@ where
     -\int_\tau^t \alpha(s) \, ds
   \right)
   .
+  \notag
 \end{equation}
 %
 Thus, the error at the end of simulation $t = T$,
@@ -727,7 +846,7 @@ can be measured as expectation of $x^2(T)$,
   \int_1^T
     \dot u_T^2(t) \, dt
   ,
-  \label{eq:error_functional}
+  \label{eq:err_functional}
 \end{equation}
 where
 $A(t) = \int_1^t \alpha(t) \, dt$.
@@ -748,19 +867,20 @@ which leads to the solution,
 $u_T(t) = (t + t_0) / (T + t_0)$,
 with $c$ and $t_0$ being two constants.
 %
-As a result, we get the optimal schedule
+As a result, we get the optimal schedule of the updating magnitude
 %
 \begin{equation}
   \alpha(t) = \frac{ 1 } { t + t_0 }
   ,
-  \label{eq:alpha_opt}
+  \notag
+  %\label{eq:alpha_opt}
 \end{equation}
 %
-and the error under this schedule is
+and the error is
 %
-\begin{equation}
+$$%\begin{equation}
   \left\langle
-  x^2(T)
+    x^2(T)
   \right\rangle
   =
   \frac{
@@ -772,9 +892,14 @@ and the error under this schedule is
     (T + t_0)^2
   }
   ,
-\end{equation}
+$$%\end{equation}
 %
-For a long simulation, the influence of $t_0$
+From this, we find the optimal $t_0$ to be
+$$
+t_0 = \frac{ \Gamma } { \left\langle x^2(1) \right\rangle } - 1.
+$$
+%
+However, for a long simulation, the influence of $t_0$
 is small, and we may approximately use
 $$
 \alpha(t) \approx \frac 1 t,
@@ -785,7 +910,7 @@ We can further show that Eq. \eqref{eq:dE_mod}
 corresponds to a modified schedule
 $\alpha(t) = z/t$,
 which results in an expected error of
-$$
+\begin{equation}
   \left\langle
   x^2(T)
   \right\rangle
@@ -800,9 +925,35 @@ $$
     T^{2 \, z}
   }
   ,
-$$
+  \label{eq:err_zovert}
+\end{equation}
 which is minimal at $z = 1$ for a long simulation.
 
+To determine the value of $\Gamma$ of an unknown system,
+we may conduct a simulation with the regular velocity scaling,
+which corresponds to a constant schedule $\alpha(t) = \alpha_0$.
+%
+From Eq. \eqref{eq:err_functional}, we find that
+$\left\langle
+  x^2(T)
+\right\rangle
+=
+\Gamma \, \alpha_0 / 2$,
+is independent of time $T$.
+Thus, we can compute it from the trajectory average
+after equilibration,
+\begin{equation}
+\Gamma
+=
+\frac{ 2 } { \alpha_0 } \,
+\overline{
+  \bigl(
+    E - \overline E
+  \bigr)^2
+}
+.
+\label{eq:Gamma_alpha0}
+\end{equation}
 
 
 \section{Derivation of the microcanonical temperature}
@@ -1044,7 +1195,7 @@ E^{-2}
      { \frac{ N_f } 2 - 2 }
 .
 \end{align*}
-This means the ratio
+This means the ratio defined in Eq. \eqref{eq:gamma_def}
 $$
 \gamma
 =

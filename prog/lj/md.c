@@ -5,7 +5,7 @@
 
 
 int n = 108;
-int nsteps = 500000;
+long nsteps = 500000;
 double rho = 0.7;
 double tp = 1.5;
 double rcdef = 2.5;
@@ -35,7 +35,7 @@ static void help(void)
   fprintf(stderr, "  -A:        set the fixed scaling magnitude, %g\n", mag);
   fprintf(stderr, "  -r:        set the density, %g\n", rho);
   fprintf(stderr, "  -T:        set the temperature, %g\n", tp);
-  fprintf(stderr, "  -t:        set the number of steps, %d\n", nsteps);
+  fprintf(stderr, "  -t:        set the number of steps, %ld\n", nsteps);
   fprintf(stderr, "  -c:        set the cutoff distance, %g\n", rcdef);
   fprintf(stderr, "  -h:        display this message\n");
   exit(1);
@@ -105,7 +105,7 @@ static int doargs(int argc, char **argv)
         } else if ( ch == 'T' ) {
           tp = atof(q);
         } else if ( ch == 't' ) {
-          nsteps = atoi(q);
+          nsteps = atol(q);
         } else if ( ch == 'c' ) {
           rcdef = atof(q);
         }
@@ -229,7 +229,7 @@ void avscale(lj_t *lj, const betacm_t *acm,
 
 int main(int argc, char **argv)
 {
-  int t;
+  long t;
   lj_t *lj;
   double cnt = 0, etot = 0, dbde = 0, dbdk = 0;
   double epsm = 0, etsm = 0, et2sm = 0, eitot;
@@ -248,7 +248,7 @@ int main(int argc, char **argv)
     lj_vv(lj, dt);
     lj->ekin = lj_ekin(lj->v, n);
     if ( t % 1000 == 0 )
-      printf("%8d\t%8.3f\t%8.3f\t%8.3f\n", t, lj->epot, lj->ekin, lj->epot + lj->ekin);
+      printf("%8ld\t%8.3f\t%8.3f\t%8.3f\n", t, lj->epot, lj->ekin, lj->epot + lj->ekin);
     if ( t > nsteps / 2 ) {
       cnt += 1;
       etot = lj->epot + lj->ekin;

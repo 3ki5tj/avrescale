@@ -11,23 +11,24 @@ aval = 100000
 # with rescaleAdaptiveMag 0.001
 # namd 300Kmag.conf
 # ../mkhist.py ene0mag.log --col=3 --dx=0.002
-# If the value of var is 137
-# Then Gamma = 2*137/0.001 = 274000
-gval = 274000
+# If the value of var is 136.5
+# Then Gamma = 2*136.5/0.001 = 273000
+gval = 273000
 
-#set logscale y
+set logscale
 
-plot [0.3:][:200] \
-  f(x,5000,aval,gval), "wb_t5000.dat" u 1:($2)
+plot [0.3:][:20] \
+  f(x,100000,aval,gval) t "Prediction", \
+  "wb_t100000.dat" u 1:($2) t "Simulation"
 
-# wb_t5000 are created by
-#../runnamd.py -p2 -t5000 --dKdE=0.33 -Z1 -M10000
-#../runnamd.py -p1 -t5000 --dKdE=0.33 -Z0.3 -M10000
-#../runnamd.py -p2 -t5000 --dKdE=0.33 -Z3 -M10000
-#../runnamd.py -p1 -t5000 --dKdE=0.33 -Z4 -M10000
-#../runnamd.py -p2 -t5000 --dKdE=0.33 -Z0.5 -M10000
+# wb_t100000 are created by
+#../runnamd.py -p1 -t100000 --dKdE=0.33 -Z0.3 -M10000
+#../runnamd.py -p1 -t100000 --dKdE=0.33 -Z0.5 -M10000
+#../runnamd.py -p1 -t100000 --dKdE=0.33 -Z1 -M10000
+#../runnamd.py -p1 -t100000 --dKdE=0.33 -Z3 -M10000
+#../runnamd.py -p1 -t100000 --dKdE=0.33 -Z10 -M10000
 # After run
-#   mv run*/*.log wb_t5000
+#   mv run*/*.log wb_t100000
 # For the final error
 # ../mkhist.py --col=2 --dx=0.001
 # For the initial error
