@@ -42,9 +42,10 @@ microcanonical ensemble}
   temperature control scheme: velocity scaling.
   %
   Unlike the usual implementation of velocity scaling,
-  which does produce neither a canonical nor microcanonical ensemble,
-  the modification will produce an asymptotic microcanonical ensemble
-  with optimal convergence toward the target temperature.
+  which produces neither a canonical nor microcanonical ensemble,
+  the modification targets an asymptotic microcanonical ensemble,
+  where the microcanonical temperature tends to the target temperature
+  in the optimal rate.
 \end{abstract}
 
 \maketitle
@@ -58,7 +59,7 @@ In a common implementation,
 the velocity is regularly scaled such that the average
 kinetic energy of the past few steps, $\bar K$,
 can match the expected value,
-$K^* = \frac{1}{2} N_f \, k_B \, T$,
+$K^* = \frac{1}{2} N_f \, k_B \, T$\cite{frenkel},
 where $N_f$, $k_B$, and $T$ are the number of degrees of freedom,
 the Boltzmann constant, and temperature, respectively.
 %
@@ -406,7 +407,7 @@ and $\beta'(E)$ required in Eq. \eqref{eq:dE_beta}.
 %
 It can be shown that both the microcanonical temperature, $\beta(E)$,
 and $\beta'(E)$ can be evaluated as
-averages in the microcanonical ensemble\cite{rugh1997}:
+averages in the microcanonical ensemble\cite{rugh1997, frenkel}:
 %
 \begin{equation}
   \beta(E)
@@ -617,40 +618,107 @@ before the scaling operation.
 
 
 
-We coded the adaptive velocity scaling scheme to NAMD\cite{NAMD},
-and tested it on a $30 \times 30\times 30 \, \mathrm{\AA}^3$ cubic box
-of $798$ water molecules.
+We coded the adaptive velocity scaling scheme to
+the MD program NAMD\cite{NAMD},
+and tested it on a system
+of $798$ TIP3P water molecules
+in a cubic box of $30 \, \mathrm{\AA}$ side length.
+%
+Velocity scaling was conducted every $10$ steps.
 %
 The MD time step was $2$ femtosecond;
 the temperature was $300$ K.
 %
-Velocity scaling was conducted every $10$ steps.
-%
-Particle-meshed Ewald method\cite{essmann1995} was used to
+The particle-meshed Ewald method\cite{essmann1995} was used to
 compute the electrostatic interaction,
-with a spacing of $1 \, \mathrm{\AA}$.
+with a spacing of $1 \, \mathrm{\AA}$,
+and the SETTLE method\cite{miyamoto1992}
+was used for the constraints.
 
-[
-Compare the fluctuation of energy caused by velocity scaling to
-that caused by numerical integration of the equation of motion.
-]
 
-As shown in Fig. 1,
-the adaptive velocity scaling yielded a narrower distribution
-of the kinetic energy than the canonical counterpart
-with the same center.
+We first compared the total energy of a simulation
+under adaptive velocity scaling
+[with $\beta'(E^*)$ computed from Eq. \eqref{eq:dbeta}]
+and that of regular MD simulation,
+which conserves the total energy
+within the error of the integration scheme.
 %
-The canonical ensemble, as a superposition
+As shown in Fig. \ref{fig:etraj},
+the fluctuations of the total energy were
+similar after the equilibration phase.
+
+\begin{figure}[h]
+\begin{center}
+  \makebox[\linewidth][c]{
+    \includegraphics[angle=0, width=1.0\linewidth]{fig/etraj.pdf}
+  }
+  \caption{
+    \label{fig:etraj}
+    The total energy from a typical trajectory
+    under adaptive velocity scaling
+    versus
+    that from a regular MD trajectory,
+    whose total energy was at about $E = -6141.5$.
+    %
+    The points were plotted every $5000$ steps
+    %
+    \note{The figure was produced by \texttt{doc/fig/etraj.gp}.
+      The raw data were saved in
+      \texttt{data/waterbox\_fix/ene0fix.log},
+      and
+      \texttt{data/waterbox\_adp/ene0adp.log}.
+    }%
+  }
+\end{center}
+\end{figure}
+
+
+
+We then compared the distribution of the potential energy
+from the simulation under adaptive velocity scaling,
+that from a regular MD,
+and that from an MD targeting a canonical ensemble
+at the same temperature (using Langevin dynamics).
+%
+As shown in Fig. \ref{fig:uhist},
+the regular MD simulation and that using adaptive velocity scaling
+produced similar distributions,
+which were considerably narrower than the distribution
+from the canonical counterpart.
+%
+This is understandable,
+as the canonical ensemble, as a superposition
 of microcanonical ones,
 tends to broaden distributions.
 %
-More interestingly,
-Fig. 2 shows that the adaptive velocity scaling
-yields shorter correlation for the kinetic energy.
+%More interestingly,
+%Fig. 2 shows that the adaptive velocity scaling
+%yields shorter correlation for the kinetic energy.
+
+\begin{figure}[h]
+\begin{center}
+  \makebox[\linewidth][c]{
+    \includegraphics[angle=0, width=1.0\linewidth]{fig/uhist.pdf}
+  }
+  \caption{
+    \label{fig:uhist}
+    Distributions of the potential energy, $U$,
+    from MD simulations in the canonical ensemble,
+    microcanonical ensemble,
+    and one under adaptive velocity scaling.
+    %
+    \note{The figure was produced by \texttt{doc/fig/uhist.gp}.
+    }%
+  }
+\end{center}
+\end{figure}
+
+
 
 To test the optimality of Eq. \eqref{eq:dE_final},
 we studied a generalized velocity scaling scheme,
 whose the energy change in each step is given by
+%
 \begin{equation}
   \delta E_t
   =
@@ -700,7 +768,7 @@ on the fluctuation of the total energy, Eq. \eqref{eq:noise_corr}.
     for the modified velocity scaling scheme,
     Eq. \eqref{eq:dE_mod}.
     %
-    The points are results from averaging over $20$ independent runs;
+    The points are results from averaging over {\color{red} $20$} independent runs;
     the curve is the analytical prediction from
     Eq. \eqref{eq:err_zovert}.
     The value of $\Gamma$ used in the latter was deduced
@@ -710,7 +778,6 @@ on the fluctuation of the total energy, Eq. \eqref{eq:noise_corr}.
     %
     \note{The figure was produced by \texttt{doc/fig/errz.gp}.
       The raw data were saved in \texttt{data/wb\_t100000.dat}
-      (see the \texttt{Makefile} there).
     }%
   }
 \end{center}

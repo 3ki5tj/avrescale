@@ -8,16 +8,16 @@ f(z,T,a,g)=a/T**(2*z)+g*z*z/(2*z-1)*(T**(2*z-1)-1)/T**(2*z)
 aval = 100000
 
 # To be obtained from constant a magnitude simulation, 300Kmag.conf
-# with rescaleAdaptiveMag 0.001
+# with rescaleAdaptiveMag 0.0001
 # namd 300Kmag.conf
 # ../mkhist.py ene0mag.log --col=3 --dx=0.002
-# If the value of var is 136.5
-# Then Gamma = 2*136.5/0.001 = 273000
-gval = 273000
+# If the value of var is 18
+# Then Gamma = 2*18/0.0001 = 360000
+gval = 360000
 
 set logscale
 
-plot [0.3:][:20] \
+plot [0.3:][:60] \
   f(x,100000,aval,gval) t "Prediction", \
   "wb_t100000.dat" u 1:($2) t "Simulation"
 
