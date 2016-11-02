@@ -14,16 +14,17 @@ set xlabel "Potential energy, {/Times-Italic U} (kcal/mol)" offset 0, 0
 
 set ytics 0.01
 set mytics 5
-set yrange [:0.023]
+set yrange [:0.026]
 #set ylabel "Total energy, {/Times-Italic E}" offset 0.5, 0
 
 set key right Left reverse spacing 1.1 width -7
 
-plot [:][:0.026] \
+plot [:][:] \
     "../../data/waterbox_can/ene0can.his" u ($1):($2) w l  lt 1  lw 2.0 t "Canonical", \
     "../../data/waterbox_fix/ene0fix.his" u ($1):($2) w l  lt 2  lw 2.0 t "Microcanonical", \
     "../../data/waterbox_adp/ene0adp.his" u ($1):($2) w l  lt 4  lw 2.0 t "Adaptive velocity scaling", \
 
+# "../../data/waterbox_reg/ene0reg.his" u ($1):($2) w l  lt 5  lw 2.0 t "Regular velocity scaling"
 
 unset multiplot
 unset output
