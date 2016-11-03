@@ -25,6 +25,9 @@ dKdE = 0
 Etot = None
 Edev = None
 trace = False
+thermostat = None
+tNHCPeriod = 100.0
+langRescaleDt = 20.0
 verbose = 0
 
 
@@ -50,6 +53,9 @@ def usage():
     -E, --Etot=         set the target initial total energy
     -D, --Edev=         set the standard deviation of the initial total energy
     --trace             trace the time series of total energy
+    --th=               set the thermostat method, Langevin, NH (Nose-Hoover), VRS (velocity rescaling)
+    --tNHCPeriod        set the period of Nose-Hoover thermostat
+    --langRescaleDt     set the time constant of the Langevin velocity rescaling thermostat
     --opt=              set options to be passed to the command line
     -v                  be verbose
     --verbose=          set verbosity
@@ -68,7 +74,8 @@ def doargs():
           "np=",
           "dKdE=", "zoom=", "scan=", "nsteps=",
           "cfg=", "conf=", "Etot=", "Edev=",
-          "trace",
+          "trace", "th",
+          "thermostat=", "tNHCPeriod=", "langRescaleDt=",
           "output=", "opt=",
           "help", "verbose=",
         ] )
@@ -77,7 +84,7 @@ def doargs():
     usage()
 
   global fnconf, nsteps, ntrials, nproc, dKdE, zoom, zrange, Etot, Edev
-  global trace
+  global trace, thermostat, tNHCPeriod, langRescaleDt
   global fnout, cmdopt, verbose
 
   for o, a in opts:
@@ -101,6 +108,12 @@ def doargs():
       zrange = [float(x) for x in a.strip().split(":")]
     elif o in ("--trace",):
       trace = True
+    elif o in ("--th", "--thermostat",):
+      thermostat = a.upper()
+    elif o in ("--tNHCPeriod",):
+      tNHCPeriod = float(a)
+    elif o in ("--langRescaleDt",):
+      langRescaleDt = float(a)
     elif o in ("-v",):
       verbose += 1  # such that -vv gives verbose = 2
     elif o in ("--verbose",):
@@ -114,6 +127,7 @@ def doargs():
 
 
 class Ave:
+  ''' to compute average and variance '''
   def __init__(self):
     self.n = 0
     self.xsum = 0
@@ -149,6 +163,7 @@ def getprogdir(build = True):
 
 def getfiles(initdir):
   ''' get files on the system '''
+  global thermostat
   if not os.path.exists(initdir):
     initdir = "../" + initdir
   fnpsf = os.path.abspath( glob.glob(initdir + "/*.psf")[0] )
@@ -178,6 +193,9 @@ def getfiles(initdir):
       scfg[i] = ""
     elif ln.startswith("rescaleInitDev") and Edev != None:
       scfg[i] = ""
+    if thermostat:
+      if ln.startswith("rescaleFreq") or ln.startswith("rescaleTemp"):
+        scfg[i] = ""
   scfg = ''.join(scfg)
   return fnpsf, fnpdb, fnprm, scfg
 
@@ -305,6 +323,7 @@ def dozscan():
 
 def dotrace(zoom, build = True):
   global fncfg, fnout, cmdopt, Etot, Edev
+  global thermostat, tNHCPeriod, langRescaleDt
 
   progdir = getprogdir(build)
 
@@ -344,16 +363,47 @@ def dotrace(zoom, build = True):
   for i in range(ntrials):
     # write the configuration file
     fnene = "ene0.log"
+
     strcfg = scfg + '''
-rescaleAdaptive           on
-rescaleAdaptiveZoom       %s
-rescaleAdaptiveFileFreq   1000
 energyLogFile             %s
 energyLogFreq             10
 energyLogTotal            on
-''' % (zoom, fnene)
-    if dKdE > 0:
-      strcfg += "rescaleAdaptiveDKdE       %s\n" % dKdE
+''' % (fnene)
+
+    if not thermostat:
+      strcfg += '''
+rescaleAdaptive           on
+rescaleAdaptiveZoom       %s
+rescaleAdaptiveFileFreq   1000
+''' % (zoom)
+      if dKdE > 0:
+        strcfg += "rescaleAdaptiveDKdE       %s\n" % dKdE
+
+    elif thermostat == "NH":
+      # Nose-Hoover thermostat
+      strcfg += '''
+tNHC              on
+tNHCTemp          $temperature
+tNHCLen           5
+tNHCPeriod        %g
+''' % (tNHCPeriod)
+
+    elif thermostat.startswith("VR"):
+      # Langevin-style velocity rescaling
+      strcfg += '''
+langRescale       on
+langRescaleTemp   $temperature
+langRescaleDt     %g
+''' % (langRescaleDt)
+
+    else: # if thermostat.startswith("L"):
+      # Langevin thermostat
+      strcfg += '''
+langevin          on
+langevinDamping   1
+langevinTemp      $temperature
+'''
+
     if Etot != None:
       strcfg += "rescaleInitTotal          %s\n" % Etot
     if Edev != None:
@@ -385,7 +435,7 @@ energyLogTotal            on
     strace = "# count %s, zoom %s, nsteps %s, dKdE %s, Etot %s, Edev %s\n" % (
       etarr[0].n, zoom, nsteps, dKdE, Etot, Edev)
     for k in range(tm):
-      strace += "%s\t%s\t%s\n" % (ssplit[k][0], etarr[k].getave(), etarr[k].getvar())
+      strace += "%s\t%g\t%g\n" % (ssplit[k][0], etarr[k].getave(), etarr[k].getvar())
     open(fntrace, "w").write(strace)
 
   # go back to the parent directory
