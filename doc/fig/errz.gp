@@ -47,7 +47,7 @@ set ylabel "Error of the total energy" offset 1, 0
 set key right Left reverse spacing 1.2
 
 plot [0.3:][:25] \
-    "../../data/wb_t100000.dat" u ($1):2         w p  pt 7  ps 2.0 t "Simulation", \
+    "../../data/wb/wb_t100000.dat" u ($1):2         w p  pt 7  ps 2.0 t "Simulation", \
     f(x,100000,aval,gval) lt 1 t "Prediction"
 
 

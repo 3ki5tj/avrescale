@@ -20,7 +20,7 @@ set yrange [:0.026]
 set key right Left reverse spacing 1.1 width -7
 
 plot [:][:] \
-    "../../data/waterbox_can/ene0can.his" u ($1):($2) w l  lt 1  lw 2.0 t "Canonical", \
+    "../../data/wb/can/ene0can.his" u ($1):($2) w l  lt 1  lw 2.0 t "Canonical", \
     "../../data/waterbox_fix/ene0fix.his" u ($1):($2) w l  lt 2  lw 2.0 t "Microcanonical", \
     "../../data/waterbox_adp/ene0adp.his" u ($1):($2) w l  lt 4  lw 2.0 t "Adaptive velocity scaling", \
 

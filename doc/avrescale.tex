@@ -672,14 +672,13 @@ and that from a regular MD simulation without velocity scaling.
 %
 In the case of regular velocity scaling,
 as described in the Introduction,
-velocity was scaled only every \red{$10^3$} MD steps.
+velocity was scaled every $10^3$ MD steps.
 %
 For adaptive velocity scaling,
-$\beta'(E^*)$ was computed from Eq. \eqref{eq:dbeta}.
-%
-From this simulation,
-we obtained the heuristic value of $\gamma = 0.33$,
-which we would use for other tests.
+$\beta'(E^*)$ was computed from Eq. \eqref{eq:dbeta},
+and we obtained from this simulation
+the heuristic value of $\gamma = 0.33$,
+to be used for other tests.
 %
 The regular MD conserves the total energy
 within the error of the integration scheme,
@@ -708,7 +707,7 @@ from a regular MD without velocity scaling.
     from an MD trajectory
     without velocity scaling (with the total energy $E \approx -6141.5$),
     one under regular velocity scaling
-    (conducted every \red{$10^3$} steps),
+    (conducted every $10^3$ steps),
     %(in which the velocity is scaled
     %every $m = 10^4$ steps by a factor of
     %$\sqrt{\frac12 N_f k_B T/\bar K}$,
@@ -717,7 +716,7 @@ from a regular MD without velocity scaling.
     and
     one under adaptive velocity scaling (conducted every $10$ steps).
     %
-    The points were plotted every $2 \times 10^4$ steps.
+    The points were plotted every $5 \times 10^4$ steps.
     %
     \note{The figure was produced by \texttt{doc/fig/etraj.gp}.
       The raw data were saved in
@@ -831,7 +830,7 @@ on the fluctuation of the total energy, Eq. \eqref{eq:noise_corr}.
     for the modified velocity scaling scheme,
     Eq. \eqref{eq:dE_mod}.
     %
-    The points are results from averaging over \red{$50$} independent runs;
+    The points are results from averaging over \red{$72$} independent runs;
     the curve is the analytical prediction from
     Eq. \eqref{eq:err_zovert}.
     The value of $\Gamma$ used in the latter was deduced

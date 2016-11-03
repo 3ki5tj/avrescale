@@ -3,6 +3,7 @@
 
 
 '''
+Compute the error versus the zooming factor
 '''
 
 
@@ -17,12 +18,13 @@ cmdopt = ""
 fnconf = ""
 nsteps = 10000
 ntrials = 100
-nproc = 4
+nproc = 1
 zoom = 1.0
 zrange = None
 dKdE = 0
 Etot = None
 Edev = None
+trace = False
 verbose = 0
 
 
@@ -34,7 +36,7 @@ def usage():
     %s [OPTIONS]""" % sys.argv[0]
 
   print """
-  Compute the error over a range of zooming factor
+  Compute the error versus the zooming factor
 
   OPTIONS:
 
@@ -47,6 +49,7 @@ def usage():
     -S, --scan=         set the range of the scanning z, format xmin:dx:xmax
     -E, --Etot=         set the target initial total energy
     -D, --Edev=         set the standard deviation of the initial total energy
+    --trace             trace the time series of total energy
     --opt=              set options to be passed to the command line
     -v                  be verbose
     --verbose=          set verbosity
@@ -65,6 +68,7 @@ def doargs():
           "np=",
           "dKdE=", "zoom=", "scan=", "nsteps=",
           "cfg=", "conf=", "Etot=", "Edev=",
+          "trace",
           "output=", "opt=",
           "help", "verbose=",
         ] )
@@ -73,6 +77,7 @@ def doargs():
     usage()
 
   global fnconf, nsteps, ntrials, nproc, dKdE, zoom, zrange, Etot, Edev
+  global trace
   global fnout, cmdopt, verbose
 
   for o, a in opts:
@@ -94,6 +99,8 @@ def doargs():
       zoom = float(a)
     elif o in ("-S", "--scan",):
       zrange = [float(x) for x in a.strip().split(":")]
+    elif o in ("--trace",):
+      trace = True
     elif o in ("-v",):
       verbose += 1  # such that -vv gives verbose = 2
     elif o in ("--verbose",):
@@ -106,8 +113,42 @@ def doargs():
       usage()
 
 
+class Ave:
+  def __init__(self):
+    self.n = 0
+    self.xsum = 0
+    self.x2sum = 0
+
+  def add(self, x):
+    self.n += 1
+    self.xsum += x
+    self.x2sum += x * x
+
+  def getave(self):
+    return self.xsum / self.n
+
+  def getvar(self):
+    ave = self.xsum / self.n
+    return self.x2sum / self.n - ave * ave
+
+
+
+def getprogdir(build = True):
+  ''' find the directory of NAMD '''
+  progdir = "../../NAMD_mods/NAMD_2.11_thstat/Linux-x86_64-g++"
+  i = 0
+  while not os.path.isdir(progdir):
+    progdir = "../" + progdir
+    i += 1
+    if i > 3: break
+  if build: # build the program
+    zcom.runcmd("make -C %s" % progdir)
+  return progdir
+
+
 
 def getfiles(initdir):
+  ''' get files on the system '''
   if not os.path.exists(initdir):
     initdir = "../" + initdir
   fnpsf = os.path.abspath( glob.glob(initdir + "/*.psf")[0] )
@@ -160,15 +201,10 @@ def geterror(result):
 def dosimul(zoom, build = True):
   global fncfg, fnout, cmdopt, Etot, Edev
 
-  # build the program
-  progdir = "../../NAMD_mods/NAMD_2.11_thstat/Linux-x86_64-g++"
-  if not os.path.isdir(progdir):
-    progdir = "../" + progdir
-  if build:
-    zcom.runcmd("make -C %s" % progdir)
+  progdir = getprogdir(build)
 
   # copy files from the source directory
-  fnpsf, fnpdb, fnprm, scfg = getfiles("waterbox")
+  fnpsf, fnpdb, fnprm, scfg = getfiles("normal")
 
   # create a temporary directory
   rundir = "tmprun"
@@ -196,11 +232,8 @@ def dosimul(zoom, build = True):
   
   print "CMD: %s; LOG %s" % (cmd, fnlog)
 
-  cnt = 0
-  esum = 0
-  e2sum = 0
-  eisum = 0
-  ei2sum = 0
+  ef = Ave()
+  ei = Ave()
   # multiple trials
   for i in range(ntrials):
     # write the configuration file
@@ -235,26 +268,19 @@ energyLogTotal            on
       j -= 1
     etot = float( ss[j].split()[2] )
 
-    # print results
-    cnt += 1
-    eisum += eitot
-    ei2sum += eitot * eitot
-    eiave = eisum / cnt
-    eivar = ei2sum / cnt - eiave * eiave
-    esum += etot
-    e2sum += etot * etot
-    eave = esum / cnt
-    evar = e2sum / cnt - eave * eave
+    # update accumulators and print results
+    ei.add(eitot)
+    ef.add(etot)
     print "count %s, total energy %s, ave %s, var %s, init %s, iave %s, ivar %s" % (
-        cnt, etot, eave, evar, eitot, eiave, eivar)
+        ef.n, etot, ef.getave(), ef.getvar(), eitot, ei.getave(), ei.getvar())
 
-    ln = "%d %s %s\n" % (cnt, etot, eitot)
+    ln = "%d %s %s\n" % (ef.n, etot, eitot)
     open(fnlog, "a").write(ln)
 
   # go back to the parent directory
   os.chdir("..")
 
-  return cnt, eave, evar, eiave, eivar
+  return ef.n, ef.getave(), ef.getvar(), ei.getave(), ei.getvar()
 
 
 
@@ -277,9 +303,101 @@ def dozscan():
 
 
 
+def dotrace(zoom, build = True):
+  global fncfg, fnout, cmdopt, Etot, Edev
+
+  progdir = getprogdir(build)
+
+  if Edev == None: Edev = 100
+  if Etot == None: Etot = -6141.16
+  Etot += Edev
+  Edev = 0
+
+  # copy files from the source directory
+  fnpsf, fnpdb, fnprm, scfg = getfiles("normal")
+
+  # create a temporary directory
+  rundir = "tmprun"
+  if not os.path.exists(rundir):
+    os.mkdir(rundir)
+  # move to the running directory
+  os.chdir(rundir)
+
+  # program directory
+  prog = "../" + progdir + "/namd2 +p%s" % nproc
+
+  # copy files
+  os.system("cp %s ." % fnpsf)
+  os.system("cp %s ." % fnpdb)
+  os.system("cp %s ." % fnprm)
+
+  # command line
+  fncfg = "run.conf"
+  cmd = "%s %s %s" % (prog, cmdopt, fncfg)
+
+  fntrace = "../etot.tr"
+  
+  print "CMD: %s; TRACE %s" % (cmd, fntrace)
+
+  etarr = []
+  # multiple trials
+  for i in range(ntrials):
+    # write the configuration file
+    fnene = "ene0.log"
+    strcfg = scfg + '''
+rescaleAdaptive           on
+rescaleAdaptiveZoom       %s
+rescaleAdaptiveFileFreq   1000
+energyLogFile             %s
+energyLogFreq             10
+energyLogTotal            on
+''' % (zoom, fnene)
+    if dKdE > 0:
+      strcfg += "rescaleAdaptiveDKdE       %s\n" % dKdE
+    if Etot != None:
+      strcfg += "rescaleInitTotal          %s\n" % Etot
+    if Edev != None:
+      strcfg += "rescaleInitDev            %s\n" % Edev
+
+    strcfg += "run %s\n" % nsteps
+    open(fncfg, "w").write(strcfg)
+
+    # clear the directory
+    os.system("rm -rf *.dat *.BAK *.old ene*.log *.vel *.xsc *.xst *.coor")
+
+    ret, out, err = zcom.runcmd(cmd, capture = True, verbose = 0)
+    # extract the energy
+    ss = open(fnene).read().strip().split('\n')
+    ssplit = [ln.strip().split() for ln in ss]
+    tm = len(ss)
+
+    # update accumulators and print results
+    if i == 0:
+      etarr = [ Ave() for k in range(tm) ]
+    for k in range(tm):
+      etot = float( ssplit[k][2] )
+      etarr[k].add(etot)
+
+    print "count %s, total energy, final: ave %s, fvar %s, init: ave %s, var %s" % (
+        i + 1, etarr[-1].getave(), etarr[-1].getvar(),
+        etarr[0].getave(), etarr[0].getvar())
+
+    strace = "# count %s, zoom %s, nsteps %s, dKdE %s, Etot %s, Edev %s\n" % (
+      etarr[0].n, zoom, nsteps, dKdE, Etot, Edev)
+    for k in range(tm):
+      strace += "%s\t%s\t%s\n" % (ssplit[k][0], etarr[k].getave(), etarr[k].getvar())
+    open(fntrace, "w").write(strace)
+
+  # go back to the parent directory
+  os.chdir("..")
+
+
+
 if __name__ == "__main__":
   doargs()
-  if zrange:
+  if trace:
+    dotrace(zoom)
+  elif zrange:
     dozscan()
   else:
     dosimul(zoom)

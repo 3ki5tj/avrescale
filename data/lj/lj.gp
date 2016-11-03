@@ -27,5 +27,5 @@ unset logscale
 
 # To show the relative accuracy of the prediction
 plot [][0:] \
-  "lj1/zscan.dat" u 1:($3/f($1,1000,aval,gval)) w lp, \
-  "lj3/zscan.dat" u 1:($3/f($1,2000,aval,gval)) w lp, 1
+  "zscan_t1000.dat" u 1:($3/f($1,1000,aval,gval)) w lp, \
+  "zscan_t2000.dat" u 1:($3/f($1,2000,aval,gval)) w lp, 1

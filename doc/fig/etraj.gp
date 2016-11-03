@@ -13,15 +13,15 @@ set xlabel "Number of MD steps, {/Times-Italic t} ({/Symbol \264} 10^{/*0.7 5 })
 
 set ytics 10
 set mytics 10
-set yrange [:-6110]
+set yrange [:-6100]
 set ylabel "Total energy, {/Times-Italic E}" offset 0.5, 0
 
 set key right Left reverse spacing 1.2 width -7
 
-plot [:20][:] \
-    "../../data/waterbox_fix/ene0fix.log" u ($1/1e5):($3) every 2000 w p  lt 1 pt 1  ps 1.0 t "Without velocity scaling", \
-    "../../data/waterbox_reg/ene0reg.log" u ($1/1e5):($3) every 2000 w p  lt 1 pt 2  ps 1.0 t "Regular velocity scaling", \
-    "../../data/waterbox_adp/ene0adp.log" u ($1/1e5):($3) every 2000 w p  lt 2 pt 9  ps 1.0 t "Adaptive velocity scaling", \
+plot [:30][:] \
+    "../../data/waterbox_fix/ene0fix.log" u ($1/1e5):($3) every 5000 w p  lt 1 pt 1  ps 1.0 t "Without velocity scaling", \
+    "../../data/waterbox_reg/ene0reg.log" u ($1/1e5):($3) every 5000 w p  lt 1 pt 2  ps 1.0 t "Regular velocity scaling", \
+    "../../data/waterbox_adp/ene0adp.log" u ($1/1e5):($3) every 5000 w p  lt 2 pt 9  ps 1.0 t "Adaptive velocity scaling", \
 
 #plot [:5][:] \
 #    "../../data/waterbox_fix/set1/ene0fix.log" u ($1/1e5):($3) every 500  w p  pt 1  ps 1.0 t "Regular MD", \
