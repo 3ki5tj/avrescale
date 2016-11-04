@@ -16,7 +16,7 @@ import zcom
 fnout = None
 cmdopt = ""
 fnconf = ""
-nsteps = 10000
+nsteps = None 
 ntrials = 100
 nproc = 1
 zoom = 1.0
@@ -57,6 +57,7 @@ def usage():
     --tNHCPeriod        set the period of Nose-Hoover thermostat
     --langRescaleDt     set the time constant of the Langevin velocity rescaling thermostat
     --opt=              set options to be passed to the command line
+    -o, --output=       set the output file
     -v                  be verbose
     --verbose=          set verbosity
     -h, --help          help
@@ -74,8 +75,8 @@ def doargs():
           "np=",
           "dKdE=", "zoom=", "scan=", "nsteps=",
           "cfg=", "conf=", "Etot=", "Edev=",
-          "trace", "th",
-          "thermostat=", "tNHCPeriod=", "langRescaleDt=",
+          "trace", "th=", "thermostat=",
+          "tNHCPeriod=", "langRescaleDt=",
           "output=", "opt=",
           "help", "verbose=",
         ] )
@@ -216,8 +217,8 @@ def geterror(result):
 
 
 
-def dosimul(zoom, build = True):
-  global fncfg, fnout, cmdopt, Etot, Edev
+def dosimul(zoom, build = True, fnlog = None):
+  global fncfg, nsteps, cmdopt, Etot, Edev
 
   progdir = getprogdir(build)
 
@@ -239,11 +240,16 @@ def dosimul(zoom, build = True):
   os.system("cp %s ." % fnpdb)
   os.system("cp %s ." % fnprm)
 
+  if nsteps == None: nsteps = 10
+
   # command line
   fncfg = "run.conf"
   cmd = "%s %s %s" % (prog, cmdopt, fncfg)
 
-  fnlog = "../ez%s.log" % zoom
+  # output file
+  if not fnlog: fnlog = "ez%s.log" % zoom
+  fnlog = "../" + fnlog
+
   ln = "# zoom %s, nsteps %s, dKdE %s, Etot %s, Edev %s\n" % (
       zoom, nsteps, dKdE, Etot, Edev)
   open(fnlog, "a").write(ln)
@@ -321,8 +327,8 @@ def dozscan():
 
 
 
-def dotrace(zoom, build = True):
-  global fncfg, fnout, cmdopt, Etot, Edev
+def dotrace(zoom, build = True, fntrace = None):
+  global fncfg, nsteps, cmdopt, Etot, Edev
   global thermostat, tNHCPeriod, langRescaleDt
 
   progdir = getprogdir(build)
@@ -350,14 +356,20 @@ def dotrace(zoom, build = True):
   os.system("cp %s ." % fnpdb)
   os.system("cp %s ." % fnprm)
 
+  if nsteps == None: nsteps = 1
+
   # command line
   fncfg = "run.conf"
   cmd = "%s %s %s" % (prog, cmdopt, fncfg)
 
-  fntrace = "../etot.tr"
-  
+  # output file
+  if not fntrace: fntrace = "etot.tr"
+  fntrace = "../" + fntrace
+
   print "CMD: %s; TRACE %s" % (cmd, fntrace)
 
+  eparr = []
+  ekarr = []
   etarr = []
   # multiple trials
   for i in range(ntrials):
@@ -366,7 +378,7 @@ def dotrace(zoom, build = True):
 
     strcfg = scfg + '''
 energyLogFile             %s
-energyLogFreq             10
+energyLogFreq             1
 energyLogTotal            on
 ''' % (fnene)
 
@@ -424,9 +436,15 @@ langevinTemp      $temperature
     # update accumulators and print results
     if i == 0:
       etarr = [ Ave() for k in range(tm) ]
+      eparr = [ Ave() for k in range(tm) ]
+      ekarr = [ Ave() for k in range(tm) ]
     for k in range(tm):
+      epot = float( ssplit[k][1] )
+      eparr[k].add(epot)
       etot = float( ssplit[k][2] )
       etarr[k].add(etot)
+      ekin = etot - epot
+      ekarr[k].add(ekin)
 
     print "count %s, total energy, final: ave %s, fvar %s, init: ave %s, var %s" % (
         i + 1, etarr[-1].getave(), etarr[-1].getvar(),
@@ -435,7 +453,10 @@ langevinTemp      $temperature
     strace = "# count %s, zoom %s, nsteps %s, dKdE %s, Etot %s, Edev %s\n" % (
       etarr[0].n, zoom, nsteps, dKdE, Etot, Edev)
     for k in range(tm):
-      strace += "%s\t%g\t%g\n" % (ssplit[k][0], etarr[k].getave(), etarr[k].getvar())
+      strace += "%s\t%g\t%g\t%g\t%g\t%g\t%g\n" % ( ssplit[k][0],
+          etarr[k].getave(), etarr[k].getvar(),
+          eparr[k].getave(), eparr[k].getvar(),
+          ekarr[k].getave(), ekarr[k].getvar() )
     open(fntrace, "w").write(strace)
 
   # go back to the parent directory
@@ -446,9 +467,9 @@ langevinTemp      $temperature
 if __name__ == "__main__":
   doargs()
   if trace:
-    dotrace(zoom)
+    dotrace(zoom, fntrace = fnout)
   elif zrange:
     dozscan()
   else:
-    dosimul(zoom)
+    dosimul(zoom, fnlog = fnout)
 

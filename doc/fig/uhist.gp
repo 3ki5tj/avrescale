@@ -9,8 +9,10 @@ set multiplot
 
 set xtics 100 offset 0, 0.3
 set mxtics 5
-set xrange [-7720:-7400]
-set xlabel "Potential energy, {/Times-Italic U} (kcal/mol)" offset 0, 0
+#set xrange [-7720:-7400]
+#set xlabel "Potential energy, {/Times-Italic U} (kcal/mol)" offset 0, 0
+set xrange [1300:1540]
+set xlabel "Kinetic energy, {/Times-Italic K} (kcal/mol)" offset 0, 0.5
 
 set ytics 0.01
 set mytics 5

@@ -33,7 +33,7 @@ def showhelp():
   print "  --dT=:         set the temperature tolerance"
   print "  -o, --output=: set the output file"
   print "  -i, --input=:  set the input file"
-  print "  -c, --col=:    set the column for the quantity"
+  print "  -c, --col=:    set the column for the quantity, can also be --col=dif"
   print "  --t0=:         set the first time step"
   print "  --colT=:       set the column for temperature"
   print "  --rst=:        set the restart file for WHAM (weighted histogram analysis method)"
@@ -74,7 +74,7 @@ def doargs():
     elif o in ("-o", "--output"):
       fnout = a
     elif o in ("-c", "--col"):
-      col = int(a)
+      col = a # keep the string form
     elif o in ("--colT",):
       colT = int(a)
     elif o in ("--colE",):
@@ -282,6 +282,7 @@ class WHAM:
 
 
 def mkhist_simple(s, fnout):
+  global col
   n = len(s)
   if drop1: n -= 1 # drop the last frame
   hist = None
@@ -292,8 +293,13 @@ def mkhist_simple(s, fnout):
     tok = ln.split()
     try:
       tm = float(tok[0])
-      x = float(tok[col - 1])
-    except:
+      if type(col) == str and col.startswith("dif"):
+        x = float(tok[2]) - float(tok[1])
+      else:
+        if type(col) == str: col = int(col)
+        x = float(tok[col - 1])
+    except e:
+      print "error: %s" % e
       break
     if tm <= t0: continue
     if not hist:
@@ -321,7 +327,11 @@ def mkhist_reweight(s, fnout):
     except:
       break
     if tm <= t0: continue
-    x = float(tok[col - 1])
+    if type(col) == str and col.startswith("dif"):
+      x = float(tok[2]) - float(tok[1])
+    else:
+      if type(col) == str: col = int(col)
+      x = float(tok[col - 1])
     ene = float(tok[colE - 1])
     if wham.is_open: # use WHAM
       w = wham.getweight(ene)
@@ -344,7 +354,8 @@ def mkhist(fnin):
   if not fno:
     fno = os.path.splitext(fnin)[0] + ".his"
 
-  if col == 2: # determine file type
+  if col == 2 or col == "2":
+    # automatically determine file type
     for ln in s:
       if ln.startswith("#"): continue
       arr = ln.split()
