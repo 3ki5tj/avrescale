@@ -155,11 +155,12 @@ class Hist:
       sumx2 += x * x * self.arr[i]
       s += "%s\t%s\t%s\n" % (x, dist, self.arr[i])
       i += 1
-    open(fn, "w").write(s)
     avx = sumx / tot
     varx = sumx2 / tot - avx * avx
     print "saving histogram file %s, total %s, ave %s, var %s, std %s" % (
         fn, tot, avx, varx, sqrt(varx) )
+    if fn.lower() not in ("null", "none"):
+      open(fn, "w").write(s)
 
 
 
@@ -305,7 +306,7 @@ def mkhist_simple(s, fnout):
     if not hist:
       hist = Hist(x, x, dx)
     hist.add(x)
-  if hist:
+  if hist: 
     hist.save(fnout)
 
 

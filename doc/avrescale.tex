@@ -716,13 +716,24 @@ from a regular MD without velocity scaling.
     and
     one under adaptive velocity scaling (conducted every $10$ steps).
     %
+    Each simulation had $10^7$ steps,
+    but only the data from the first $3\times 10^6$ steps were shown.
+    %
     The points were plotted every $5 \times 10^4$ steps.
+    %
+    The standard deviations of the total energy,
+    excluding the first $10^6$ steps,
+    were \red{$0.261$, $7.7$, and $0.263$} $\mathrm{kcal/mol}$,
+    respectively.
     %
     \note{The figure was produced by \texttt{doc/fig/etraj.gp}.
       The raw data were saved in
-      \texttt{data/waterbox\_fix/ene0fix.log},
+      \texttt{data/wb/fix/ene0fix.log},
+      \texttt{data/wb/reg/ene0reg.log},
       and
-      \texttt{data/waterbox\_adp/ene0adp.log}.
+      \texttt{data/wb/adp/ene0adp.log}.
+      The standard deviations can be found with
+      \texttt{make etraj -C data/wb}.
     }%
   }
 \end{center}
@@ -730,7 +741,7 @@ from a regular MD without velocity scaling.
 
 
 
-We then compared the potential energy
+We then compared the kinetic energy
 distribution from a simulation under adaptive velocity scaling
 %distributions from the simulations under regular and adaptive velocity scaling,
 %that from a regular MD,
@@ -765,16 +776,84 @@ tends to be broader.
   }
   \caption{
     \label{fig:uhist}
-    Potential energy distributions
+    Kinetic energy distributions
     from MD simulations in the canonical ensemble,
     microcanonical ensemble,
     and one under adaptive velocity scaling.
     %
+    Each simulation had $10^7$ steps,
+    and the data from the first $10^6$ steps
+    were dropped.
+    %
     \note{The figure was produced by \texttt{doc/fig/uhist.gp}.
+      For data preparation, \texttt{make uhist -C data/wb}.
     }%
   }
 \end{center}
 \end{figure}
+
+
+We compared the efficiency of the adaptive velocity scaling scheme,
+which is designed for the microcanonical ensemble,
+to several temperature control schemes for the canonical ensemble.
+%
+For this purpose, we lifted the total energy about
+$100\,\mathrm{kcal/mol}$ above the average,
+and monitored the evolution of the kinetic energy.
+%
+As shown in Fig. \ref{fig:equil},
+adaptive velocity scaling
+behaved similarly to
+the Nos\'e-Hoover chain\cite{nose1984, nose1984mp, hoover1985, martyna1992},
+and velocity rescaling\cite{bussi2007}
+thermostats
+in equilibrating the kinetic energy;
+and these velocity-scaling-based schemes
+appeared to be more efficient than Langevin dynamics.
+
+\begin{figure}[h]
+\begin{center}
+  \makebox[\linewidth][c]{
+    \includegraphics[angle=0, width=1.0\linewidth]{fig/equil.pdf}
+  }
+  \caption{
+    \label{fig:equil}
+    Time series of the total energy
+    of simulations under
+    adaptive velocity scaling,
+    Langevin dynamics,
+    Nos\'e-Hoover chain thermostat
+    and
+    velocity rescaling thermostat.
+    %
+    For Langevin dynamics,
+    the damping parameter was $1.0 \, \mathrm{ps}^{-1}$.
+    %
+    For the Nos\'e-Hoover chain thermostat,
+    we used 5 chain variables. The masses
+    of the first and the rest variables
+    were $N_f \, \omega^2 \, k_B T$ and
+    $\omega^2 \, k_B T$, respectively\cite{martyna1992},
+    and
+    $\omega = 2 \,\pi/(0.1 \, \mathrm{ps})$.
+    %
+    For the velocity rescaling thermostat,
+    the inverse viscosity $\tau$ was $0.03 \, \mathrm{ps}$.
+    %
+    The average kinetic energy of the system
+    is roughly $1426.3 \, \mathrm{kcal/mol}$.
+    %
+    \red{The lines are a guide to the eyes.}
+    %
+    \red{The results were averaged over $10^4$ independent trials.}
+    %
+    \note{The figure was produced by \texttt{doc/fig/equil.gp}.
+    }%
+  }
+\end{center}
+\end{figure}
+
+
 
 
 
@@ -848,18 +927,22 @@ on the fluctuation of the total energy, Eq. \eqref{eq:noise_corr}.
 
 
 
-%\section{Discussion}
+\section{\label{sec:conclusion}
+Conclusions and Discussions}
 
 
-%As time $t$ increases, the scaling tends to $1$,
-%and this gradually decreased magnitude of velocity change
-%allows the ensemble to asymptotically approach a
-%microcanonical one with conserved total energy.
-%%
-%Thus, the approach differs from the Langevin-style
-%velocity scaling and Nos\'e-Hoover thermostats,
-%which target a canonical ensemble.
 
+\section{Acknowledgment}
+
+We thank Dr. J. Ma, Dr. Y. Mei, J. Wang,
+J. Drake, O. Nassar, Dr. C. Lai, Dr. S. Ou and D. Stuhlsatz
+for helpful discussions.
+We gratefully acknowledge the Robert A. Welch Foundation (H-0037),
+the National Science Foundation (CHE-1152876)
+and
+the National Institutes of Health (GM-037657) for partial support of this work.
+%
+%This research used computing resources of the National Science Foundation XSEDE grid.
 
 
 \appendix
