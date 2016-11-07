@@ -389,7 +389,8 @@ E
 %
 In our adaptive velocity scaling scheme,
 we require the total energy at the beginning of every step
-(before scaling) to match the average value $\bar{\mathcal E}_{t - 1}$.
+(before scaling) to match the average value of
+$\bar{\mathcal E}_{t - 1}$.
 %
 Thus, if we use $\bar{\mathcal E}_{t - 1}$ for $E$
 and $\beta_t$ for $\beta(E)$
@@ -430,7 +431,7 @@ is
 \subsection{Microcanonical temperature}
 
 
-We now specify formulas for $\beta_t$
+We now give formulas for $\beta_t$
 and $\beta'(E)$ required in Eq. \eqref{eq:dE_beta}.
 %
 It can be shown that both the microcanonical temperature, $\beta(E)$,
@@ -476,12 +477,12 @@ means the variance of quantity $A$.
 Note that the usual definition of temperature from twice the kinetic energy
 per degree of freedom is, however,
 derived from the canonical ensemble and
-inexact for the microcanonical ensemble.
+only approximate for the microcanonical ensemble.
 
 
 
-Now if we use Eq. \eqref{eq:betaE_invK} and
-the one-step estimate for the inverse temperature
+If we use the quantity in the brackets of
+Eq. \eqref{eq:betaE_invK} for the inverse temperature
 $\beta_t$,
 then the optimal energy increment is given by
 Eq. \eqref{eq:dE_beta}:
@@ -502,8 +503,9 @@ Eq. \eqref{eq:dE_beta}:
 %
 where
 $K_t$ is the kinetic energy before velocity scaling at step $t$,
-and $\beta'(E^*)$ can be approximated
-as
+and
+Eq. \eqref{eq:dbetadE} can be used to approximate
+$\beta'(E^*)$ as
 %
 \begin{align}
   \beta'(E^*)
@@ -529,7 +531,20 @@ $\overline A$ means the trajectory average of $A$,
 and
 $\operatorname{Var}(A) = \overline{ A^2 } - {\overline A}^2$
 is the corresponding variance.
+
+In practice, velocity scaling is often implemented every few,
+say $m$ ($m > 1$), MD steps.
 %
+Then,
+as shown in Appendix \ref{sec:block},
+$t$ can be understood as the number of
+such velocity-scaling operations instead of
+the number of MD steps, and
+$1/K_t$ in Eq. \eqref{eq:dE_final} is understood
+as the average kinetic energy $\bar K$ of the $m$ steps
+before the scaling operation.
+
+
 
 
 \subsection{Approximations on $\beta'(E^*)$}
@@ -539,8 +554,9 @@ Ideally, we should have $\beta'(E) \le 0$
 as the temperature $T$ increases the total energy $E$.
 %
 This, however, may not be true in practice
-because of the numerical error of the second variance term on the right-hand side
-of Eq. \eqref{eq:dbeta}.
+because the second variance term on the right-hand side
+of Eq. \eqref{eq:dbeta}
+can be susceptible to numerical error.
 %
 %Further, since the variance is nonnegative, we have
 %%
@@ -557,22 +573,8 @@ of Eq. \eqref{eq:dbeta}.
 %  0,
 %\end{equation*}
 %
-A useful approximation that avoids the variance is the following
-%
-\begin{equation}
-  \beta'(E^*)
-  =
-  -\gamma \, \overline{
-    \left(
-      \frac{ N_f - 2 }
-           { 2 \, K_t^2 }
-    \right)
-    }
-  ,
-  \label{eq:dbeta_approx}
-\end{equation}
-%
-where we have defined the ratio $\gamma$ as
+To avoid the variance term,
+we may define a ratio 
 %
 \begin{equation}
   \gamma
@@ -586,23 +588,39 @@ where we have defined the ratio $\gamma$ as
       \left( \frac 1 2 N_f - 1  \right) / K_t^2
     }
   }
-  .
+  ,
   \label{eq:gamma_def}
 \end{equation}
 %
-For for a physical system, we expect $0 \le \gamma \le 1$.
-
+and rewrite Eq. \eqref{eq:dbeta} as
+%
+\begin{equation}
+  \beta'(E^*)
+  =
+  -\gamma \, \overline{
+    \left(
+      \frac{ N_f - 2 }
+           { 2 \, K_t^2 }
+    \right)
+    }
+  .
+  \label{eq:dbeta_approx}
+\end{equation}
+%
+For a physical system, we expect $0 \le \gamma \le 1$.
 
 We may use Eq. \eqref{eq:dbeta_approx} in two ways.
 %
-First, as a safety measure in an early stage of simulation,
+First, as a safety measure,
 we may propose a minimal value of $\gamma$, say $0.1$,
-and when the value from Eq. \eqref{eq:dbeta}
-exceeds that from Eq. \eqref{eq:dbeta_approx},
-we will use the latter instead of the former.
+to prevent an overly large value from Eq. \eqref{eq:dbeta}.
 
-Second, from
-Eqs. \eqref{eq:dbeta_approx} and \eqref{eq:dbeta_approx2},
+Second,
+we can determine a heuristic value of $\gamma$
+that holds approximately for a class of similar systems.
+%
+Then,
+from Eqs. \eqref{eq:dbeta_approx} and \eqref{eq:dbeta_approx2},
 we have
 %
 \begin{equation}
@@ -610,35 +628,16 @@ we have
   =
   -\frac{ \gamma \, {\beta^*}^2 }
   { \frac{1}{2} N_f + \gamma - 2 }
-  .
+  ,
   \label{eq:dbeta_approx2}
 \end{equation}
 %
-We can determine some heuristic value of $\gamma$
-for certain type of systems,
-then use Eq. \eqref{eq:dbeta_approx2}
-instead of Eq. \eqref{eq:dbeta}.
+which does not require additional averaging.
 %
 For example,
 for an explicit solvent simulation of TIP3P water\cite{jorgensen1983}
 at 300K, we find that the optimal $\gamma$
 to be around $0.33$.
-
-
-
-\subsection{Scaling frequency}
-
-
-In practice, velocity scaling is often implemented every few,
-say $m$ ($m > 1$), MD steps.
-%
-Then,
-%$t$ should be understood as the number of
-%such velocity-scaling operations so far instead of
-%the number of MD steps, and
-$K_t$ in Eq. \eqref{eq:dE_final} is understood
-as the average kinetic energy $\bar K$ of the $m$ steps
-before the scaling operation.
 
 
 
@@ -648,8 +647,10 @@ before the scaling operation.
 
 We coded the adaptive velocity scaling scheme to
 the MD program NAMD\cite{NAMD},
-and tested it on a system
-of $798$ TIP3P water molecules\cite{jorgensen1983}
+and tested it on a box of water.
+%
+The system contains
+$798$ TIP3P water molecules\cite{jorgensen1983}
 in a cubic box of $30 \, \mathrm{\AA}$ side length.
 %
 Velocity scaling was conducted every $10$ steps
@@ -793,11 +794,17 @@ tends to be broader.
 \end{figure}
 
 
-We compared the efficiency of the adaptive velocity scaling scheme,
-which is designed for the microcanonical ensemble,
-to several temperature control schemes for the canonical ensemble.
+Next, we wish to test
+the efficiency of the adaptive velocity scaling scheme
+in recovering from a bad initial condition.
 %
-For this purpose, we lifted the total energy about
+For this purpose,
+we designed a test to compare this scheme, 
+which is designed for the microcanonical ensemble,
+with several temperature control schemes
+for the canonical ensemble.
+%
+In this test, we lifted the total energy about
 $100\,\mathrm{kcal/mol}$ above the average,
 and monitored the evolution of the kinetic energy.
 %
@@ -810,6 +817,12 @@ thermostats
 in equilibrating the kinetic energy;
 and these velocity-scaling-based schemes
 appeared to be more efficient than Langevin dynamics.
+%
+Note that, the relaxation time
+of the thermostat algorithms
+depends on some input parameters,
+while adaptive velocity scaling
+is parameter free.
 
 \begin{figure}[h]
 \begin{center}
@@ -830,7 +843,7 @@ appeared to be more efficient than Langevin dynamics.
     the damping parameter was $1.0 \, \mathrm{ps}^{-1}$.
     %
     For the Nos\'e-Hoover chain thermostat,
-    we used 5 chain variables. The masses
+    we used $5$ chain variables. The masses
     of the first and the rest variables
     were $N_f \, \omega^2 \, k_B T$ and
     $\omega^2 \, k_B T$, respectively\cite{martyna1992},
@@ -838,12 +851,12 @@ appeared to be more efficient than Langevin dynamics.
     $\omega = 2 \,\pi/(0.1 \, \mathrm{ps})$.
     %
     For the velocity rescaling thermostat,
-    the inverse viscosity $\tau$ was $0.03 \, \mathrm{ps}$.
+    the inverse viscosity $\tau$ was $0.1 \, \mathrm{ps}$.
     %
     The average kinetic energy of the system
     is roughly $1426.3 \, \mathrm{kcal/mol}$.
     %
-    \red{The lines are a guide to the eyes.}
+    %\red{The lines are a guide to the eyes.}
     %
     \red{The results were averaged over $10^4$ independent trials.}
     %
@@ -957,8 +970,10 @@ the National Institutes of Health (GM-037657) for partial support of this work.
 
 Here, we present an alternative derivation of Eq. \eqref{eq:dE_opt},
 which shows that if in each step, we can form an independent correction
-to the total energy, such a correction should be optimally used
-in velocity scaling with an ever-decreasing weight of $1/t$.
+to the total energy,
+then optimally,
+this correction should be used
+in velocity scaling with a weight of $1/t$.
 
 Let $E_t$ be the total energy at step $t$,
 then the aim of velocity scaling is to converge $E_t$
@@ -967,21 +982,26 @@ to the desired value of $E^*$.
 We assume that we can form an independent estimate of $E^*$
 in step $t$, $\mathcal E_t$,
 which means, equivalently, an independent correction
-to the current total energy, $\mathcal E_t - E_{t-1}$.
+to the current total energy,
+$\Delta \mathcal E_t = \mathcal E_t - E_{t-1}$.
 %
-The correction can be used to guide the amount of
-energy change, $\Delta E_t = E_t - E_{t-1}$,
-for velocity scaling.
+The correction can be used in velocity scaling
+to guide the amount of energy change.
 %
 If the independent correction were exact,
 then velocity scaling only needs to be done once,
-with the change $\Delta E_t$ to be identical to the correction.
+with the energy change $\Delta E_t = E_t - E_{t-1}$
+being identical to the correction.
 %
-But since the independent correction contains random error,
+But since in an MD simulation,
+the independent correction contains random error,
 velocity scaling must be done continually,
 and as we shall see,
 if we accept the correction with some
-optimal time-dependent magnitude, $\alpha(t)$, as
+optimal time-dependent magnitude, $\alpha(t)$,
+as
+$\Delta E_t = \alpha(t) \, \Delta \mathcal E_t$,
+or
 %
 \begin{equation}
   \Delta E_t = \alpha(t) \, \left( \mathcal E_t - E_{t - 1} \right)
@@ -989,11 +1009,12 @@ optimal time-dependent magnitude, $\alpha(t)$, as
   \label{eq:Eupdate}
 \end{equation}
 %
+Our aim is to minimize
 the expected error of the total energy, $E_T$,
-at the end of the simulation, $t = T$, can be minimized.
+at the end of the simulation, $t = T$.
 
 To find the optimal $\alpha(t)$,
-it is more convenient to use the continuous-time framework.
+we shall switch to the continuous-time framework.
 %
 We introduce the error of the total energy at step $t$ as
 $x(t) = E_{t-1} - E^*$,
@@ -1026,7 +1047,7 @@ The solution of Eq. \eqref{eq:x_diffeq} is
 \begin{equation}
   x(t)
   =
-  x(1) \, e^{ -\int_1^t \alpha(\tau) \, d\tau }
+  x(1) \, e^{ -A(t) }
   +
   \int_1^t \dot u_t(\tau) \, \xi(\tau) \, d\tau
   ,
@@ -1035,13 +1056,19 @@ The solution of Eq. \eqref{eq:x_diffeq} is
 \end{equation}
 %
 where
-\begin{equation}
-  u_t(\tau) = \exp\left(
+\begin{align*}
+  A(t)
+  &=
+  \int_1^t \alpha(s) \, ds
+  ,
+\\
+  u_t(\tau)
+  &= \exp\left(
     -\int_\tau^t \alpha(s) \, ds
   \right)
   .
   \notag
-\end{equation}
+\end{align*}
 %
 Thus, the error at the end of simulation $t = T$,
 can be measured as expectation of $x^2(T)$,
@@ -1059,11 +1086,9 @@ can be measured as expectation of $x^2(T)$,
   \Gamma
   \int_1^T
     \dot u_T^2(t) \, dt
-  ,
+  .
   \label{eq:err_functional}
 \end{equation}
-where
-$A(t) = \int_1^t \alpha(t) \, dt$.
 %
 %the total energy change induced by velocity scaling
 %is
@@ -1073,7 +1098,7 @@ or equivalently, a functional of $u_T(t)$.
 %
 To minimize it under a fixed value of $A(T)$,
 which implies fixed values of $u_T(1)$ and $u_T(T)$,
-we get the condition
+we get, from the Euler-Lagrange equation, 
 $$
 \dot u_T(t) = \mathrm{const},
 $$
@@ -1110,8 +1135,10 @@ $$%\end{equation}
 %
 We can further determine the optimal value of $t_0$ as
 $$
-t_0 = \frac{ \Gamma } { \left\langle x^2(1) \right\rangle } - 1.
+t_0 = \frac{ \Gamma } { \left\langle x^2(1) \right\rangle } - 1,
 $$
+%
+with the minimal error being $\Gamma / (T + t_0)$.
 %
 However, for a long simulation, the influence of $t_0$
 is small, and we may approximately use
@@ -1121,9 +1148,9 @@ $$
 This result recovers Eq. \eqref{eq:dE_opt}.
 
 We can further show that Eq. \eqref{eq:dE_mod}
-corresponds to a modified schedule
-$\alpha(t) = z/t$,
-which results in an expected error of
+%corresponds to a modified schedule
+%$\alpha(t) = z/t$,
+results in an expected error of
 \begin{equation}
   \left\langle
   x^2(T)
@@ -1176,7 +1203,8 @@ after equilibration,
 
 
 Here we derive Eqs. \eqref{eq:betaE_invK} and \eqref{eq:dbetadE}.
-We start by defining a vector field, $\mathbf u$,
+We start by introducing a vector field, $\mathbf u$,
+in the phase space,
 such that
 %
 \begin{equation}
@@ -1242,7 +1270,8 @@ $\mathbf u \cdot \nabla H
 = (\mathbf p \cdot \nabla_{\mathbf p} K)/(2 \, K)
 = \mathbf p \cdot (\mathbf M^{-1} \cdot \mathbf p) / (2 \, K) = 1$.
 %
-Using Eq. \eqref{eq:u_def} in Eq. \eqref{eq:betaE_average} yields Eq. \eqref{eq:betaE_invK}
+Using Eq. \eqref{eq:u_def} in Eq. \eqref{eq:betaE_average}
+yields Eq. \eqref{eq:betaE_invK}.
 
 In a similar manner, we have
 %
@@ -1275,7 +1304,7 @@ In a similar manner, we have
   ,
 \end{align*}
 %
-and
+and since
 %
 \begin{align*}
   \Omega''(E)
@@ -1293,10 +1322,10 @@ and
      (\nabla \cdot \mathbf u)^2
      \right]
      \delta\bigl( H(\mathbf x) - E \bigr) \, d\mathbf x
-  .
+  ,
 \end{align*}
 %
-This means
+We have
 %
 \begin{align*}
   \beta'(E)
@@ -1321,8 +1350,16 @@ which gives additional constraints satisfied in a typical MD simulation.
 %
 Fortunately, with the particular choice given by Eq. \eqref{eq:u_def},
 one can show that this effect is negligible for a system
-with zero total momenta\cite{uline2008}.
-
+with zero total momenta\cite{uline2008}
+(a key condition here is
+$
+\mathbf u \cdot \nabla
+\left(
+  \sum_i p_{i,\nu}
+\right) = 0,
+$
+where $\nu = x, y, z$
+and the sum is carried over all particles.)
 
 
 \subsection{Model system}
@@ -1425,6 +1462,50 @@ $$
 ,
 $$
 which lies between $0$ and $1$.
+
+
+
+\section{\label{sec:block}
+Block average}
+
+
+
+If block average is used, we have
+%
+\begin{align*}
+  \sum_{t = 1}^T \frac{ A_t } { t }
+  &=
+  \sum_{\tau = 1}^{T/m}
+  \sum_{\tau' = 1}^{m}
+  \frac{ A_t } { (\tau - 1) \, m + \tau' }
+  \\
+  &\approx 
+  \sum_{\tau = 1}^{T/m}
+  \frac{ 1 } { \tau }
+  \left(
+    \frac 1 m
+    \sum_{\tau' = 1}^m
+    A_t
+  \right)
+  =
+  \sum_{\tau = 1}^{T/m}
+  \frac{ A^*_\tau } { \tau }
+  .
+\end{align*}
+%
+where
+$t = (\tau - 1) \, m + \tau'$
+and
+$
+A^*_\tau = \frac 1 m
+\sum_{\tau' = 1}^m A_t.
+$
+
+In our case,
+$
+A_t = \beta^* - \frac{ N_f - 2 } { 2 \, K_t }.
+$
+
 
 %\bibliographystyle{abbrv}
 \bibliography{simul}
