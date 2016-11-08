@@ -99,14 +99,14 @@ controlled to make
 the resulting fluctuation of the total energy
 mimic the natural behavior demanded by the underlying canonical ensemble.
 %
-Albeit the success and popularity of the thermostat algorithms,
-one may argue that these algorithms often introduce
-some artificial time scales that are foreign to the natural time evolution.
+%Albeit the success and popularity of the thermostat algorithms,
+%one may argue that these algorithms often introduce
+%some artificial time scales that are foreign to the natural time evolution.
 
 Here we present a modified velocity scaling scheme
 for an asymptotic microcanonical ensemble,
 in which
-the total energy is gradually stabilized to a value
+the total energy is gradually stabilized to a constant
 that corresponds to the target temperature.
 %
 Our modification is inspired by the $1/t$ scheme\cite{
@@ -532,14 +532,14 @@ and
 $\operatorname{Var}(A) = \overline{ A^2 } - {\overline A}^2$
 is the corresponding variance.
 
-In practice, velocity scaling is often implemented every few,
-say $m$ ($m > 1$), MD steps.
+In practice, velocity scaling is often implemented
+only every $m$ MD steps.
 %
 Then,
 as shown in Appendix \ref{sec:block},
 $t$ can be understood as the number of
 such velocity-scaling operations instead of
-the number of MD steps, and
+the number of MD steps (or $t/m$), and
 $1/K_t$ in Eq. \eqref{eq:dE_final} is understood
 as the average kinetic energy $\bar K$ of the $m$ steps
 before the scaling operation.
@@ -747,7 +747,8 @@ distribution from a simulation under adaptive velocity scaling
 %distributions from the simulations under regular and adaptive velocity scaling,
 %that from a regular MD,
 and that from an MD targeting a canonical ensemble
-at the same temperature (using Langevin dynamics).
+at the same temperature
+(using the velocity rescaling thermostat\cite{bussi2007} with $\tau = 0.03 \, \mathrm{ps}$).
 %
 As shown in Fig. \ref{fig:uhist},
 adaptive velocity scaling and regular MD
@@ -851,10 +852,11 @@ is parameter free.
     $\omega = 2 \,\pi/(0.1 \, \mathrm{ps})$.
     %
     For the velocity rescaling thermostat,
-    the inverse viscosity $\tau$ was $0.1 \, \mathrm{ps}$.
+    we tried two values of the inverse viscosity $\tau$,
+    $0.1 \, \mathrm{ps}$ and $0.03 \, \mathrm{ps}$.
     %
     The average kinetic energy of the system
-    is roughly $1426.3 \, \mathrm{kcal/mol}$.
+    was roughly $1426 \, \mathrm{kcal/mol}$.
     %
     %\red{The lines are a guide to the eyes.}
     %

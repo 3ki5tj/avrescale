@@ -105,6 +105,9 @@ class Hist:
     self.xmin = round(xmin1 / dx) * dx
     self.xmax = self.xmin + self.n * self.dx
     self.arr = [0] * self.n
+    self.sum1 = 1e-300
+    self.sumx = 0
+    self.sumx2 = 0
 
   def add(self, newx, w = 1.0):
     if newx < self.xmin:
@@ -131,9 +134,12 @@ class Hist:
       raw_input()
     self.arr[i] += w
 
+    self.sum1 += w
+    self.sumx += w * newx
+    self.sumx2 += w * newx * newx
+
   def save(self, fn):
-    tot = fsum(self.arr)
-    fac = 1.0 / (self.dx * tot)
+    fac = 1.0 / (self.dx * self.sum1)
     # determine the boundaries
     i0 = 0
     while i0 < self.n:
@@ -155,10 +161,10 @@ class Hist:
       sumx2 += x * x * self.arr[i]
       s += "%s\t%s\t%s\n" % (x, dist, self.arr[i])
       i += 1
-    avx = sumx / tot
-    varx = sumx2 / tot - avx * avx
+    avx = self.sumx / self.sum1
+    varx = self.sumx2 / self.sum1 - avx * avx
     print "saving histogram file %s, total %s, ave %s, var %s, std %s" % (
-        fn, tot, avx, varx, sqrt(varx) )
+        fn, self.sum1, avx, varx, sqrt(varx) )
     if fn.lower() not in ("null", "none"):
       open(fn, "w").write(s)
 
@@ -290,7 +296,7 @@ def mkhist_simple(s, fnout):
   for i in range(n):
     ln = s[i].strip()
     # skip a comment line
-    if ln.startswith("#"): continue
+    if ln == "" or ln.startswith("#"): continue
     tok = ln.split()
     try:
       tm = float(tok[0])
@@ -299,8 +305,8 @@ def mkhist_simple(s, fnout):
       else:
         if type(col) == str: col = int(col)
         x = float(tok[col - 1])
-    except e:
-      print "error: %s" % e
+    except Exception:
+      print "error in %s: %s" % (fn, ln)
       break
     if tm <= t0: continue
     if not hist:
@@ -320,7 +326,7 @@ def mkhist_reweight(s, fnout):
   for i in range(n):
     ln = s[i].strip()
     # skip a comment line
-    if ln.startswith("#"): continue
+    if ln == "" or ln.startswith("#"): continue
     tok = ln.split()
     try:
       tm = float(tok[0])
