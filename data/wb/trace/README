@@ -1,3 +1,6 @@
+use set2
+
+
 ../runnamd.py -t 1000 -M 10000 --trace
 ../runnamd.py -t 1000 -M 10000 --trace --th=VRS --langRescaleDt=100
 ../runnamd.py -t 1000 -M 10000 --trace --thermostat=NH --tNHCPeriod=100

@@ -1,0 +1,9 @@
+normal    template, normal testing
+reg       regular velocity scaling, constant scaling magnitude
+adp       adaptive velocity scaling
+fix       microcanonical enesmble
+can       canonical ensemble, Langevin
+can2      canonical ensemble, Langevin, half of the damping
+can_vrs   canonical ensemble, velocity rescaling
+600K      raising the temperature to 600K
+large     larger waterbox
