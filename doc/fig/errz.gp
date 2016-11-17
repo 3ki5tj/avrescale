@@ -36,19 +36,21 @@ set logscale x
 #set xrange [0.05:10]
 set xlabel "{/Times-Italic z}" offset 0, 0.5
 
-#set logscale y
-#set format y "10^{/*0.8 %T}"
-set ytics 5
-set mytics 5
-#set yrange [5e-7:0.1]
+set logscale y
+set format y "10^{/*0.8 %T}"
+set yrange [0.1:400]
+#set ytics 5
+#set mytics 5
 set ylabel "Error of the total energy" offset 1, 0
 
 # `width` to reduce the text length
-set key right Left reverse spacing 1.2
+set key right Left reverse spacing 1.2 width -3
 
-plot [0.3:][:25] \
-    "../../data/wb/wb_t100000.dat" u ($1):2         w p  pt 7  ps 2.0 t "Simulation", \
-    f(x,100000,aval,gval) lt 1 t "Prediction"
+plot [0.25:][:] \
+    "../../data/wb/wb_t100000.dat"  u ($1):2  w p  pt 7  ps 2.0 t "Simulation, {/Times-Italic T} = 10^{/*0.8 5}", \
+    f(x,100000,aval,gval)                     lt 1 lw 3         t "Prediction, {/Times-Italic T} = 10^{/*0.8 5}", \
+    "../../data/wb/wb_t1M.dat"      u ($1):2  w p  pt 5  ps 1.8 t "Simulation, {/Times-Italic T} = 10^{/*0.8 6}", \
+    f(x,1000000,aval,gval)                    lt 3 lw 3         t "Prediction, {/Times-Italic T} = 10^{/*0.8 6}"
 
 
 unset multiplot

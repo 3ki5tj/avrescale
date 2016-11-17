@@ -7,3 +7,21 @@ can2      canonical ensemble, Langevin, half of the damping
 can_vrs   canonical ensemble, velocity rescaling
 600K      raising the temperature to 600K
 large     larger waterbox
+
+trace     directory for the equilibration test, used to for doc/fig/equil.gp
+
+## For the optimality test
+
+The template NAMD script is `normal/300Krand.conf`.
+```
+cd run1
+rm -f *.log && ../runnamd.py -p 2 -t 1000000 -M 1000 -G 0.33 -Z 1
+```
+
+
+run1    Z = 1
+run2    Z = 0.5
+run3    Z = 0.3
+run4    Z = 3
+run5    Z = 10
+
