@@ -16,7 +16,7 @@ import zcom
 fnout = None
 cmdopt = ""
 fnconf = ""
-nsteps = None 
+nsteps = None
 ntrials = 100
 nproc = 1
 zoom = 1.0
@@ -253,7 +253,7 @@ def dosimul(zoom, build = True, fnlog = None):
   ln = "# zoom %s, nsteps %s, dKdE %s, Etot %s, Edev %s\n" % (
       zoom, nsteps, dKdE, Etot, Edev)
   open(fnlog, "a").write(ln)
-  
+
   print "CMD: %s; LOG %s" % (cmd, fnlog)
 
   ef = Ave()

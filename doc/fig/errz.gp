@@ -47,10 +47,12 @@ set ylabel "Error of the total energy" offset 1, 0
 set key right Left reverse spacing 1.2 width -3
 
 plot [0.25:][:] \
-    "../../data/wb/wb_t100000.dat"  u ($1):2  w p  pt 7  ps 2.0 t "Simulation, {/Times-Italic T} = 10^{/*0.8 5}", \
-    f(x,100000,aval,gval)                     lt 1 lw 3         t "Prediction, {/Times-Italic T} = 10^{/*0.8 5}", \
-    "../../data/wb/wb_t1M.dat"      u ($1):2  w p  pt 5  ps 1.8 t "Simulation, {/Times-Italic T} = 10^{/*0.8 6}", \
-    f(x,1000000,aval,gval)                    lt 3 lw 3         t "Prediction, {/Times-Italic T} = 10^{/*0.8 6}"
+    "../../data/wb/wb_t100000.dat"     u 1:2  w p  pt 7  ps 2.0 t "Simulation, {/Times-Italic T} = 10^{/*0.8 5}", \
+    "../../data/wb/wberrz_t100000.dat" u 1:2  w l  lt 1  lw 4   t "Prediction, {/Times-Italic T} = 10^{/*0.8 5}", \
+    f(x,100000,aval,gval)                          lt 1  lw 1   lc rgb "#808080" notitle, \
+    "../../data/wb/wb_t1M.dat"         u 1:2  w p  pt 5  ps 1.8 t "Simulation, {/Times-Italic T} = 10^{/*0.8 6}", \
+    "../../data/wb/wberrz_t1M.dat"     u 1:2  w l  lt 3  lw 4   t "Prediction, {/Times-Italic T} = 10^{/*0.8 5}", \
+    f(x,1000000,aval,gval)                         lt 3  lw 1   lc rgb "#808080" notitle
 
 
 unset multiplot

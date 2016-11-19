@@ -1,5 +1,5 @@
 %\documentclass[12pt]{article}
-\documentclass[preprint]{revtex4-1}
+\documentclass[reprint]{revtex4-1}
 \usepackage{amsmath}
 \usepackage{mathtools}
 \usepackage{upgreek}
@@ -925,14 +925,7 @@ Eq. \eqref{eq:dbeta_approx2} was used with the heuristic value of $0.33$.
 %
 As shown in Fig. \ref{fig:errz},
 the value of $z = 1$
-indeed gives the lowest error.
-%
-The deviation from the analytical prediction,
-Eq. \eqref{eq:err_zovert},
-is likely due to that
-the time correlation of the total energy
-is neglected in the approximation, Eq. \eqref{eq:noise_corr},
-which is not valid for short simulations.
+indeed gives the least error.
 
 \begin{figure}[h]
 \begin{center}
@@ -951,15 +944,21 @@ which is not valid for short simulations.
     The points are results from averaging over
     multiple independent runs.
     %
-    The curve is the analytical prediction from
-    Eq. \eqref{eq:err_zovert},
-    with the value of $\Gamma$ used in the latter was deduced
-    using Eq. \eqref{eq:Gamma_alpha0} from
-    a long simulation under regular velocity scaling
-    with $\alpha_0 = 0.001$.
+    The thicker curves are the analytical predictions from
+    Eq. \eqref{eq:err_functional},
+    for which we have computed the autocorrelation function
+    of the fluctuation 
+    $\xi(t) = \left[\beta^* - \left(\frac 1 2 N_f-1\right)/K_t\right]/\beta'(E^*)$
+    from a regular MD simulation.
+    %
+    The thinner curves were from the more approximate theory
+    that assumes the fluctuation is a white noise,
+    and this assumption is less reliable for shorter simulations
+    (cf. Appendix \ref{sec:whitenoise}).
     %
     \note{The figure was produced by \texttt{doc/fig/errz.gp}.
-      The raw data were saved in \texttt{data/wb\_t100000.dat}
+      The raw data were saved in \texttt{data/wb\_t100000.dat}.
+      For the analytical prediction \texttt{make -C data/wb wberrz}.
     }%
   }
 \end{center}
@@ -1043,12 +1042,12 @@ the National Institutes of Health (GM-037657) for partial support of this work.
 }
 
 
-Here, we present an alternative derivation of Eq. \eqref{eq:dE_opt},
+Here we present an alternative derivation of Eq. \eqref{eq:dE_opt},
 which shows that if in each step, we can form an independent correction
 to the total energy,
 then optimally,
 this correction should be used
-in velocity scaling with a weight of $1/t$.
+with a weight of $1/t$.
 
 Let $E_t$ be the total energy at step $t$,
 then the aim of velocity scaling is to converge $E_t$
@@ -1107,16 +1106,6 @@ and Eq. \eqref{eq:Eupdate} can be approximated as
 where $\xi(t) \equiv \mathcal E_t - E^*$
 denotes the random fluctuation of the independent estimate at step $t$.
 %
-For simplicity, we will further approximate $\xi(t)$ as a white noise,
-such that
-\begin{equation}
-  \langle \xi(t) \, \xi(t') \rangle = \Gamma \, \delta(t - t').
-  \label{eq:noise_corr}
-\end{equation}
-%
-Note that we may only justify this approximation
-for a simulation much longer than the autocorrelation time of $\xi(t)$.
-%
 The solution of Eq. \eqref{eq:x_diffeq} is
 %
 \begin{equation}
@@ -1146,7 +1135,53 @@ where
 \end{align*}
 %
 Thus, the error at the end of simulation $t = T$,
-can be measured as expectation of $x^2(T)$,
+can be measured as the expectation of $x^2(T)$,
+%
+\begin{align}
+  \left\langle
+    x^2(T)
+  \right\rangle
+  &=
+  \left\langle
+    x^2(1)
+  \right\rangle
+  \, e^{ -2 \, A(t) }
+  \notag \\
+  &+
+  \int_1^T
+  \int_1^T
+  \dot u_T(t) \, \dot u_T(t') \,
+  \left\langle
+    \xi(t) \, \xi(t')
+  \right\rangle
+  \, dt \, dt'
+  .
+  \label{eq:err_functional}
+\end{align}
+%
+%the total energy change induced by velocity scaling
+%is
+
+\subsection{\label{sec:whitenoise}
+White-noise approximation
+}
+
+For a very long simulation,
+we may approximate $\xi(t)$ as a white noise,
+such that
+\begin{equation}
+  \left\langle \xi(t) \, \xi(t') \right\rangle
+  = \Gamma \, \delta(t - t').
+  \label{eq:noise_corr}
+\end{equation}
+%
+Note that this is justifiable only
+if the simulation length $T$ is much longer than
+the autocorrelation time of $\xi(t)$,
+as shown in Fig. \ref{fig:errz}.
+%
+Under this assumption the error functional, Eq. \eqref{eq:err_functional},
+is simplified as
 %
 \begin{equation}
   \left\langle
@@ -1162,11 +1197,8 @@ can be measured as expectation of $x^2(T)$,
   \int_1^T
     \dot u_T^2(t) \, dt
   .
-  \label{eq:err_functional}
+  \label{eq:err_functional_wn}
 \end{equation}
-%
-%the total energy change induced by velocity scaling
-%is
 %
 This expression is a functional of $\alpha(t)$,
 or equivalently, a functional of $u_T(t)$.
@@ -1250,7 +1282,7 @@ we may conduct a simulation
 with the scaling magnitude of velocity scaling
 being a constant, $\alpha(t) = \alpha_0$.
 %
-From Eq. \eqref{eq:err_functional}, we find that
+From Eq. \eqref{eq:err_functional_wn}, we find that
 the error
 $\left\langle
   x^2(T)
@@ -1270,7 +1302,8 @@ after equilibration,
   \bigr)^2
 }
 .
-\label{eq:Gamma_alpha0}
+\notag
+%\label{eq:Gamma_alpha0}
 \end{equation}
 
 

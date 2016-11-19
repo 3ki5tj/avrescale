@@ -19,9 +19,11 @@ set logscale
 
 plot [0.3:][:60] \
   f(x,1000000,aval,gval) t "Prediction, T = 10^6", \
+  "wberrz_t1M.dat" u 1:2 w l t "Prediction, T = 10^6", \
   "wb_t1M.dat" u 1:($2) t "Simulation, T = 10^6", \
   f(x,100000,aval,gval) t "Prediction, T = 10^5", \
-  "wb_t100000.dat" u 1:($2) t "Simulation, T = 10^5", \
+  "wberrz_t100000.dat" u 1:2 w l t "Prediction, T = 10^5", \
+  "wb_t100000.dat" u 1:($2) t "Simulation, T = 10^5"
 
 
 

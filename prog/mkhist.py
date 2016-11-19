@@ -20,20 +20,24 @@ fnrst = ""
 t0 = 0
 tpinterp = 10
 drop1 = False
-
+docorr = False
+fncorr = None
+corrmax = 200
+nohist = False
 
 
 def showhelp():
   print "mkhist.py [Options] ene.log"
   print "Description:"
   print "  Make a histogram of an energy log file"
+  print "  It can compute the autocorrelation function with --corr"
   print "Options:"
   print "  -T, --tp=:     set the temperature"
   print "  -d, --dx=:     set the energy bin size"
   print "  --dT=:         set the temperature tolerance"
   print "  -o, --output=: set the output file"
   print "  -i, --input=:  set the input file"
-  print "  -c, --col=:    set the column for the quantity, can also be --col=dif"
+  print "  -c, --col=:    set the column for the quantity, can also be --col=dif for the difference between column 3 and 2, or --col=invK for the inverse (for autocorrelations)"
   print "  --t0=:         set the first time step"
   print "  --colT=:       set the column for temperature"
   print "  --rst=:        set the restart file for WHAM (weighted histogram analysis method)"
@@ -41,18 +45,24 @@ def showhelp():
   print "  --colE=:       set the column for energy (for reweighting)"
   print "  --dE=:         set the bin size for the energy grid (for reweighting)"
   print "  -1, --drop1    drop the last frame"
+  print "  --corr         compute the autocorrelation function"
+  print "  --fncorr=      set the output file name for the autocorrelation function"
+  print "  --corrmax=     set the maximal number of steps for the autocorrelation function"
+  print "  --nohist       skipping histogram"
   exit(1)
 
 
 
 def doargs():
   global fnins, fnout, dx, dE, dT, T, col, colT, colE, fnrst, t0, tpinterp, drop1
+  global docorr, fncorr, corrmax, nohist
 
   try:
     opts, args = getopt.gnu_getopt(sys.argv[1:],
         "hd:T:o:i:c:1",
         ["dx=", "dE=", "de=", "dT=", "dt=", "tp=", "input=", "output=",
-         "col=", "colT=", "colE=", "rst=", "t0=", "tm=", "drop=" ])
+         "col=", "colT=", "colE=", "rst=", "t0=", "tm=", "drop=",
+         "corr", "fncorr=", "corrmax="])
   except:
     print "Error parsing the command line"
     sys.exit(1)
@@ -74,7 +84,9 @@ def doargs():
     elif o in ("-o", "--output"):
       fnout = a
     elif o in ("-c", "--col"):
-      col = a # keep the string form
+      col = a.lower() # keep the string form, for "dif" or "invk"
+      if col.isdigit():
+        col = int(col)
     elif o in ("--colT",):
       colT = int(a)
     elif o in ("--colE",):
@@ -87,6 +99,16 @@ def doargs():
       tm = int(a)
     elif o in ("-1", "--drop1",):
       drop1 = True
+    elif o in ("--corr",):
+      docorr = True
+    elif o in ("--fncorr",):
+      fncorr = a
+      docorr = True
+    elif o in ("--corrmax",):
+      corrmax = int(a)
+      docorr = True
+    elif o in ("--nohist",):
+      nohist = True
 
   if len(fnins) == 0:
     fnins = glob.glob("e*.log")
@@ -288,6 +310,21 @@ class WHAM:
 
 
 
+def getcol(col, arr):
+  ''' interpret the column data '''
+  if type(col) == str:
+    if col.startswith("dif") or col in ("k", "kin", "kinetic"):
+      return arr[2] - arr[1]
+    elif col in ("ik", "invk"):
+      return 1.0/(arr[2] - arr[1])
+    else:
+      print "unknown column type: '%s'" % col
+      raise Exception
+  else:
+    return arr[col-1]
+
+
+
 def mkhist_simple(s, fnout):
   global col
   n = len(s)
@@ -297,22 +334,18 @@ def mkhist_simple(s, fnout):
     ln = s[i].strip()
     # skip a comment line
     if ln == "" or ln.startswith("#"): continue
-    tok = ln.split()
+    tok = [float(y) for y in ln.split()]
     try:
-      tm = float(tok[0])
-      if type(col) == str and col.startswith("dif"):
-        x = float(tok[2]) - float(tok[1])
-      else:
-        if type(col) == str: col = int(col)
-        x = float(tok[col - 1])
+      tm = tok[0]
     except Exception:
       print "error in %s: %s" % (fn, ln)
       break
     if tm <= t0: continue
+    x = getcol(col, tok)
     if not hist:
       hist = Hist(x, x, dx)
     hist.add(x)
-  if hist: 
+  if hist:
     hist.save(fnout)
 
 
@@ -327,18 +360,14 @@ def mkhist_reweight(s, fnout):
     ln = s[i].strip()
     # skip a comment line
     if ln == "" or ln.startswith("#"): continue
-    tok = ln.split()
+    tok = [float(x) for x in ln.split()]
     try:
-      tm = float(tok[0])
-      tp = float(tok[colT - 1])
+      tm = tok[0]
+      tp = tok[colT - 1]
     except:
       break
     if tm <= t0: continue
-    if type(col) == str and col.startswith("dif"):
-      x = float(tok[2]) - float(tok[1])
-    else:
-      if type(col) == str: col = int(col)
-      x = float(tok[col - 1])
+    x = getcol(col, tok)
     ene = float(tok[colE - 1])
     if wham.is_open: # use WHAM
       w = wham.getweight(ene)
@@ -361,7 +390,7 @@ def mkhist(fnin):
   if not fno:
     fno = os.path.splitext(fnin)[0] + ".his"
 
-  if col == 2 or col == "2":
+  if col == 2:
     # automatically determine file type
     for ln in s:
       if ln.startswith("#"): continue
@@ -387,7 +416,58 @@ def mkhist(fnin):
 
 
 
+def getcorr(fnin):
+  global col, corrmax, t0
+
+  t = []
+  x = []
+  i = 0
+  for ln in open(fnin).readlines():
+    if ln.strip() == "": continue
+    tok = [float(y) for y in ln.strip().split()]
+    tm = int(tok[0])
+    if tm <= t0: continue
+    xv = getcol(col, tok)
+    x.append( xv )
+    if i < 2: t.append( tm )
+    i += 1
+  dt = t[1] - t[0]
+
+  n = len(x)
+  var = 0
+  ave = sum(x)/n
+  xx = []
+  for i in range(corrmax+1):
+    xxv = sum((x[j]-ave)*(x[j+i]-ave) for j in range(n - i))/(n - i)
+    if xxv < 0: break
+    xx.append(xxv)
+  var = xx[0]
+
+  # compute the autocorrelation integral
+  ss = 0
+  sout = ""
+  for i in range(len(xx) - 1):
+    y1 = xx[i]
+    y2 = xx[i+1]
+    ss += 0.5*(y2+y1)
+    # assuming exponential variation within two neighboring points
+    #ss += (y2-y1)/log(y2/y1)
+    sout += "%s %s\n" % (i*dt, xx[i]/xx[0])
+  ss *= 2*dt
+
+  # add a tag line
+  sout = "# %s %s %s %s %s %s\n" % (n, ave, var, dt, len(xx) - 1, ss) + sout
+
+  scol = col if type(col) == str else ("col" + str(col))
+  fnout = fncorr if fncorr != None else os.path.splitext(fnin)[0] + "_" + scol + ".acf"
+  open(fnout, "w").write(sout)
+  print "saved correlation function to %s, n %s, ave %s, var %s, correlation integral %s" % (
+      fnout, n, ave, var, ss)
+
+
+
 if __name__ == "__main__":
   doargs()
   for fn in fnins:
-    mkhist(fn)
+    if not nohist: mkhist(fn)
+    if docorr: getcorr(fn)
