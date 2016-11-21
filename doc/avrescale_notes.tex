@@ -1,0 +1,155 @@
+%\documentclass[12pt]{article}
+\documentclass[reprint]{revtex4-1}
+\usepackage{amsmath}
+\usepackage{mathtools}
+\usepackage{upgreek}
+\usepackage[table,usenames,dvipsnames]{xcolor}
+\usepackage{hyperref}
+
+\hypersetup{
+  colorlinks,
+  linkcolor={red!30!black},
+  citecolor={green!20!black},
+  urlcolor={blue!80!black}
+}
+
+
+\definecolor{DarkBlue}{RGB}{0,0,64}
+\definecolor{DarkBrown}{RGB}{64,20,10}
+\definecolor{DarkGreen}{RGB}{0,64,0}
+\definecolor{DarkPurple}{RGB}{64,0,42}
+\definecolor{LightGray}{gray}{0.85}
+% annotation macros
+\newcommand{\red}[1]{{\color{red} #1}}
+\newcommand{\repl}[2]{{\color{gray} [#1] }{\color{blue} #2}}
+\newcommand{\add}[1]{{\color{blue} #1}}
+\newcommand{\del}[1]{{\color{gray} [#1]}}
+\newcommand{\note}[1]{{\color{DarkGreen}\footnotesize \textsc{Note.} #1}}
+\newcommand{\answer}[1]{{\color{DarkBlue}\footnotesize \textsc{Answer.} #1}}
+\newcommand{\summary}[1]{{\color{DarkPurple}\footnotesize \textsc{Summary.} #1}}
+
+
+
+\begin{document}
+
+
+
+\title{Notes on ``Adaptive velocity scaling for an asymptotic
+microcanonical ensemble''}
+\author{}
+%\date{\vspace{-7ex}}
+
+\maketitle
+
+
+
+\section{\label{sec:model}Ratio $\gamma$ in a model system}
+
+
+
+The ratio defined in Eq. \eqref{eq:gamma_def}
+depends on the potential energy.
+%
+Consider the model Hamiltonian of $\mathbf x = (\mathbf r, \mathbf v)$,
+\begin{equation}
+  H(\mathbf x)
+  =
+  \frac{\mathbf v^2} { 2 }
+  +
+  \left( \frac{\mathbf r^2} { 2 } \right)^\theta
+  ,
+\end{equation}
+%
+where $K = \frac 1 2 {\mathbf v}^2$ and
+$U = \frac 1 2 {\mathbf r}^2$
+are the kinetic and potential energy, respectively,
+and $\theta$ is a positive free parameter.
+Then
+\begin{align*}
+  \Omega(E)
+  &=
+  C^2
+  \int
+    \delta\left( K + U^\theta - E \right) \,
+    K^{\frac{ N_f } 2 - 1} \, dK \, U^{\frac{ N_f } 2 - 1} \, dU
+  \\
+  &=
+  \frac{ C^2 } { \theta }
+  \int
+  K^{\frac{ N_f } 2 - 1} \, (E - K)^{\frac{ N_f }{ 2 \, \theta } - 1}
+    \, dK
+  \\
+  &=
+  \frac{ C^2 }{ \theta } \,
+  B\left( \frac{ N_f } {2 \, \theta}, \frac{ N_f } 2 \right)
+  E^{ \frac{ N_f }{2 \, \theta} + \frac{N_f}{2} - 1 }
+  ,
+\end{align*}
+where
+%
+$C = 2 \, \pi^{N_f/2} / \Gamma\left( N_f / 2 \right)$,
+and
+$B(a, b) = \Gamma(a) \, \Gamma(b) / \Gamma(a+b)$
+is the beta function.
+%
+Then, we have
+\begin{align*}
+\beta(E)
+&=
+\left(
+  \frac{ N_f } { 2 \, \theta } + \frac{ N_f } 2 - 1
+\right)
+E^{-1}
+,
+\\
+\beta'(E)
+&=
+-
+\left(
+  \frac{ N_f } { 2 \, \theta } + \frac{ N_f } 2 - 1
+\right)
+E^{-2}
+\\
+\left\langle
+  \frac{
+    N_f - 2
+  }
+  {
+    2 \, K^2
+  }
+\right\rangle
+&=
+  E^{-2}
+\left.
+  B\left( \frac{ N_f } { 2  \, \theta } - 2, \frac{ N_f } { 2 } \right)
+\middle/
+  B\left( \frac{ N_f } { 2  \, \theta }, \frac{ N_f } { 2 } \right)
+\right.
+\\
+&=
+\frac{ \frac{ N_f } 2 + \frac{ N_f }{2 \, \theta} - 1 }
+     { E^2 }
+\frac{ \frac{ N_f } 2 + \frac{ N_f }{2 \, \theta} - 2 }
+     { \frac{ N_f } 2 - 2 }
+.
+\end{align*}
+This means the ratio defined in Eq. \eqref{eq:gamma_def}
+$$
+\gamma
+=
+\frac
+{
+  \frac{ N_f } 2 - 2
+}
+{
+  \frac{ N_f } 2 + \frac{N_f}{2 \, \theta} - 2
+}
+,
+$$
+which lies between $0$ and $1$.
+
+
+
+%\bibliographystyle{abbrv}
+\bibliography{simul}
+\end{document}

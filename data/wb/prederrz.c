@@ -44,7 +44,7 @@ static double *loadcorr(const char *fn, double *dt, int *cnt)
 }
 
 static double geterrz(double z, const double *xx, double cnt,
-    double dt, double std, double time)
+    double dt, double time)
 {
   int i, j, j0, tmax = (int) (time / dt + 0.5);
   double ss = 0, mul;
@@ -63,7 +63,23 @@ static double geterrz(double z, const double *xx, double cnt,
   ss *= 2 * dt*dt;
 
   free(du);
-  //ss += std*std*exp(-2*z*log(tmax));
+  return ss;
+}
+
+
+/* white noise approximation */
+static double geterrz_white(double z, const double *xx, double cnt,
+    double dt, double time)
+{
+  int i, tmax = (int) (time / dt + 0.5);
+  double ss, gamma = xx[0];
+  for ( i = 1; i <= cnt; i++ ) gamma += 2 * xx[i];
+  gamma *= dt;
+  if ( fabs(2*z - 1) < 1e-10 ) {
+    ss = gamma * z*z*log(time)/time;
+  } else {
+    ss = gamma * z*z/(2*z-1) * (1/time - 1/pow(time, 2*z));
+  }
   return ss;
 }
 
@@ -71,15 +87,17 @@ static double geterrz(double z, const double *xx, double cnt,
 int main(int argc, char **argv)
 {
   int cnt;
-  double *xx, dt, z, zstep, err;
+  double *xx, dt, z, zstep, err, err_white, err_res;
 
   if ( argc > 1 ) tottime = atof( argv[1] );
   if ( argc > 2 ) zstep = atof( argv[2] );
   xx = loadcorr(fncorr, &dt, &cnt);
   if ( xx == NULL ) return -1;
   for ( z = 0.2; z <= 10; z += zstep ) {
-    err = geterrz(z, xx, cnt, dt, initstd, tottime);
-    printf("%g\t%g\n", z, err);
+    err = geterrz(z, xx, cnt, dt, tottime);
+    err_white = geterrz_white(z, xx, cnt, dt, tottime);
+    err_res = initstd*initstd*exp(-2*z*log(tottime));
+    printf("%g\t%g\t%g\t%g\n", z, err, err_white, err_res);
   }
   return 0;
 }

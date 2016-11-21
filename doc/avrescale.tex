@@ -42,14 +42,19 @@ microcanonical ensemble}
   We present a modification of the commonly-used
   temperature control scheme: velocity scaling.
   %
-  The usual velocity scaling scheme does not precisely represent
+  The usual velocity scaling scheme produces a perturbation to
   the microcanonical ($NVE$) ensemble
   as the scaling operation causes the total energy to fluctuate continually.
   %
-  Our modification gradually reduces the scaling magnitude
-  by the number of steps
-  and thereby achieves an asymptotic microcanonical ensemble,
-  where the microcanonical temperature tends to the target value
+  Inspired by the $1/t$ prescription for improving the Wang-Landau algorithm,
+  we modify the usual velocity scaling scheme
+  by reducing the scaling magnitude by the number of steps.
+  %
+  In this way, the fluctuation of total energy quickly becomes negligible,
+  and the simulation ensemble becomes effectively a microcanonical one.
+  %
+  Further, we shall show that the reduction factor
+  allows the microcanonical temperature to tend to the target value
   at an optimal rate.
 \end{abstract}
 
@@ -90,7 +95,7 @@ Thus, they are often regarded as expedient protocols
 suitable only for parameter tuning in preliminary runs,
 but not for rigorous MD simulations in the microcanonical ensemble.
 %
-However, in several ingenious modifications,
+On the other hand, in several ingenious modifications,
 the energy fluctuation of velocity scaling
 can be used to design thermostat algorithms
 for the canonical ($NVT$) ensemble, in which the total energy
@@ -103,10 +108,10 @@ are rigorous algorithms, as
 the velocity scaling operation is carefully
 controlled to make
 the resulting fluctuation of the total energy
-mimic the natural behavior demanded by the underlying canonical ensemble.
+mimic the natural behavior demanded by the underlying canonical distribution.
 %
 Motivated by the thermostat algorithms,
-one may consider similar modifications
+one may wish to consider similar modifications
 that result in precise temperature control
 for the microcanonical ensemble.
 %Albeit the success and popularity of the thermostat algorithms,
@@ -133,25 +138,29 @@ of metadynamics\cite{
 has parameters for the entropy that need to be
 determined and updated adaptively,
 and the $1/t$ prescription gives the optimal updating magnitude
-for the parameters to reach their ideal values.
+for the parameters to reach their target values.
 %
-In analogy, we may compare the total energy here
+By analogy, we may compare the total energy here
 to a parameter in the WL algorithm,
 and set the optimal magnitude
 of velocity scaling to be inversely proportional
 to the number of steps.
 %
+Such a modification could hopefully gradually decrease
+the fluctuation of the total energy, and
+help the total energy tend to the target value in an optimal rate.
+%
 Besides the above change,
 our modification will target a more accurate
 microcanonical temperature\cite{rugh1997},
-which differs from the canonical definition
-given in Eq. \eqref{eq:K_canon}.
+which differs from the usual definition, Eq. \eqref{eq:K_canon},
+for the canonical ensemble.
 %
 As we shall see,
 with a rapidly decreasing magnitude of velocity scaling,
 a sufficiently long simulation under adaptive velocity scaling
 is almost identical to a regular MD
-in conserving the total energy and reproducing other quantities
+in conserving the total energy and producing other quantities
 of the microcanonical ensemble.
 
 
@@ -608,7 +617,8 @@ we may define a ratio
     }
   }
   ,
-  \label{eq:gamma_def}
+  \notag
+  %\label{eq:gamma_def}
 \end{equation}
 %
 and rewrite Eq. \eqref{eq:dbeta} as
@@ -628,8 +638,8 @@ and rewrite Eq. \eqref{eq:dbeta} as
 %
 For a physical system, we expect $0 \le \gamma \le 1$.
 %
-The value of $\gamma$ is computed for a model system
-in Appendix \ref{sec:model}.
+%The value of $\gamma$ is computed for a model system
+%in Appendix \ref{sec:model}.
 
 We may use Eq. \eqref{eq:dbeta_approx} in two ways.
 %
@@ -688,68 +698,62 @@ and the SETTLE method\cite{miyamoto1992}
 to maintain the constraints.
 
 
-We first compared the time series of the total energy
-from simulations
-under regular and adaptive velocity scaling
-and that from a regular MD simulation without velocity scaling.
+We first compared the fluctuation of the total energy
+from three simulations:
 %
-In the case of regular velocity scaling,
-as described in the Introduction,
+a regular MD without velocity scaling,
+one under the regular velocity scaling scheme as described in the Introduction,
+and one under adaptive velocity scaling.
+%
+Note that although Newton's equation conserves the total energy,
+MD simulations usually employ approximate integration schemes
+(such as the velocity Verlet),
+which lead to small fluctuation of the total energy.
+%
+In all three cases,
+we set the initial total energy to the correct value, $-6141.2$ kcal/mol.
+%
+In the second case,
 velocity was scaled every $10^3$ MD steps.
 %
-For adaptive velocity scaling,
-$\beta'(E^*)$ was computed from Eq. \eqref{eq:dbeta},
-and we obtained from this simulation
-the heuristic value of $\gamma = 0.33$,
-to be used for other tests.
+In the last case,
+velocity was scaled every $10$ MD steps with
+$\beta'(E^*)$ computed from Eq. \eqref{eq:dbeta}.
 %
-For the regular MD case,
-we have adjusted the initial total energy of this simulation
-to the converged value from the adaptive velocity scaling simulation.
+As shown in Table \ref{tab:etraj},
+the energy fluctuation from the simulation under adaptive velocity scaling
+was similar to that from a regular MD,
+which suggests that the influence of adaptive velocity scaling
+becomes negligible for long simulations.
 %
-As shown in Fig. \ref{fig:etraj},
-despite a low scaling frequency,
-regular velocity scaling
-produced considerable fluctuation in the total energy,
-and the magnitude does not decrease over time.
-%
-In contrast, adaptive velocity scaling
-was able to quickly reduce the fluctuation of the total energy
-to a level comparable to that
-from a regular MD without velocity scaling,
-which results from the numerical error of the integration scheme.
+However, regular velocity scaling
+produced a much larger energy fluctuation
+despite a low scaling frequency.
 
-\begin{figure}[h]
-\begin{center}
-  \makebox[\linewidth][c]{
-    \includegraphics[angle=0, width=1.0\linewidth]{fig/etraj.pdf}
-  }
+\begin{table}[h]
+  \setlength{\tabcolsep}{5pt}
+  \renewcommand{\arraystretch}{1.5}
+  \begin{center}
+    \begin{tabular}{ p{2.5cm} | c c c }
+      \hline
+      Velocity scaling
+      &   None    &   Regular   &   Adaptive \\
+      \hline
+      $\sigma_E$ (kcal/mol)
+      &   $0.26$  &   $7.7$     &   $0.25$ \\
+      \hline
+    \end{tabular}
+  \end{center}
   \caption{
-    \label{fig:etraj}
-    The time series of the total energy
-    from an MD trajectory
-    without velocity scaling (with the total energy $E \approx -6141.5$),
-    one under regular velocity scaling
-    (conducted every $10^3$ steps),
-    %(in which the velocity is scaled
-    %every $m = 10^4$ steps by a factor of
-    %$\sqrt{\frac12 N_f k_B T/\bar K}$,
-    %with $\bar K$ being the average kinetic energy
-    %of the past $m$ steps),
-    and
-    one under adaptive velocity scaling (conducted every $10$ steps).
+    \label{tab:etraj}
+    Standard deviations of the total energy, $\sigma_E$,
+    from simulations under different types of velocity scaling.
     %
     Each simulation lasted $10^7$ steps,
-    but only the data from the first $3\times 10^6$ steps were shown.
+    and the standard deviation of the total energy
+    of the last $9 \times 10^6$ steps was reported.
     %
-    %The points were plotted every $5 \times 10^4$ steps.
-    %
-    The standard deviations of the total energy,
-    excluding the first $10^6$ steps,
-    were $0.26$, $7.7$, and $0.25$ $\mathrm{kcal/mol}$,
-    respectively.
-    %
-    \note{The figure was produced by \texttt{doc/fig/etraj.gp}.
+    \note{
       The raw data were saved in
       \texttt{data/wb/fix/ene0fix.log},
       \texttt{data/wb/reg/ene0reg.log},
@@ -759,31 +763,72 @@ which results from the numerical error of the integration scheme.
       \texttt{make etraj -C data/wb}.
     }%
   }
-\end{center}
-\end{figure}
+\end{table}
+
+%\begin{figure}[h]
+%\begin{center}
+%  \makebox[\linewidth][c]{
+%    \includegraphics[angle=0, width=1.0\linewidth]{fig/etraj.pdf}
+%  }
+%  \caption{
+%    \label{fig:etraj}
+%    The time series of the total energy
+%    from an MD trajectory
+%    without velocity scaling (with the total energy $E \approx -6141.5$),
+%    one under regular velocity scaling
+%    (conducted every $10^3$ steps),
+%    %(in which the velocity is scaled
+%    %every $m = 10^4$ steps by a factor of
+%    %$\sqrt{\frac12 N_f k_B T/\bar K}$,
+%    %with $\bar K$ being the average kinetic energy
+%    %of the past $m$ steps),
+%    and
+%    one under adaptive velocity scaling (conducted every $10$ steps).
+%    %
+%    Each simulation lasted $10^7$ steps,
+%    but only the data from the first $3\times 10^6$ steps were shown.
+%    %
+%    %The points were plotted every $5 \times 10^4$ steps.
+%    %
+%    The standard deviations of the total energy,
+%    excluding the first $10^6$ steps,
+%    were $0.26$, $7.7$, and $0.25$ $\mathrm{kcal/mol}$,
+%    respectively.
+%    %
+%    \note{The figure was produced by \texttt{doc/fig/etraj.gp}.
+%      The raw data were saved in
+%      \texttt{data/wb/fix/ene0fix.log},
+%      \texttt{data/wb/reg/ene0reg.log},
+%      and
+%      \texttt{data/wb/adp/ene0adp.log}.
+%      The standard deviations can be found with
+%      \texttt{make etraj -C data/wb}.
+%    }%
+%  }
+%\end{center}
+%\end{figure}
 
 
 
-We then compared the kinetic energy
-distribution from a simulation under adaptive velocity scaling
-%distributions from the simulations under regular and adaptive velocity scaling,
-%that from a regular MD,
-and that from an MD targeting a canonical ensemble
-at the same temperature
-(using the velocity rescaling thermostat\cite{bussi2007} with $\tau = 0.03 \, \mathrm{ps}$).
+We then compared the kinetic and potential energy
+distributions from a regular MD simulation,
+a simulation under adaptive velocity scaling,
+and
+a simulation under the velocity rescaling thermostat\cite{bussi2007}
+(with $\tau = 0.03 \, \mathrm{ps}$).
 %
-As shown in Fig. \ref{fig:uhist},
+The former two targets an (asymptotic) microcanonical ensemble,
+whereas the last targets a canonical ensemble.
+%
+As shown in Fig. \ref{fig:kuhist},
 adaptive velocity scaling and regular MD
 produced almost identical distributions,
-which were considerably narrower than
-the canonical counterpart.
+while the simulation under the velocity rescaling thermostat
+produced wider distributions.
 %
-This is understandable,
-as the canonical ensemble
-can be constructed as a superposition
-of microcanonical ensembles of different $E$'s,
-and the distribution from the former ensemble
-tends to be broader.
+We may understand the widening % of the distributions
+as a result of the construction of the canonical ensemble
+as a superposition of microcanonical ensembles of different $E$'s.
 %
 %The distribution from regular velocity scaling,
 %however, was visibly different from
@@ -796,40 +841,117 @@ tends to be broader.
 \begin{figure}[h]
 \begin{center}
   \makebox[\linewidth][c]{
-    \includegraphics[angle=0, width=1.0\linewidth]{fig/uhist.pdf}
+    \includegraphics[angle=0, width=1.0\linewidth]{fig/kuhist.pdf}
   }
   \caption{
-    \label{fig:uhist}
-    Kinetic energy distributions
-    from MD simulations in the canonical ensemble,
-    microcanonical ensemble,
-    and one under adaptive velocity scaling.
+    \label{fig:kuhist}
+    Kinetic and potential energy distributions
+    from a regular MD simulation in the microcanonical ensemble,
+    a simulation under adaptive velocity scaling,
+    and one in the canonical ensemble.
     %
     %Each simulation had $10^7$ steps,
     %and the data from the first $10^6$ steps
     %were dropped.
     %
-    \note{The figure was produced by \texttt{doc/fig/uhist.gp}.
-      For data preparation, \texttt{make uhist -C data/wb}.
+    \note{The figure was produced by \texttt{doc/fig/kuhist.gp}.
+      For data preparation, \texttt{make uhist khist -C data/wb}.
     }%
   }
 \end{center}
 \end{figure}
 
 
-Next, we wish to test
+Next, we wish to see if Eq. \eqref{eq:dE_final}
+is indeed the optimal in controlling the magnitude of velocity scaling.
+%
+To this end, we modified the adaptive velocity scaling scheme
+such that the energy change in each step is given by
+%
+\begin{equation}
+  \delta E_t
+  =
+  \frac{ \alpha(t) } { \beta'(E^*) }
+  \left(
+   \beta^* -
+   \frac{ N_f - 2 }
+   { 2 \, K_t }
+  \right)
+  ,
+  \label{eq:dE_mod}
+\end{equation}
+%
+where $\alpha(t) = z/t$ with $z$ being a free parameter;
+and Eq. \eqref{eq:dE_final} is the $z = 1$ case.
+%
+For each value of $z$,
+we performed multiple independent simulations of
+$T = 10^5$ and $10^6$ steps,
+and used the variance of the total energy at the simulation end
+to represent the error.
+%
+For $\beta'(E^*)$,
+Eq. \eqref{eq:dbeta_approx2} was used with the heuristic value of $0.33$.
+%
+As shown in Fig. \ref{fig:errz},
+the value of $z = 1$
+indeed gives the least error,
+supporting the optimality of Eq. \eqref{eq:dE_final}.
+
+\begin{figure}[h]
+\begin{center}
+  \makebox[\linewidth][c]{
+    \includegraphics[angle=0, width=1.0\linewidth]{fig/errz.pdf}
+  }
+  \caption{
+    \label{fig:errz}
+    Error of the total energy,
+    measured as the fluctuation
+    $\left\langle \Delta E^2(T) \right\rangle$,
+    at the end of a simulation of $T$ steps,
+    versus the variable $z$
+    in the modified velocity scaling scheme,
+    Eq. \eqref{eq:dE_mod}.
+    %
+    The points are results from averaging over
+    multiple independent runs.
+    %
+    The curves are the analytical predictions from
+    Eq. \eqref{eq:err_functional},
+    for which we have computed the autocorrelation function
+    of the fluctuation
+    $\xi(t) = \left[\beta^* - \left(\frac 1 2 N_f-1\right)/K_t\right]/\beta'(E^*)$
+    from a regular MD simulation.
+    %
+    %The thinner curves were from a more approximate formula,
+    %Eq. \eqref{eq:err_zovert},
+    %which assumes the fluctuation is a white noise
+    %%and this assumption is less reliable for shorter simulations
+    %(cf. Appendix \ref{sec:error}).
+    %
+    \note{The figure was produced by \texttt{doc/fig/errz.gp}.
+      The raw data were saved in \texttt{data/wb\_t100000.dat}.
+      For the analytical prediction \texttt{make -C data/wb wberrz}.
+    }%
+  }
+\end{center}
+\end{figure}
+
+
+
+Finally, we wish to test
 the efficiency of the adaptive velocity scaling scheme
 in recovering from a bad initial condition.
 %
-For this purpose,
-we designed a test to compare this scheme,
+To this end,
+we compared this scheme,
 which targets the microcanonical ensemble,
 with several temperature control schemes
 targeting the canonical ensemble.
 %
 In this test, we lifted the total energy about
 $100\,\mathrm{kcal/mol}$ above the average,
-and monitored the evolution of the kinetic energy.
+and monitored the evolution of the total energy.
 %
 As shown in Fig. \ref{fig:equil},
 adaptive velocity scaling
@@ -837,15 +959,42 @@ behaved similarly to
 the Nos\'e-Hoover chain\cite{nose1984, nose1984mp, hoover1985, martyna1992},
 and velocity rescaling\cite{bussi2007}
 thermostats
-in equilibrating the kinetic energy;
+in the relaxation;
 and these velocity-scaling-based schemes
 appeared to be more efficient than Langevin dynamics.
 %
-Note that, the relaxation time
+Note that the relaxation time
 of the thermostat algorithms
-depends on some input parameters,
-while adaptive velocity scaling
-is parameter free.
+depends on some input parameters
+(e.g., the inverse viscosity $\tau$ of the velocity rescaling thermostat),
+whereas adaptive velocity scaling does not.
+
+\note{
+We also note that relaxation curve of the thermostat algorithms
+take an exponential form ($\propto e^{-k\,t}$),
+while that of adaptive velocity scaling takes
+an algebraic form [$\propto 1/t$,
+cf. \eqref{eq:abserr}].
+%
+One may wonder if it is more effective to use an exponential form
+for the magnitude of velocity scaling,
+$\alpha(t) \propto e^{-kt}$.
+%
+This is no so, as the alternative functional forms
+would be less effective in the long run
+in eliminating the random error caused by velocity scaling,
+i.e., the error bar of Fig. \ref{fig:equil},
+which is not shown.
+%
+For the canonical ensemble, the fluctuation is unimportant
+as the total energy is intrinsically fluctuating.
+%
+However, for the microcanonical ensemble, the fluctuation
+is the key measure of convergence.
+%
+This is why adaptive velocity scaling chooses the $1/t$ form
+instead of the exponential form for the scaling magnitude.
+}
 
 \begin{figure}[h]
 \begin{center}
@@ -894,78 +1043,6 @@ is parameter free.
 
 
 
-To test the optimality of Eq. \eqref{eq:dE_final},
-we studied a generalized velocity scaling scheme,
-in which the energy change in each step is given by
-%
-\begin{equation}
-  \delta E_t
-  =
-  \frac{ \alpha(t) } { \beta'(E^*) }
-  \left(
-   \beta^* -
-   \frac{ N_f - 2 }
-   { 2 \, K_t }
-  \right)
-  ,
-  \label{eq:dE_mod}
-\end{equation}
-%
-where $\alpha(t) = z/t$ with $z$ being a free parameter;
-and Eq. \eqref{eq:dE_final} is the $z = 1$ case.
-%
-For each value of $z$,
-we performed multiple independent simulations of
-$T = 10^5$ and $10^6$ steps,
-and used the variance of the total energy at the simulation end
-to represent the error.
-%
-For $\beta'(E^*)$,
-Eq. \eqref{eq:dbeta_approx2} was used with the heuristic value of $0.33$.
-%
-As shown in Fig. \ref{fig:errz},
-the value of $z = 1$
-indeed gives the least error.
-
-\begin{figure}[h]
-\begin{center}
-  \makebox[\linewidth][c]{
-    \includegraphics[angle=0, width=1.0\linewidth]{fig/errz.pdf}
-  }
-  \caption{
-    \label{fig:errz}
-    Error of the total energy,
-    $\left\langle \Delta E^2(T) \right\rangle$,
-    at the end of a simulation of $T$ steps,
-    versus the variable $z$
-    in the modified velocity scaling scheme,
-    Eq. \eqref{eq:dE_mod}.
-    %
-    The points are results from averaging over
-    multiple independent runs.
-    %
-    The thicker curves are the analytical predictions from
-    Eq. \eqref{eq:err_functional},
-    for which we have computed the autocorrelation function
-    of the fluctuation 
-    $\xi(t) = \left[\beta^* - \left(\frac 1 2 N_f-1\right)/K_t\right]/\beta'(E^*)$
-    from a regular MD simulation.
-    %
-    The thinner curves were from the more approximate theory
-    that assumes the fluctuation is a white noise,
-    and this assumption is less reliable for shorter simulations
-    (cf. Appendix \ref{sec:whitenoise}).
-    %
-    \note{The figure was produced by \texttt{doc/fig/errz.gp}.
-      The raw data were saved in \texttt{data/wb\_t100000.dat}.
-      For the analytical prediction \texttt{make -C data/wb wberrz}.
-    }%
-  }
-\end{center}
-\end{figure}
-
-
-
 
 \section{\label{sec:conclusion}
 Conclusions and Discussions}
@@ -975,32 +1052,39 @@ Conclusions and Discussions}
 In summary, we have presented an adaptive velocity scaling scheme
 as a more precise temperature control for the microcanonical ($NVE$) ensemble.
 %
-However, unlike thermostat algorithms for the canonical ($NVT$) ensemble,
+Unlike the canonical ($NVT$) ensemble,
 the microcanonical ensemble requires a constant total energy, $E$,
-which forbids constant velocity scaling.
+which is incompatible with the usual periodic velocity scaling scheme
+with a fixed magnitude.
 %
-Thus, our scheme gradually tunes down the magnitude of the velocity scaling
-by a factor of inverse number of steps.
+Our modified scheme gradually decreases the magnitude of the velocity scaling
+by a factor of the number of steps.
 %
-Like the $1/t$ prescription for the WL algorithm,
+Like the $1/t$ prescription\cite{
+  belardinelli2007, belardinelli2007jcp, belardinelli2008,
+  zhou2005, zhou2008, morozov2007}
+for the WL algorithm\cite{wang2001, wang2001pre},
 the adaptive velocity scaling is able to reach
 the desired temperature at an optimal rate.
 %
 Because of the magnitude control,
 the effect of velocity scaling often becomes negligible
-at long times that
+at long times so that
 a simulation under adaptive velocity scaling
 behaves similar to a regular MD simulation.
 
-The key element of our adaptive velocity scaling scheme
-is the $1/t$ prescription. %, which results from runtime averaging.
+We may view the adaptive velocity scaling scheme
+as an application of the $1/t$ prescription
+for adjusting the total energy
+to achieve the target temperature.
 %
-More generally, for a pair of correlated variables $x$ and $y$,
-this technique can be used to finding the optimal value of
-of a parameter, $x$, on the fly
-to achieve a target value, $y^*$, of some observable, $y$.
+More generally, we may apply this technique
+to a pair of correlated variables $x$ and $y$,
+to find the optimal value of a parameter, $x$,
+that achieves a target value, $y^*$, of an observable, $y$,
+on the fly.
 %
-As a generalization of Eq. \eqref{eq:dE_beta},
+Then, instead of Eq. \eqref{eq:dE_beta},
 we have
 $$
 \delta x_t = \frac 1 t
@@ -1010,11 +1094,12 @@ $$
 .
 $$
 %
-For example, one may use this technique
-to determine the optimal move size ($x$)
+For example, one may determine the optimal move size ($x$)
 in a Monte Carlo simulation
 in order to reaching a certain acceptance ratio ($y$).
-
+%
+We expect this and similar parameter control schemes
+to be useful in molecular simulations.
 
 
 
@@ -1134,8 +1219,24 @@ where
   \notag
 \end{align*}
 %
-Thus, the error at the end of simulation $t = T$,
-can be measured as the expectation of $x^2(T)$,
+Thus, the average error at the end of simulation $t = T$
+is given by
+%
+\begin{align}
+  \left\langle
+    x(T)
+  \right\rangle
+  &=
+  \left\langle
+    x(1)
+  \right\rangle
+  \, e^{ -A(t) }
+  ,
+  \label{eq:abserr}
+\end{align}
+%
+and the square error
+can be measured as
 %
 \begin{align}
   \left\langle
@@ -1159,12 +1260,14 @@ can be measured as the expectation of $x^2(T)$,
   \label{eq:err_functional}
 \end{align}
 %
-%the total energy change induced by velocity scaling
-%is
+Below we shall find the optimal functional form of $\alpha(t)$
+that minimizes the square error.
 
-\subsection{\label{sec:whitenoise}
-White-noise approximation
-}
+
+
+%\subsection{\label{sec:whitenoise}
+%White-noise approximation
+%}
 
 For a very long simulation,
 we may approximate $\xi(t)$ as a white noise,
@@ -1172,7 +1275,8 @@ such that
 \begin{equation}
   \left\langle \xi(t) \, \xi(t') \right\rangle
   = \Gamma \, \delta(t - t').
-  \label{eq:noise_corr}
+  \notag
+  %\label{eq:noise_corr}
 \end{equation}
 %
 Note that this is justifiable only
@@ -1180,8 +1284,8 @@ if the simulation length $T$ is much longer than
 the autocorrelation time of $\xi(t)$,
 as shown in Fig. \ref{fig:errz}.
 %
-Under this assumption the error functional, Eq. \eqref{eq:err_functional},
-is simplified as
+Under this assumption,
+Eq. \eqref{eq:err_functional} is simplified as
 %
 \begin{equation}
   \left\langle
@@ -1273,39 +1377,41 @@ results in an expected error of
     T^{2 \, z}
   }
   ,
-  \label{eq:err_zovert}
+  \notag
+  %\label{eq:err_zovert}
 \end{equation}
 which is minimal at $z = 1$ for a long simulation.
 
-To determine the value of $\Gamma$ of an unknown system,
-we may conduct a simulation
-with the scaling magnitude of velocity scaling
-being a constant, $\alpha(t) = \alpha_0$.
-%
-From Eq. \eqref{eq:err_functional_wn}, we find that
-the error
-$\left\langle
-  x^2(T)
-\right\rangle
-=
-\Gamma \, \alpha_0 / 2$
-is independent of time $T$.
-Thus, we can compute $\Gamma$ from the trajectory average
-after equilibration,
-\begin{equation}
-\Gamma
-=
-\frac{ 2 } { \alpha_0 } \,
-\overline{
-  \bigl(
-    E - \overline E
-  \bigr)^2
+\note{
+  To determine the value of $\Gamma$ of an unknown system,
+  we may conduct a simulation
+  with the scaling magnitude of velocity scaling
+  being a constant, $\alpha(t) = \alpha_0$.
+  %
+  From Eq. \eqref{eq:err_functional_wn}, we find that
+  the error
+  $\left\langle
+    x^2(T)
+  \right\rangle
+  =
+  \Gamma \, \alpha_0 / 2$
+  is independent of time $T$.
+  Thus, we can compute $\Gamma$ from the trajectory average
+  after equilibration,
+  \begin{equation}
+  \Gamma
+  =
+  \frac{ 2 } { \alpha_0 } \,
+  \overline{
+    \bigl(
+      E - \overline E
+    \bigr)^2
+  }
+  .
+  \notag
+  %\label{eq:Gamma_alpha0}
+  \end{equation}
 }
-.
-\notag
-%\label{eq:Gamma_alpha0}
-\end{equation}
-
 
 \section{Microcanonical temperature and its derivative}
 
@@ -1451,7 +1557,7 @@ We have
 With Eq. \eqref{eq:u_def},
 this yields Eq. \eqref{eq:dbetadE}.
 
-Note that in the above derivation
+Note that in the above derivation,
 we have, for simplicity, ignored the conservation
 of total momenta\cite{shirts2006, uline2008},
 which gives additional constraints satisfied in a typical MD simulation.
@@ -1459,10 +1565,10 @@ which gives additional constraints satisfied in a typical MD simulation.
 Fortunately, with the particular choice given by Eq. \eqref{eq:u_def},
 one can show that this effect is negligible for a system
 with zero total momenta\cite{uline2008}
-(a key observation here is
+\big[a key observation here is
 that for the total momenta $P_\nu = \sum_{i} p_{i, \nu}$,
 $\nu = x,y,z$, we have
-$\mathbf u \cdot \nabla P_\nu = 0$).
+$\mathbf u \cdot \nabla P_\nu = P_\nu/(2K) = 0$ \big].
 
 
 
@@ -1506,113 +1612,6 @@ In our case,
 $
 A_t = \beta^* - \frac{ N_f - 2 } { 2 \, K_t }.
 $
-
-
-
-\section{\label{sec:model}Ratio $\gamma$ in a model system}
-
-
-
-The ratio defined in Eq. \eqref{eq:gamma_def}
-depends on the potential energy.
-%
-Consider the model Hamiltonian of $\mathbf x = (\mathbf r, \mathbf v)$,
-\begin{equation}
-  H(\mathbf x)
-  =
-  \frac{\mathbf v^2} { 2 }
-  +
-  \left( \frac{\mathbf r^2} { 2 } \right)^\theta
-  ,
-\end{equation}
-%
-where $K = \frac 1 2 {\mathbf v}^2$ and
-$U = \frac 1 2 {\mathbf r}^2$
-are the kinetic and potential energy, respectively,
-and $\theta$ is a positive free parameter.
-Then
-\begin{align*}
-  \Omega(E)
-  &=
-  C^2
-  \int
-    \delta\left( K + U^\theta - E \right) \,
-    K^{\frac{ N_f } 2 - 1} \, dK \, U^{\frac{ N_f } 2 - 1} \, dU
-  \\
-  &=
-  \frac{ C^2 } { \theta }
-  \int
-  K^{\frac{ N_f } 2 - 1} \, (E - K)^{\frac{ N_f }{ 2 \, \theta } - 1}
-    \, dK
-  \\
-  &=
-  \frac{ C^2 }{ \theta } \,
-  B\left( \frac{ N_f } {2 \, \theta}, \frac{ N_f } 2 \right)
-  E^{ \frac{ N_f }{2 \, \theta} + \frac{N_f}{2} - 1 }
-  ,
-\end{align*}
-where
-%
-$C = 2 \, \pi^{N_f/2} / \Gamma\left( N_f / 2 \right)$,
-and
-$B(a, b) = \Gamma(a) \, \Gamma(b) / \Gamma(a+b)$
-is the beta function.
-%
-Then, we have
-\begin{align*}
-\beta(E)
-&=
-\left(
-  \frac{ N_f } { 2 \, \theta } + \frac{ N_f } 2 - 1
-\right)
-E^{-1}
-,
-\\
-\beta'(E)
-&=
--
-\left(
-  \frac{ N_f } { 2 \, \theta } + \frac{ N_f } 2 - 1
-\right)
-E^{-2}
-\\
-\left\langle
-  \frac{
-    N_f - 2
-  }
-  {
-    2 \, K^2
-  }
-\right\rangle
-&=
-  E^{-2}
-\left.
-  B\left( \frac{ N_f } { 2  \, \theta } - 2, \frac{ N_f } { 2 } \right)
-\middle/
-  B\left( \frac{ N_f } { 2  \, \theta }, \frac{ N_f } { 2 } \right)
-\right.
-\\
-&=
-\frac{ \frac{ N_f } 2 + \frac{ N_f }{2 \, \theta} - 1 }
-     { E^2 }
-\frac{ \frac{ N_f } 2 + \frac{ N_f }{2 \, \theta} - 2 }
-     { \frac{ N_f } 2 - 2 }
-.
-\end{align*}
-This means the ratio defined in Eq. \eqref{eq:gamma_def}
-$$
-\gamma
-=
-\frac
-{
-  \frac{ N_f } 2 - 2
-}
-{
-  \frac{ N_f } 2 + \frac{N_f}{2 \, \theta} - 2
-}
-,
-$$
-which lies between $0$ and $1$.
 
 
 

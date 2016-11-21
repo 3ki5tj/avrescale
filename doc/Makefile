@@ -1,14 +1,12 @@
 prj=avrescale
 
-ver=3.0
+ver=0.0
 
 figgps=$(wildcard fig/*.gp)
 pdffigs=$(patsubst %.gp,%.pdf, $(figgps))
 epsfigs=$(patsubst %.gp,%.eps, $(figgps))
 
-texpdf = $(prj).pdf
-
-#$(prj)_notes.pdf
+texpdf = $(prj).pdf $(prj)_notes.pdf
 
 alltexpdf = $(patsubst %.tex,%.pdf, $(wildcard $(prj)*.tex))
 

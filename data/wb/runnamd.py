@@ -29,7 +29,7 @@ thermostat = None
 tNHCPeriod = 100.0
 langRescaleDt = 20.0
 verbose = 0
-
+progdir = None
 
 
 def usage():
@@ -58,6 +58,7 @@ def usage():
     --langRescaleDt     set the time constant of the Langevin velocity rescaling thermostat
     --opt=              set options to be passed to the command line
     -o, --output=       set the output file
+    --progdir=          set the directory of NAMD
     -v                  be verbose
     --verbose=          set verbosity
     -h, --help          help
@@ -78,6 +79,7 @@ def doargs():
           "trace", "th=", "thermostat=",
           "tNHCPeriod=", "langRescaleDt=",
           "output=", "opt=",
+          "progdir=",
           "help", "verbose=",
         ] )
   except getopt.GetoptError, err:
@@ -86,6 +88,7 @@ def doargs():
 
   global fnconf, nsteps, ntrials, nproc, dKdE, zoom, zrange, Etot, Edev
   global trace, thermostat, tNHCPeriod, langRescaleDt
+  global progdir
   global fnout, cmdopt, verbose
 
   for o, a in opts:
@@ -115,6 +118,8 @@ def doargs():
       tNHCPeriod = float(a)
     elif o in ("--langRescaleDt",):
       langRescaleDt = float(a)
+    elif o in ("--progdir",):
+      progdir = a
     elif o in ("-v",):
       verbose += 1  # such that -vv gives verbose = 2
     elif o in ("--verbose",):
@@ -150,12 +155,15 @@ class Ave:
 
 def getprogdir(build = True):
   ''' find the directory of NAMD '''
-  progdir = "../../NAMD_mods/NAMD_2.11_thstat/Linux-x86_64-g++"
-  i = 0
-  while not os.path.isdir(progdir):
-    progdir = "../" + progdir
-    i += 1
-    if i > 3: break
+  global progdir
+
+  if not progdir:
+    progdir = "../../NAMD_mods/NAMD_2.11_thstat/Linux-x86_64-g++"
+    i = 0
+    while not os.path.isdir(progdir):
+      progdir = "../" + progdir
+      i += 1
+      if i > 3: break
   if build: # build the program
     zcom.runcmd("make -C %s" % progdir)
   return progdir

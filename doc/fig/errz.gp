@@ -5,8 +5,6 @@ set terminal push
 # dl 3.0 make dashed line longer
 set terminal postscript eps enhanced dl 3.0 size 5, 3.5 font "Times, 32"
 set output "errz.eps"
-set multiplot
-
 
 
 # error vs the proportionality constant z
@@ -16,11 +14,12 @@ set multiplot
 # T: number of steps
 # a: initial error (as the variance of the energy)
 # g: Gamma, correlation integral
-f(z,T,a,g)=a/T**(2*z)+g*z*z/(2*z-1)*(T**(2*z-1)-1)/T**(2*z)
+#f(z,T,a,g)=a/T**(2*z)+g*z*z/(2*z-1)*(T**(2*z-1)-1)/T**(2*z)
+f0(z,T,g)=g*z*z/(2*z-1)*(T**(2*z-1) - 1)/T**(2*z)
 
 # To be specified by the option in the configuration file
 # rescaleInitDev 100
-aval = 100000
+aval = 10000
 
 # To be obtained from constant a magnitude simulation, 300Kmag.conf
 # with rescaleAdaptiveMag 0.0001
@@ -47,15 +46,17 @@ set ylabel "Error of the total energy" offset 1, 0
 set key right Left reverse spacing 1.2 width -3
 
 plot [0.25:][:] \
-    "../../data/wb/wb_t100000.dat"     u 1:2  w p  pt 7  ps 2.0 t "Simulation, {/Times-Italic T} = 10^{/*0.8 5}", \
-    "../../data/wb/wberrz_t100000.dat" u 1:2  w l  lt 1  lw 4   t "Prediction, {/Times-Italic T} = 10^{/*0.8 5}", \
-    f(x,100000,aval,gval)                          lt 1  lw 1   lc rgb "#808080" notitle, \
-    "../../data/wb/wb_t1M.dat"         u 1:2  w p  pt 5  ps 1.8 t "Simulation, {/Times-Italic T} = 10^{/*0.8 6}", \
-    "../../data/wb/wberrz_t1M.dat"     u 1:2  w l  lt 3  lw 4   t "Prediction, {/Times-Italic T} = 10^{/*0.8 5}", \
-    f(x,1000000,aval,gval)                         lt 3  lw 1   lc rgb "#808080" notitle
+    "../../data/wb/wb_t100000.dat"     u 1:2        w p  pt 7  ps 2.0 t "Simulation, {/Times-Italic T} = 10^{/*0.8 5}", \
+    "../../data/wb/wberrz_t100000.dat" u 1:($2+$4)  w l  lt 1  lw 6   t "Prediction, {/Times-Italic T} = 10^{/*0.8 5}", \
+    "../../data/wb/wb_t1M.dat"         u 1:2        w p  pt 5  ps 1.8 t "Simulation, {/Times-Italic T} = 10^{/*0.8 6}", \
+    "../../data/wb/wberrz_t1M.dat"     u 1:($2+$4)  w l  lt 3  lw 6   t "Prediction, {/Times-Italic T} = 10^{/*0.8 5}", \
 
 
-unset multiplot
+#"../../data/wb/wberrz_t100000.dat" u 1:($3+$4)  w l  lt 1  lw 2   lc rgb "#808080" notitle,
+#f(x,100000,aval,gval)                          lt 3  lw 1   lc rgb "#808080" notitle
+#"../../data/wb/wberrz_t1M.dat"     u 1:($3+$4)  w l  lt 3  lw 2   lc rgb "#808080" notitle,
+#f(x,1000000,aval,gval)                         lt 3  lw 1   lc rgb "#808080" notitle
+
 unset output
 set terminal pop
 reset
