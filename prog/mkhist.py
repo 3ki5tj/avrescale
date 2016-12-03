@@ -18,6 +18,8 @@ colT = -1
 colE = -1
 fnrst = ""
 t0 = 0
+i0 = 0
+every = 1
 tpinterp = 10
 drop1 = False
 docorr = False
@@ -32,37 +34,40 @@ def showhelp():
   print "  Make a histogram of an energy log file"
   print "  It can compute the autocorrelation function with --corr"
   print "Options:"
-  print "  -T, --tp=:     set the temperature"
-  print "  -d, --dx=:     set the energy bin size"
-  print "  --dT=:         set the temperature tolerance"
-  print "  -o, --output=: set the output file"
-  print "  -i, --input=:  set the input file"
-  print "  -c, --col=:    set the column for the quantity, can also be --col=dif for the difference between column 3 and 2, or --col=invK for the inverse (for autocorrelations)"
-  print "  --t0=:         set the first time step"
-  print "  --colT=:       set the column for temperature"
-  print "  --rst=:        set the restart file for WHAM (weighted histogram analysis method)"
-  print "  --tm=:         set the number of subdivisions for each temperature bin (for WHAM)"
-  print "  --colE=:       set the column for energy (for reweighting)"
-  print "  --dE=:         set the bin size for the energy grid (for reweighting)"
-  print "  -1, --drop1    drop the last frame"
-  print "  --corr         compute the autocorrelation function"
-  print "  --fncorr=      set the output file name for the autocorrelation function"
-  print "  --corrmax=     set the maximal number of steps for the autocorrelation function"
-  print "  --nohist       skipping histogram"
+  print "  -T, --tp=:           set the temperature"
+  print "  -d, --dx=:           set the energy bin size"
+  print "  --dT=:               set the temperature tolerance"
+  print "  -o, --output=:       set the output file"
+  print "  -i, --input=:        set the input file"
+  print "  -c, --col=:          set the column for the quantity, can also be --col=dif for the difference between column 3 and 2, or --col=invK for the inverse (for autocorrelations)"
+  print "  --t0=:               set the first time step"
+  print "  --i0=:               set the first frame"
+  print "  -e, --every=:        set the stride of frames"
+  print "  --colT=:             set the column for temperature"
+  print "  --rst=:              set the restart file for WHAM (weighted histogram analysis method)"
+  print "  --tm=:               set the number of subdivisions for each temperature bin (for WHAM)"
+  print "  --colE=:             set the column for energy (for reweighting)"
+  print "  --dE=:               set the bin size for the energy grid (for reweighting)"
+  print "  -1, --drop1          drop the last frame"
+  print "  --corr, --acf        compute the autocorrelation function"
+  print "  --fncorr=, --fnacf   set the output file name for the autocorrelation function"
+  print "  --corrmax=           set the maximal number of steps for the autocorrelation function"
+  print "  --nohist             skipping histogram"
   exit(1)
 
 
 
 def doargs():
-  global fnins, fnout, dx, dE, dT, T, col, colT, colE, fnrst, t0, tpinterp, drop1
+  global fnins, fnout, dx, dE, dT, T, col, colT, colE, fnrst
+  global t0, i0, every, tpinterp, drop1
   global docorr, fncorr, corrmax, nohist
 
   try:
     opts, args = getopt.gnu_getopt(sys.argv[1:],
-        "hd:T:o:i:c:1",
+        "hd:T:o:i:c:e:1",
         ["dx=", "dE=", "de=", "dT=", "dt=", "tp=", "input=", "output=",
          "col=", "colT=", "colE=", "rst=", "t0=", "tm=", "drop=",
-         "corr", "fncorr=", "corrmax="])
+         "corr", "acf", "fncorr=", "fnacf=", "corrmax=", "nohist"])
   except:
     print "Error parsing the command line"
     sys.exit(1)
@@ -95,13 +100,17 @@ def doargs():
       fnrst = a
     elif o in ("--t0",):
       t0 = float(a)
+    elif o in ("--i0",):
+      i0 = int(a)
+    elif o in ("-e", "--every",):
+      every = int(a)
     elif o in ("--tm",):
       tm = int(a)
     elif o in ("-1", "--drop1",):
       drop1 = True
-    elif o in ("--corr",):
+    elif o in ("--corr", "--acf",):
       docorr = True
-    elif o in ("--fncorr",):
+    elif o in ("--fncorr", "--fnacf",):
       fncorr = a
       docorr = True
     elif o in ("--corrmax",):
@@ -326,7 +335,7 @@ def getcol(col, arr):
 
 
 def mkhist_simple(s, fnout):
-  global col
+  global col, i0, every
   n = len(s)
   if drop1: n -= 1 # drop the last frame
   hist = None
@@ -334,6 +343,8 @@ def mkhist_simple(s, fnout):
     ln = s[i].strip()
     # skip a comment line
     if ln == "" or ln.startswith("#"): continue
+    i += 1
+    if i <= i0 or i % every != 0: continue
     tok = [float(y) for y in ln.split()]
     try:
       tm = tok[0]
@@ -352,7 +363,7 @@ def mkhist_simple(s, fnout):
 
 def mkhist_reweight(s, fnout):
   ''' temperature selected/reweighted histogram '''
-  global col, colT, colE, fnrst
+  global col, colT, colE, fnrst, i0, every
   n = len(s) - 1 # drop the last frame
   hist = None
   wham = WHAM(T, fnrst) # make a WHAM object
@@ -360,6 +371,8 @@ def mkhist_reweight(s, fnout):
     ln = s[i].strip()
     # skip a comment line
     if ln == "" or ln.startswith("#"): continue
+    i += 1
+    if i <= i0 or i % every != 0: continue
     tok = [float(x) for x in ln.split()]
     try:
       tm = tok[0]
@@ -422,34 +435,40 @@ def getcorr(fnin):
   t = []
   x = []
   i = 0
-  for ln in open(fnin).readlines():
-    if ln.strip() == "": continue
+  for ln0 in open(fnin).readlines():
+    ln = ln0.strip()
+    # skip a comment line
+    if ln == "" or ln.startswith("#"): continue
+    i += 1
+    if i <= i0 or i % every != 0: continue
     tok = [float(y) for y in ln.strip().split()]
     tm = int(tok[0])
     if tm <= t0: continue
     xv = getcol(col, tok)
     x.append( xv )
-    if i < 2: t.append( tm )
-    i += 1
+    if len(t) < 2: t.append( tm )
   dt = t[1] - t[0]
 
   n = len(x)
   var = 0
   ave = sum(x)/n
+  dx = [y - ave for y in x]
   xx = []
-  for i in range(corrmax+1):
-    xxv = sum((x[j]-ave)*(x[j+i]-ave) for j in range(n - i))/(n - i)
-    if xxv < 0: break
+  imax = min(corrmax + 1, n - 1)
+  for i in range(imax):
+    xxv = sum(dx[j]*dx[j+i] for j in range(n - i))/(n - i)
     xx.append(xxv)
   var = xx[0]
 
   # compute the autocorrelation integral
   ss = 0
   sout = ""
+  good = True
   for i in range(len(xx) - 1):
     y1 = xx[i]
     y2 = xx[i+1]
-    ss += 0.5*(y2+y1)
+    if y1 < 0: good = False
+    if good: ss += 0.5*(y2+y1)
     # assuming exponential variation within two neighboring points
     #ss += (y2-y1)/log(y2/y1)
     sout += "%s %s\n" % (i*dt, xx[i]/xx[0])
@@ -458,8 +477,16 @@ def getcorr(fnin):
   # add a tag line
   sout = "# %s %s %s %s %s %s\n" % (n, ave, var, dt, len(xx) - 1, ss) + sout
 
-  scol = col if type(col) == str else ("col" + str(col))
-  fnout = fncorr if fncorr != None else os.path.splitext(fnin)[0] + "_" + scol + ".acf"
+  if type(col) == str:
+    scol = col
+  else:
+    scol = "col" + str(col)
+
+  if fncorr != None:
+    fnout = fncorr
+  else:
+    fnout = os.path.splitext(fnin)[0] + "_" + scol + ".acf"
+
   open(fnout, "w").write(sout)
   print "saved correlation function to %s, n %s, ave %s, var %s, correlation integral %s" % (
       fnout, n, ave, var, ss)

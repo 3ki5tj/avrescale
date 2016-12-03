@@ -44,16 +44,17 @@ microcanonical ensemble}
   %
   The usual velocity scaling scheme produces a perturbation to
   the microcanonical ($NVE$) ensemble
-  as the scaling operation causes the total energy to fluctuate continually.
+  as the regular scaling operations cause the total energy to fluctuate continually.
   %
   Inspired by the $1/t$ prescription for improving the Wang-Landau algorithm,
   we modify the usual velocity scaling scheme
-  by reducing the scaling magnitude by the number of steps.
+  such that the scaling magnitude is reduced
+  by a factor of the number of steps, $t$.
   %
-  In this way, the fluctuation of total energy quickly becomes negligible,
+  In this way, the fluctuation of total energy becomes negligible at long times,
   and the simulation ensemble becomes effectively a microcanonical one.
   %
-  Further, we shall show that the reduction factor
+  Further, we shall show that the $1/t$ reduction factor
   allows the microcanonical temperature to tend to the target value
   at an optimal rate.
 \end{abstract}
@@ -65,10 +66,11 @@ microcanonical ensemble}
 Velocity scaling is a temperature control scheme
 for molecular dynamics (MD) simulations.
 %
-In a common version,
-the velocity is regularly scaled such that the average
+It is usually implemented as
+regular velocity scaling operations
+that correct the average
 kinetic energy of the past few steps, $\bar K$,
-can match the expected value\cite{frenkel},
+to the expected value\cite{frenkel, haile},
 %
 \begin{equation}
   K^* = \frac{1}{2} N_f \, k_B \, T
@@ -79,11 +81,19 @@ can match the expected value\cite{frenkel},
 where $N_f$, $k_B$, and $T$ are the number of degrees of freedom,
 the Boltzmann constant, and temperature, respectively.
 %
+In order words,
+the velocity is scaled by a factor of
+$\sqrt{ K^* / \bar K }$
+in each scaling operation.
+%
 We refer to this version as the regular velocity scaling below.
 %
-A somewhat gentler modification, the Berendsen thermostat\cite{berendsen1984},
-modifies the scaling scheme, such that
-the kinetic energy approaches the target value at a rate of
+Velocity scaling has some variants,
+among which 
+the Berendsen thermostat\cite{berendsen1984}
+is a notable example.
+There the kinetic energy in each scaling operation
+is given by
 $\left( K^* - \bar K \right)/\tau$,
 with $\tau^{-1}$ being the rate of damping.
 
@@ -92,39 +102,68 @@ do not result in exact sampling for the microcanonical ($NVE$) ensemble\cite{her
 because they cause the total energy to fluctuate continually.
 %
 Thus, they are often regarded as expedient protocols
-suitable only for parameter tuning in preliminary runs,
-but not for rigorous MD simulations in the microcanonical ensemble.
+suitable only for parameter tuning in preliminary MD runs.
+%but not for rigorous MD simulations in the microcanonical ensemble.
 %
-On the other hand, in several ingenious modifications,
-the energy fluctuation of velocity scaling
-can be used to design thermostat algorithms
-for the canonical ($NVT$) ensemble, in which the total energy
-is intrinsically fluctuating.
+Nor are these schemes exact for the canonical ($NVT$) ensemble,
+in which the total energy is intrinsically fluctuating.
 %
-These modifications,
-exemplified by the Nos\'e-Hoover\cite{nose1984, nose1984mp, hoover1985, martyna1992}
-and Langevin-style velocity rescaling\cite{bussi2007} thermostats,
-are rigorous algorithms, as
+Fortunately, there are several ingenious ways
+of modifying the energy fluctuation caused by velocity scaling
+to emulate the effect of a heat-bath,
+resulting in exact thermostat algorithms for the $NVT$ ensemble,
+e.g., the Nos\'e-Hoover\cite{nose1984, nose1984mp, hoover1985, martyna1992}
+and Langevin-style velocity rescaling\cite{bussi2007} thermostats.
+%
+There,
 the velocity scaling operation is carefully
 controlled to make
 the resulting fluctuation of the total energy
-mimic the natural behavior demanded by the underlying canonical distribution.
-%
-Motivated by the thermostat algorithms,
-one may wish to consider similar modifications
-that result in precise temperature control
-for the microcanonical ensemble.
-%Albeit the success and popularity of the thermostat algorithms,
-%one may argue that these algorithms often introduce
-%some artificial time scales that are foreign to the natural time evolution.
+compatible with the underlying canonical distribution.
 
-Here we present a modified velocity scaling scheme
-for an asymptotic microcanonical ensemble,
+
+The existence of exact thermostat algorithms for the $NVT$ ensemble
+suggests the possibility of designing
+precise temperature controls also
+for the $NVE$ ensemble.
+%
+However, we immediately face a dilemma:
+%
+as the microcanonical temperature is a function of the total energy, $E$,
+one must somehow change the total energy in the temperature control;
+%
+doing so too often, however, violates the conservation of the total energy,
+and negatively affects the accuracy of the simulation\cite{hermansson1988}.
+%resulting in deviation from the desired microcanonical ensemble.
+%
+In this study, we shall follow a compromised solution,
+in which the magnitude of velocity scaling is gradually toned down.
+%
+In this way,
+the temperature controller can
+get close to the proper value of the total energy
+early in simulation,
+and gradually improve its precision
+in later stages.
+%while its long time influence is often negligible.
+
+
+%As a result of the above strategy
+Accordingly,
+we shall propose a modified velocity scaling scheme
+aiming for an \emph{asymptotic} microcanonical ensemble,
 in which
-the total energy is gradually stabilized to a constant
+the total energy gradually tends to a constant
 that corresponds to the target temperature.
 %
-Our modification is inspired by the $1/t$ prescription\cite{
+The effectiveness,
+in terms of the convergence of the final total energy,
+depends critically on how
+the magnitude of velocity scaling, $\alpha(t)$,
+varies with the number of steps, $t$.
+%
+Fortunately, we may borrow the optimal scheme $\alpha(t)$
+from the $1/t$ prescription\cite{
   belardinelli2007, belardinelli2007jcp, belardinelli2008,
   zhou2005, zhou2008, morozov2007}
 for improving the convergence of
@@ -143,18 +182,23 @@ for the parameters to reach their target values.
 By analogy, we may compare the total energy here
 to a parameter in the WL algorithm,
 and set the optimal magnitude
-of velocity scaling to be inversely proportional
-to the number of steps.
+of velocity scaling to be
+the inverse number of steps.
+%inversely proportional to the number of steps.
 %
-Such a modification could hopefully gradually decrease
-the fluctuation of the total energy, and
-help the total energy tend to the target value in an optimal rate.
-%
+%Such a modification could hopefully gradually decrease
+We will show that the modified scheme can decrease
+the fluctuation of the total energy and
+help converge the total energy
+at an optimal rate.
+
 Besides the above change,
-our modification will target a more accurate
-microcanonical temperature\cite{rugh1997},
-which differs from the usual definition, Eq. \eqref{eq:K_canon},
-for the canonical ensemble.
+our modification will target a % a more accurate
+microcanonical temperature\cite{rugh1997}
+based on the surface or Boltzmann entropy\cite{
+frenkel2015},
+which turns out to be different 
+from the usual definition, Eq. \eqref{eq:K_canon}.
 %
 As we shall see,
 with a rapidly decreasing magnitude of velocity scaling,
@@ -175,12 +219,13 @@ of the microcanonical ensemble.
 
 Our adaptive velocity scaling scheme aims at
 controlling the temperature for an
-MD simulation in the microcanonical ensemble.
+MD simulation in the microcanonical or $NVE$ ensemble.
 %
-Since the microcanonical ensemble is parameterized by
+Since this ensemble is parameterized by
 the total energy, $E$,
 our scheme must adjust the total energy
-to influence the temperature of the ensemble.
+to effect the temperature change.
+%to influence the temperature of the ensemble.
 
 
 An MD trajectory generated from
@@ -192,7 +237,7 @@ with the same total energy.
 %
 Below we shall denote a configuration in the trajectory
 by a vector $\mathbf x$,
-specifying both the coordinates and momenta.
+encompassing both the coordinates and momenta.
 %
 Under the ergodicity hypothesis,
 Newton's equation will populate configurations
@@ -205,7 +250,7 @@ where $H(\mathbf x)$ is the Hamiltonian function.
 The area of the hypersurface gives the density of states,
 %
 \begin{equation}
-  \Omega(E)
+  \omega(E)
   =
   \int
     \delta\bigl( H(\mathbf x) - E \bigr)
@@ -224,10 +269,10 @@ is given by
   \beta(E)
   =
   \frac{ d }{ dE }
-  \ln \Omega(E)
+  \ln \omega(E)
   =
-  \frac{ \Omega'(E) }
-       { \Omega(E)  }
+  \frac{ \omega'(E) }
+       { \omega(E)  }
   ,
   \label{eq:betaE_def}
 \end{equation}
@@ -283,8 +328,8 @@ all previous independent estimates,
   \label{eq:Epsave}
 \end{equation}
 %
-This is a runtime average,
-and its precision improves over the simulation course.
+The precision of the runtime average
+naturally improves over the simulation course.
 
 
 
@@ -348,7 +393,8 @@ to the current average $\bar{\mathcal E}_{t - 1}$
 from the configuration at step $t$,
 and Eq. \eqref{eq:Epsave_recur} shows that
 when the correction is absorbed in the runtime average
-it carries the weight of $1/t$.
+it carries the decreasing weight of $1/t$,
+as a result of the increasing sample size.
 %
 From Eqs. \eqref{eq:dE_adaptive} and \eqref{eq:Epsave_recur},
 we obtain the optimal amount of energy change
@@ -365,7 +411,8 @@ for each MD step
 %
 This amount of energy change is to be realized by velocity scaling.
 %
-Equation \eqref{eq:dE_opt} is analogous to the $1/t$ prescription\cite{
+Equation \eqref{eq:dE_opt} is essentially
+the $1/t$ prescription\cite{
   belardinelli2007, belardinelli2007jcp, belardinelli2008,
   zhou2005, zhou2008, morozov2007}
 for the optimal control of the updating magnitude
@@ -386,7 +433,8 @@ Next, we need to form an independent estimate of
 $\mathcal E_t$ of $E^*$.
 %
 For this, we shall form
-an independent estimate of temperature, $\beta_t$
+an independent estimate of
+the instantaneous temperature, $\beta_t$,
 (detailed in the next subsection)
 and solve a linearized version of Eq. \eqref{eq:beta_star}.
 
@@ -465,7 +513,7 @@ and $\beta'(E)$ required in Eq. \eqref{eq:dE_beta}.
 %
 It can be shown that both the microcanonical temperature, $\beta(E)$,
 and $\beta'(E)$ can be evaluated as
-averages in the microcanonical ensemble\cite{rugh1997, frenkel}:
+averages in the microcanonical ensemble\cite{rugh1997}:
 %
 \begin{equation}
   \beta(E)
@@ -504,8 +552,10 @@ means the variance of quantity $A$.
 %We will use Eq. \eqref{eq:dbetadE} to gauge
 %the magnitude of adjusting the velocity-scaling factor.
 Note that the usual definition of temperature, Eq. \eqref{eq:K_canon},
-however, is derived from the canonical ensemble and
-only approximate for the microcanonical ensemble.
+however, is based on the bulk or Gibbs entropy,
+cf. Appendix \cite{sec:microT}
+%is derived from the canonical ensemble and
+%only approximate for the microcanonical ensemble.
 
 
 
@@ -617,8 +667,8 @@ we may define a ratio
     }
   }
   ,
-  \notag
-  %\label{eq:gamma_def}
+  %\notag
+  \label{eq:gamma_def}
 \end{equation}
 %
 and rewrite Eq. \eqref{eq:dbeta} as
@@ -814,7 +864,8 @@ We then compared the kinetic and potential energy
 distributions from a regular MD simulation,
 a simulation under adaptive velocity scaling,
 and
-a simulation under the velocity rescaling thermostat\cite{bussi2007}
+a simulation under the % velocity rescaling
+thermostat\cite{bussi2007}
 (with $\tau = 0.03 \, \mathrm{ps}$).
 %
 The former two targets an (asymptotic) microcanonical ensemble,
@@ -865,8 +916,9 @@ as a superposition of microcanonical ensembles of different $E$'s.
 Next, we wish to see if Eq. \eqref{eq:dE_final}
 is indeed the optimal in controlling the magnitude of velocity scaling.
 %
-To this end, we modified the adaptive velocity scaling scheme
-such that the energy change in each step is given by
+To this end, we modified the energy change in
+the adaptive velocity scaling scheme as
+%such that the energy change in each step is given by
 %
 \begin{equation}
   \delta E_t
@@ -891,7 +943,10 @@ and used the variance of the total energy at the simulation end
 to represent the error.
 %
 For $\beta'(E^*)$,
-Eq. \eqref{eq:dbeta_approx2} was used with the heuristic value of $0.33$.
+Eq. \eqref{eq:dbeta_approx2} was used with the heuristic value of
+$\gamma = 0.33$,
+which was obtained from Eq. \eqref{eq:gamma_def}
+using the data of the first test.
 %
 As shown in Fig. \ref{fig:errz},
 the value of $z = 1$
@@ -949,7 +1004,7 @@ which targets the microcanonical ensemble,
 with several temperature control schemes
 targeting the canonical ensemble.
 %
-In this test, we lifted the total energy about
+In this test, we initially lifted the total energy about
 $100\,\mathrm{kcal/mol}$ above the average,
 and monitored the evolution of the total energy.
 %
@@ -963,7 +1018,7 @@ in the relaxation;
 and these velocity-scaling-based schemes
 appeared to be more efficient than Langevin dynamics.
 %
-Note that the relaxation time
+Note that the relaxation
 of the thermostat algorithms
 depends on some input parameters
 (e.g., the inverse viscosity $\tau$ of the velocity rescaling thermostat),
@@ -982,9 +1037,9 @@ $\alpha(t) \propto e^{-kt}$.
 %
 This is no so, as the alternative functional forms
 would be less effective in the long run
-in eliminating the random error caused by velocity scaling,
-i.e., the error bar of Fig. \ref{fig:equil},
-which is not shown.
+in eliminating the cumulative random error
+caused by velocity scaling itself,
+i.e., the error bar of Fig. \ref{fig:equil} (not shown).
 %
 For the canonical ensemble, the fluctuation is unimportant
 as the total energy is intrinsically fluctuating.
@@ -1079,7 +1134,7 @@ for adjusting the total energy
 to achieve the target temperature.
 %
 More generally, we may apply this technique
-to a pair of correlated variables $x$ and $y$,
+to a pair of strongly correlated variables $x$ and $y$,
 to find the optimal value of a parameter, $x$,
 that achieves a target value, $y^*$, of an observable, $y$,
 on the fly.
@@ -1132,7 +1187,7 @@ which shows that if in each step, we can form an independent correction
 to the total energy,
 then optimally,
 this correction should be used
-with a weight of $1/t$.
+with the weight of $1/t$.
 
 Let $E_t$ be the total energy at step $t$,
 then the aim of velocity scaling is to converge $E_t$
@@ -1413,10 +1468,20 @@ which is minimal at $z = 1$ for a long simulation.
   \end{equation}
 }
 
-\section{Microcanonical temperature and its derivative}
+\section{\label{sec:microT}
+Microcanonical temperature and its derivative}
 
 
-Here we derive Eqs. \eqref{eq:betaE_invK} and \eqref{eq:dbetadE}.
+\subsection{Derivative of the surface entropy}
+
+Usually, the microcanonical entropy
+follows the surface or Boltzmann definition
+of $S_B(E) = k_B \ln \omega(E)$.
+%
+Then, from Eq. \eqref{eq:betaE_def},
+we can derive Eqs. \eqref{eq:betaE_invK} and \eqref{eq:dbetadE}
+as follows.
+%
 We start by introducing a vector field, $\mathbf u$,
 in the phase space,
 such that
@@ -1430,7 +1495,7 @@ such that
 anywhere, then
 %
 \begin{align}
-  \Omega'(E)
+  \omega'(E)
   &= -\int \delta'\bigl( H(\mathbf x) - E \bigr) \, d\mathbf x
      \notag \\
   &= -\int (\mathbf u \cdot \nabla H) \,
@@ -1443,7 +1508,7 @@ anywhere, then
      \delta\bigl( H(\mathbf x) - E \bigr) \, d\mathbf x
   .
   \notag
-  %\label{eq:dOmegaE}
+  %\label{eq:domegaE}
 \end{align}
 %
 where we have integrated by parts in the last step.
@@ -1500,19 +1565,19 @@ In a similar manner, we have
   =
   \frac
   {
-    \Omega''(E)
+    \omega''(E)
   }
   {
-    \Omega(E)
+    \omega(E)
   }
   -
   \left[
     \frac
     {
-      \Omega'(E)
+      \omega'(E)
     }
     {
-      \Omega(E)
+      \omega(E)
     }
   \right]^2
   ,
@@ -1521,7 +1586,7 @@ In a similar manner, we have
 and since
 %
 \begin{align*}
-  \Omega''(E)
+  \omega''(E)
   &= -\int \nabla \cdot \mathbf u \,
      \delta'\bigl( H(\mathbf x) - E \bigr) \, d\mathbf x
   \\
@@ -1570,6 +1635,159 @@ that for the total momenta $P_\nu = \sum_{i} p_{i, \nu}$,
 $\nu = x,y,z$, we have
 $\mathbf u \cdot \nabla P_\nu = P_\nu/(2K) = 0$ \big].
 
+
+
+\subsection{Derivative of the bulk entropy}
+
+
+
+%Our definition of temperature is based on the derivative
+%of the surface (or Boltzmann) entropy\cite{frenkel2015},
+Some authors, however, prefer the definition based on
+the bulk (or Gibbs) entropy\cite{haile, dunkel2014},
+$S_B \equiv \ln \Omega(E)$,
+where
+%
+\begin{equation}
+  \Omega(E)
+  =
+  \int
+  \Theta\bigl(
+    E - H(\mathbf x)
+  \bigr)
+  \,
+  d\mathbf x
+  ,
+\end{equation}
+%
+is an adiabatic constant.
+
+Since $\nabla_{\mathbf p} \cdot \mathbf p = N_f$,
+we have
+\begin{align*}
+  \Omega(E)
+  &=
+  \frac{1}{N_f}
+  \int
+    \nabla_{\mathbf p} \cdot \mathbf p \,
+    \Theta\bigl(
+      E - H(\mathbf x)
+    \bigr)
+    \, d\mathbf x
+  \\
+  &=
+  -
+  \frac{1}{N_f}
+  \int
+    \mathbf p \cdot \nabla_{\mathbf p} \,
+    \Theta\bigl(
+      E - H(\mathbf x)
+    \bigr)
+    \, d\mathbf x
+  \\
+  &=
+  \frac{1}{N_f}
+  \int
+    \mathbf p \cdot \nabla_{\mathbf p} K \,
+    \delta\bigl(
+      E - H(\mathbf x)
+    \bigr)
+    \, d\mathbf x
+  \\
+  &= \frac{ 2 \langle K \rangle_E } { N_f }
+    \omega(E)
+  ,
+\end{align*}
+
+Therefore,
+\begin{equation}
+  k_B T_G(E)
+  =
+  \frac{ 1 } { \beta_G(E) }
+  =
+  \frac{ \Omega(E) } { \omega(E) }
+  =
+  \frac{ 2 \langle K \rangle_E } { N_f }
+  ,
+\end{equation}
+%\begin{equation}
+%  \beta_G(E)
+%  =
+%  \frac{ 1 } { k_B \, T_G(E) }
+%  =
+%  \frac{ \omega(E) } { \Omega(E) }
+%  =
+%  \frac{ N_f } { 2 \langle K \rangle_E }
+%\end{equation}
+%
+%\begin{equation}
+%  \beta'_G(E)
+%  =
+%  \beta_G^2(E)
+%  \left(
+%    \left\langle \frac 1 K \right\rangle_E
+%    \langle K \rangle_E
+%    -1
+%  \right)
+%  -
+%  \beta_G(E)
+%  \left\langle \frac 1 K \right\rangle_E
+%  ,
+%\end{equation}
+%
+\begin{equation}
+  k_B \, T'_G(E)
+  =
+  k_B \, T_G(E)
+  \left\langle
+  K^{-1}
+  \right\rangle_E
+  +
+  \left\langle
+  \Delta \left( K^{-1} \right)
+  \Delta K
+  \right\rangle
+  ,
+\end{equation}
+%
+\begin{equation}
+  \gamma_G
+  \equiv
+  \frac{ -\beta'_G(E) }
+  { \frac{N_f}{2}
+    \left\langle K^{-1} \right\rangle
+    \langle K \rangle }
+\end{equation}
+%
+\begin{equation}
+  k_B \, T'_G(E)
+  =
+  \frac{ \gamma }
+  { \frac 1 2 N_f + \gamma - 2 }
+\end{equation}
+%
+\begin{equation}
+k_B \, T'_G(E^*)
+=
+k_B \, T^* \overline{ K_t^{-1} }
++
+\mathrm{Cov}\left(
+  K_t, K_t^{-1}
+\right)
+\end{equation}
+%
+\begin{equation}
+  \delta E_t
+  =
+  \frac 1 t
+  \frac{ T^* - T_t } { T'(E^*) }
+  =
+  \frac 1 t
+  \frac{ k_B \, T^* - 2 K_t / N_f } { k_B T'_G(E^*) }
+\end{equation}
+
+An alternative derivation based on Laplace transform
+is given by Haile\cite{haile}.
 
 
 \section{\label{sec:block}
