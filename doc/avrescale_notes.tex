@@ -43,12 +43,13 @@ microcanonical ensemble''}
 
 
 
-\section{\label{sec:model}Ratio $\gamma$ in a model system}
+\section{\label{sec:model}A model system}
 
 
 
-The ratio defined in Eq. \eqref{eq:gamma_def}
-depends on the potential energy.
+
+%The ratio defined in Eq. \eqref{eq:gamma_def}
+%depends on the potential energy.
 %
 Consider the model Hamiltonian of $\mathbf x = (\mathbf r, \mathbf v)$,
 \begin{equation}
@@ -66,7 +67,7 @@ are the kinetic and potential energy, respectively,
 and $\theta$ is a positive free parameter.
 Then
 \begin{align*}
-  \Omega(E)
+  \omega(E)
   &=
   C^2
   \int
@@ -94,7 +95,7 @@ is the beta function.
 %
 Then, we have
 \begin{align*}
-\beta(E)
+\beta_\omega(E)
 &=
 \left(
   \frac{ N_f } { 2 \, \theta } + \frac{ N_f } 2 - 1
@@ -102,7 +103,7 @@ Then, we have
 E^{-1}
 ,
 \\
-\beta'(E)
+\beta'_\omega(E)
 &=
 -
 \left(
@@ -133,7 +134,24 @@ E^{-2}
      { \frac{ N_f } 2 - 2 }
 .
 \end{align*}
-This means the ratio defined in Eq. \eqref{eq:gamma_def}
+This means the ratio defined in
+\begin{equation}
+  \gamma
+  \equiv
+  \frac
+  {
+    -\beta'(E^*)
+  }
+  {
+    \overline{
+      \left( \frac 1 2 N_f - 1  \right) / K_t^2
+    }
+  }
+  ,
+  %\notag
+  \label{eq:gamma_def}
+\end{equation}
+satisfies
 $$
 \gamma
 =
@@ -149,6 +167,24 @@ $$
 which lies between $0$ and $1$.
 
 
+For the integrated density of states, we have
+$$
+\Omega(E)
+  =
+  \frac{ C^2 }{ \theta } \,
+  B\left( \frac{ N_f } {2 \, \theta}, \frac{ N_f } 2 \right)
+  \frac{ E^{ \frac{ N_f }{2 \, \theta} + \frac{N_f}{2}  } }
+  { \frac{ N_f } { 2 \, \theta } + \frac{ N_f } { 2 } } 
+$$
+and
+$$
+k_B \, T_\Omega(E)
+=
+\frac{ E }
+  { \frac{ N_f } { 2 \, \theta } + \frac{ N_f } { 2 } } 
+,
+$$
+which is indeed less than the surface counterpart $1/\beta_\omega(E)$.
 
 %\bibliographystyle{abbrv}
 \bibliography{simul}

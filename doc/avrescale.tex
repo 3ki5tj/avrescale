@@ -36,7 +36,16 @@
 
 \title{Adaptive velocity scaling for an asymptotic
 microcanonical ensemble}
-\author{}
+
+\author{Cheng Zhang}
+\author{Justin A. Drake}
+\author{B. Montgomery Pettitt}
+\email{bmpettitt@utmb.edu}
+\affiliation{
+Sealy Center for Structural Biology and Molecular Biophysics,
+The University of Texas Medical Branch,
+Galveston, Texas 77555-0304, USA}
+
 %\date{\vspace{-7ex}}
 \begin{abstract}
   We present a modification of the commonly-used
@@ -47,12 +56,14 @@ microcanonical ensemble}
   as the regular scaling operations cause the total energy to fluctuate continually.
   %
   Inspired by the $1/t$ prescription for improving the Wang-Landau algorithm,
-  we modify the usual velocity scaling scheme
-  such that the scaling magnitude is reduced
+  we reduce
+  the magnitude of velocity scaling
   by a factor of the number of steps, $t$.
   %
-  In this way, the fluctuation of total energy becomes negligible at long times,
-  and the simulation ensemble becomes effectively a microcanonical one.
+  This modification allows
+  the fluctuation of total energy to be negligible at long times,
+  and the simulation ensemble becomes effectively
+  a microcanonical one.
   %
   Further, we shall show that the $1/t$ reduction factor
   allows the microcanonical temperature to tend to the target value
@@ -130,10 +141,10 @@ for the $NVE$ ensemble.
 However, we immediately face a dilemma:
 %
 as the microcanonical temperature is a function of the total energy, $E$,
-one must somehow change the total energy in the temperature control;
+one must somehow change the total energy to control the temperature;
 %
-doing so too often, however, violates the conservation of the total energy,
-and negatively affects the accuracy of the simulation\cite{hermansson1988}.
+but doing so too often affects the conservation of the total energy,
+and hence the accuracy of the simulation\cite{hermansson1988}.
 %resulting in deviation from the desired microcanonical ensemble.
 %
 In this study, we shall follow a compromised solution,
@@ -141,7 +152,9 @@ in which the magnitude of velocity scaling is gradually toned down.
 %
 In this way,
 the temperature controller can
-get close to the proper value of the total energy
+%get close to
+zero in on
+the proper value of the total energy
 early in simulation,
 and gradually improve its precision
 in later stages.
@@ -150,20 +163,22 @@ in later stages.
 
 %As a result of the above strategy
 Accordingly,
-we shall propose a modified velocity scaling scheme
+we shall propose a modified velocity scaling scheme,
+which will be referred to as adaptive velocity scaling below,
 aiming for an \emph{asymptotic} microcanonical ensemble,
 in which
-the total energy gradually tends to a constant
-that corresponds to the target temperature.
+the total energy gradually tends to the value
+corresponding to the target temperature.
 %
-The effectiveness,
-in terms of the convergence of the final total energy,
-depends critically on how
+The effectiveness of this modification,
+in terms of the convergence of the total energy,
+depends on how
 the magnitude of velocity scaling, $\alpha(t)$,
 varies with the number of steps, $t$.
 %
-Fortunately, we may borrow the optimal scheme $\alpha(t)$
-from the $1/t$ prescription\cite{
+%Fortunately, we may borrow the optimal scheme $\alpha(t)$
+To find the optimal schedule of $\alpha(t)$,
+we may recall the $1/t$ prescription\cite{
   belardinelli2007, belardinelli2007jcp, belardinelli2008,
   zhou2005, zhou2008, morozov2007}
 for improving the convergence of
@@ -181,27 +196,28 @@ for the parameters to reach their target values.
 %
 By analogy, we may compare the total energy here
 to a parameter in the WL algorithm,
-and set the optimal magnitude
-of velocity scaling to be
+and speculate that the optimal magnitude
+of velocity scaling would be 
 the inverse number of steps.
 %inversely proportional to the number of steps.
 %
 %Such a modification could hopefully gradually decrease
-We will show that the modified scheme can decrease
-the fluctuation of the total energy and
-help converge the total energy
+We will show that this is indeed the case:
+the $1/t$ modified velocity scaling can reduce
+the fluctuation of the total energy
 at an optimal rate.
-
-Besides the above change,
-our modification will target a % a more accurate
-microcanonical temperature\cite{rugh1997}
-based on the surface or Boltzmann entropy\cite{
-frenkel2015},
-which turns out to be different 
-from the usual definition, Eq. \eqref{eq:K_canon}.
+%
+%Besides the above change,
+%our modification will target a % a more accurate
+%microcanonical temperature\cite{rugh1997}
+%based on the surface or Boltzmann entropy\cite{
+%frenkel2015},
+%which turns out to be different 
+%from the usual definition, Eq. \eqref{eq:K_canon}.
 %
 As we shall see,
-with a rapidly decreasing magnitude of velocity scaling,
+the magnitude of velocity scaling
+often decreases so rapidly that
 a sufficiently long simulation under adaptive velocity scaling
 is almost identical to a regular MD
 in conserving the total energy and producing other quantities
@@ -226,7 +242,6 @@ the total energy, $E$,
 our scheme must adjust the total energy
 to effect the temperature change.
 %to influence the temperature of the ensemble.
-
 
 An MD trajectory generated from
 Newton's equation of motion
@@ -280,7 +295,7 @@ is given by
 and is, therefore, a function of $E$.
 %
 
-By velocity scaling, we want to
+By velocity scaling, we wish to
 find a value of the total energy, $E^*$,
 such that the microcanonical temperature
 is equal to the target value, $\beta^*$,
@@ -553,7 +568,7 @@ means the variance of quantity $A$.
 %the magnitude of adjusting the velocity-scaling factor.
 Note that the usual definition of temperature, Eq. \eqref{eq:K_canon},
 however, is based on the bulk or Gibbs entropy,
-cf. Appendix \cite{sec:microT}
+cf. Appendix \ref{sec:microT}.
 %is derived from the canonical ensemble and
 %only approximate for the microcanonical ensemble.
 
@@ -625,7 +640,8 @@ before the scaling operation.
 
 
 
-\subsection{Approximations on $\beta'(E^*)$}
+\subsection{\label{sec:dbetadE}
+Approximations on $\beta'(E^*)$}
 
 
 Ideally, we should have $\beta'(E) \le 0$
@@ -1161,8 +1177,8 @@ to be useful in molecular simulations.
 
 \section{Acknowledgment}
 
-We thank Dr. J. Ma, Dr. Y. Mei, J. Wang,
-J. Drake, O. Nassar, Dr. C. Lai, Dr. S. Ou and D. Stuhlsatz
+We thank Dr. J. Ma, Dr. M. W. Deem, Dr. Y. Mei, J. Wang,
+O. Nassar, Dr. C. Lai, Dr. S. Ou and D. Stuhlsatz
 for helpful discussions.
 We gratefully acknowledge the Robert A. Welch Foundation (H-0037),
 the National Science Foundation (CHE-1152876)
@@ -1476,7 +1492,7 @@ Microcanonical temperature and its derivative}
 
 Usually, the microcanonical entropy
 follows the surface or Boltzmann definition
-of $S_B(E) = k_B \ln \omega(E)$.
+of $S_\omega(E) = k_B \ln \omega(E)$.
 %
 Then, from Eq. \eqref{eq:betaE_def},
 we can derive Eqs. \eqref{eq:betaE_invK} and \eqref{eq:dbetadE}
@@ -1539,7 +1555,7 @@ is one derived entirely from the momenta
   \label{eq:u_def}
 \end{equation}
 where $\mathbf p$ is the momenta vector in the phase space
-with the components for coordinates being zeroes,
+with the coordinate components being zeroes,
 and $K = \frac 1 2 \mathbf p \cdot \mathbf M^{-1} \cdot \mathbf p$
 is the kinetic energy ($\mathbf M$ is the diagonal mass matrix).
 %
@@ -1633,7 +1649,7 @@ with zero total momenta\cite{uline2008}
 \big[a key observation here is
 that for the total momenta $P_\nu = \sum_{i} p_{i, \nu}$,
 $\nu = x,y,z$, we have
-$\mathbf u \cdot \nabla P_\nu = P_\nu/(2K) = 0$ \big].
+$\mathbf u \cdot \nabla P_\nu = P_\nu/(2K) = 0$\big].
 
 
 
@@ -1641,11 +1657,13 @@ $\mathbf u \cdot \nabla P_\nu = P_\nu/(2K) = 0$ \big].
 
 
 
-%Our definition of temperature is based on the derivative
-%of the surface (or Boltzmann) entropy\cite{frenkel2015},
+The above definition of temperature is based on the derivative
+of the surface (or Boltzmann) entropy\cite{frenkel2015},
+$S_\omega \equiv \ln \omega(E)$.
+%
 Some authors, however, prefer the definition based on
 the bulk (or Gibbs) entropy\cite{haile, dunkel2014},
-$S_B \equiv \ln \Omega(E)$,
+$S_\Omega \equiv \ln \Omega(E)$,
 where
 %
 \begin{equation}
@@ -1658,18 +1676,29 @@ where
   \,
   d\mathbf x
   ,
+  \notag
 \end{equation}
 %
-is an adiabatic constant.
+and we have $\Omega'(E) = \omega(E)$.
+%is an adiabatic constant.
 
-Since $\nabla_{\mathbf p} \cdot \mathbf p = N_f$,
-we have
+The temperature defined from the bulk entropy
+agrees with the definition
+of Eq. \eqref{eq:K_canon}.
+%
+To see this,
+consider a vector field $\mathbf w$
+that satisfies $\nabla \cdot \mathbf w = 1$.
+Then
+%
 \begin{align*}
   \Omega(E)
   &=
-  \frac{1}{N_f}
   \int
-    \nabla_{\mathbf p} \cdot \mathbf p \,
+    \left(
+      \nabla \cdot \mathbf w
+    \right)
+    \,
     \Theta\bigl(
       E - H(\mathbf x)
     \bigr)
@@ -1677,68 +1706,49 @@ we have
   \\
   &=
   -
-  \frac{1}{N_f}
   \int
-    \mathbf p \cdot \nabla_{\mathbf p} \,
-    \Theta\bigl(
-      E - H(\mathbf x)
-    \bigr)
-    \, d\mathbf x
-  \\
-  &=
-  \frac{1}{N_f}
-  \int
-    \mathbf p \cdot \nabla_{\mathbf p} K \,
+    \mathbf w \cdot
+    \nabla H \,
     \delta\bigl(
       E - H(\mathbf x)
     \bigr)
     \, d\mathbf x
   \\
-  &= \frac{ 2 \langle K \rangle_E } { N_f }
+  &= \langle \mathbf w \cdot \nabla H \rangle_E
+    \,
     \omega(E)
-  ,
+  .
 \end{align*}
-
-Therefore,
+%
+With $\mathbf w = \mathbf p / N_f$,
+we have
+$\mathbf w \cdot \nabla H = 2 \, K$,
+and
+%
 \begin{equation}
-  k_B T_G(E)
+  k_B \, T_\Omega(E)
   =
-  \frac{ 1 } { \beta_G(E) }
+  \frac{ 1 } { \beta_\Omega(E) }
   =
-  \frac{ \Omega(E) } { \omega(E) }
-  =
-  \frac{ 2 \langle K \rangle_E } { N_f }
-  ,
+  \frac{ \Omega(E) }
+  { \omega(E) }
+  = \frac{ 2 \, \langle K \rangle_E } { N_f }
+  .
+  \label{eq:Tbulk}
 \end{equation}
-%\begin{equation}
-%  \beta_G(E)
-%  =
-%  \frac{ 1 } { k_B \, T_G(E) }
-%  =
-%  \frac{ \omega(E) } { \Omega(E) }
-%  =
-%  \frac{ N_f } { 2 \langle K \rangle_E }
-%\end{equation}
 %
-%\begin{equation}
-%  \beta'_G(E)
-%  =
-%  \beta_G^2(E)
-%  \left(
-%    \left\langle \frac 1 K \right\rangle_E
-%    \langle K \rangle_E
-%    -1
-%  \right)
-%  -
-%  \beta_G(E)
-%  \left\langle \frac 1 K \right\rangle_E
-%  ,
-%\end{equation}
+Alternatively, this result may be derived from Laplace transform\cite{haile}.
 %
-\begin{equation}
-  k_B \, T'_G(E)
-  =
-  k_B \, T_G(E)
+Further,
+%
+\begin{align}
+  k_B \, T'_\Omega(E)
+  &=
+  1 - k_B \, T_\Omega(E) \, \beta_\omega(E)
+  \label{eq:dTbulk}
+  \\
+  &=
+  k_B \, T_\Omega(E)
   \left\langle
   K^{-1}
   \right\rangle_E
@@ -1746,36 +1756,97 @@ Therefore,
   \left\langle
   \Delta \left( K^{-1} \right)
   \Delta K
-  \right\rangle
+  \right\rangle_E
   ,
-\end{equation}
+  \notag
+\end{align}
+%
+which can be approximated as a trajectory average
 %
 \begin{equation}
-  \gamma_G
-  \equiv
-  \frac{ -\beta'_G(E) }
-  { \frac{N_f}{2}
-    \left\langle K^{-1} \right\rangle
-    \langle K \rangle }
+  k_B \, T'_\Omega(E^*)
+  =
+  k_B \, T^* \overline{ K_t^{-1} }
+  +
+  \mathrm{Cov}\left(
+    K_t, K_t^{-1}
+  \right)
+  .
+  \notag
 \end{equation}
 %
+From Eq. \eqref{eq:dTbulk},
+it is also clear that the surface microcanonical temperature,
+$T_\omega(E)$,
+would be slightly greater than the bulk one, $T_\Omega(E)$.
+%
+%\begin{equation}
+%  \beta_\Omega(E)
+%  =
+%  \frac{ 1 } { k_B \, T_\Omega(E) }
+%  =
+%  \frac{ \omega(E) } { \Omega(E) }
+%  =
+%  \frac{ N_f } { 2 \langle K \rangle_E }
+%\end{equation}
+%
+%\begin{equation}
+%  \beta'_\Omega(E)
+%  =
+%  \beta_\Omega^2(E)
+%  \left(
+%    \left\langle \frac 1 K \right\rangle_E
+%    \langle K \rangle_E
+%    -1
+%  \right)
+%  -
+%  \beta_\Omega(E)
+%  \left\langle \frac 1 K \right\rangle_E
+%  ,
+%\end{equation}
+%
+
+To adapt the approximation introduced in Sec. \ref{sec:dbetadE},
+we can redefine $\gamma$ as
+$T'_\Omega(E^*) / \bigl( T^* \, \overline{ K_t^{-1} } \bigr)$,
+%
+%\begin{equation}
+%  \gamma
+%  \equiv
+%  \frac{ T'_\Omega(E^*) }
+%  {
+%    T^* \, 
+%    \overline{ K_t^{-1} }
+%  }
+%  ,
+%  \notag
+%\end{equation}
+%
+%%
+%\begin{equation}
+%  \gamma
+%  \equiv
+%  \frac{ -\beta'_\Omega(E) }
+%  { \frac{N_f}{2}
+%    \left\langle K^{-1} \right\rangle_E
+%    \left\langle K \right\rangle_E }
+%  ,
+%  \notag
+%\end{equation}
+%%
+then Eq. \eqref{eq:dbeta_approx2} remains true, and
+%
 \begin{equation}
-  k_B \, T'_G(E)
+  k_B \, T'_\Omega(E^*)
   =
   \frac{ \gamma }
   { \frac 1 2 N_f + \gamma - 2 }
+  .
+  \notag
 \end{equation}
 %
-\begin{equation}
-k_B \, T'_G(E^*)
-=
-k_B \, T^* \overline{ K_t^{-1} }
-+
-\mathrm{Cov}\left(
-  K_t, K_t^{-1}
-\right)
-\end{equation}
-%
+We may thus reach a modified adaptive velocity scaling
+scheme, whose energy change is given by
 \begin{equation}
   \delta E_t
   =
@@ -1783,11 +1854,212 @@ k_B \, T^* \overline{ K_t^{-1} }
   \frac{ T^* - T_t } { T'(E^*) }
   =
   \frac 1 t
-  \frac{ k_B \, T^* - 2 K_t / N_f } { k_B T'_G(E^*) }
+  \frac{ k_B \, T^* - 2 K_t / N_f } { k_B T'_\Omega(E^*) }
+  ,
+  \notag
 \end{equation}
+cf. Eq. \eqref{eq:dE_beta}.
+%
+This variant may be understood
+as a variant of the Berendsen thermostat
+in the Introduction
+with
+$\tau = 2 \, t \, k_B \, T'_\Omega(E^*) / N_f$.
 
-An alternative derivation based on Laplace transform
-is given by Haile\cite{haile}.
+
+
+This definition has several advantages.
+%
+First, the bulk entropy is an adiabatic invariant\cite{gibbs,
+  hertz1910a, *hertz1910b, rugh2001, adib2002, dunkel2014},
+  which means % in the mechanical sense
+  that it maintains a constant
+  under a slow parameter change.
+Second, it is associated with a natural equipartition theorem\cite{
+  khinchin, dunkel2014}
+  that generalizes Eq. \eqref{eq:Tbulk}:
+  $\left\langle x_i \, \partial H/\partial x_j \right\rangle = \delta_{ij} \, T_G(E)$.
+
+\note{
+  To show that
+  the integrated density of states $\Omega(E, \lambda)$
+  is an adiabatic invariant,
+  we assume that
+  the Hamiltonian $H(\mathbf x, \lambda)$
+  depends on a parameter $\lambda$
+  that changes slowly, and
+  $$
+  \Omega(E, \lambda)
+  =
+  \int \Theta\bigl(
+    E - H(\mathbf p, \mathbf q, \lambda)
+  \bigr)
+  \, d\mathbf p \, d\mathbf q
+  .
+  $$
+  %
+  The rate of change is
+  \begin{align*}
+  \frac{ d \Omega } { dt }
+  &=
+  \left(
+    \frac{ \partial \Omega } { \partial E }
+  \right)_\lambda
+  \frac{ dE } { dt }
+  +
+  \left(
+    \frac{ \partial \Omega } { \partial \lambda }
+  \right)_E
+  \frac{ d\lambda } { dt }
+  .
+  \end{align*}
+  %
+  Under Newton's equation,
+  $d\mathbf p/dt = -\partial H/\partial \mathbf q$
+  and
+  $d\mathbf q/dt = \partial H/\partial \mathbf p$,
+  we have
+  $$
+  \frac{ dE } { dt }
+  =
+  \frac{ \partial H } { \partial \mathbf p }
+  \frac{ d \mathbf p } { d t }
+  +
+  \frac{ \partial H } { \partial \mathbf q }
+  \frac{ d \mathbf q } { d t }
+  +
+  \frac{ \partial H } { \partial \lambda }
+  \frac{ d \lambda } { dt }
+  =
+  \frac{ \partial H } { \partial \lambda }
+  \frac{ d \lambda } { dt }
+  .
+  $$
+  %
+  Thus, for a slowly changed $\lambda$,
+  we may time average $\partial H / \partial \lambda$,
+  %
+  \begin{align*}
+  \frac{ d \Omega } { dt }
+  &=
+  \left(
+    \frac{ \partial \Omega } { \partial E }
+  \right)_\lambda
+  \overline{ \frac{ \partial H } { \partial \lambda } } 
+  \frac{ d\lambda } { dt }
+  +
+  \left(
+    \frac{ \partial \Omega } { \partial \lambda }
+  \right)_E
+  \frac{ d\lambda } { dt }
+  .
+  \end{align*}
+  %
+  But we also have
+  \begin{align*}
+  \left(
+    \frac{ \partial \Omega } { \partial E }
+  \right)_\lambda
+  &=
+  \int
+  \delta\bigl(
+    E - H(\mathbf p, \mathbf q, \lambda)
+  \bigr)
+  \, d\mathbf p \, d\mathbf q
+  =
+  \omega(E, \lambda)
+  ,
+  \\
+  \left(
+    \frac{ \partial \Omega } { \partial \lambda }
+  \right)_E
+  &=
+  -\int
+  \frac{ \partial H } { \partial \lambda }
+  \delta\bigl(
+    E - H(\mathbf p, \mathbf q, \lambda)
+  \bigr)
+  \, d\mathbf p \, d\mathbf q
+  =
+  -\left\langle
+    \frac{ \partial H } { \partial \lambda }
+  \right\rangle
+  \omega(E, \lambda)
+  ,
+  \end{align*}
+  so
+  \begin{align*}
+  \frac{ d \Omega } { dt }
+  &=
+  \left(
+    \overline{ \frac{ \partial H } { \partial \lambda } }
+    -
+    \left\langle
+      \frac{ \partial H } { \partial \lambda }
+    \right\rangle
+  \right)
+  \omega(E, \lambda) \,
+  \frac{ d\lambda } { dt }
+  .
+  \end{align*}
+  %
+  Under the ergodicity hypothesis,
+  the trajectory and ensemble average
+  are the same,
+  the two terms in the parentheses cancel.
+  %
+  In other words, $d\Omega/dt = 0$,
+  and $\Omega(E, \lambda)$
+  is an adiabatic invariant. 
+}
+
+\note{
+  The equipartion theorem
+  \begin{align*}
+  \left\langle
+    x_i \,
+    \frac{ \partial H } { \partial x_j }
+  \right\rangle
+  \omega(E)
+  &=
+  \left\langle
+    x_i \,
+    \frac{ \partial H } { \partial x_j }
+    \,
+    \delta\bigl(
+      E - H(\mathbf x)
+    \bigr)
+  \right\rangle \\
+  &=
+  -
+  \left\langle
+    x_i \,
+    \frac{ \partial } { \partial x_j }
+    \Theta\bigl(
+      E - H(\mathbf x)
+    \bigr)
+  \right\rangle
+  \\
+  &=
+  \left\langle
+    \frac{ \partial x_i } { \partial x_j }
+    \Theta\bigl(
+      E - H(\mathbf x)
+    \bigr)
+  \right\rangle
+  =
+  \delta_{i, j} \, \Omega(E).
+  \end{align*}
+  Thus
+  \begin{align*}
+  \left\langle
+    x_i \,
+    \frac{ \partial H } { \partial x_j }
+  \right\rangle
+  =\delta_{i, j} \, T_\Omega(E).
+  \end{align*}
+}
+
 
 
 \section{\label{sec:block}
@@ -1822,16 +2094,21 @@ where
 $t = (\tau - 1) \, m + \tau'$
 and
 $
-A^*_\tau = \frac 1 m
+A_{\tau*} = \frac 1 m
 \sum_{\tau' = 1}^m A_t.
 $
 
 In our case,
 $
-A_t = \beta^* - \frac{ N_f - 2 } { 2 \, K_t }.
+A_t = \beta^* - (\frac{ N_f } { 2 } - 1) K_t^{-1},
 $
-
-
+and the block average is
+$
+A_{\tau*}
+= \beta^* - (\frac{N_f}{2} - 1) \, K_{\tau*}^{-1},
+$
+where $K_{\tau*}^{-1}$
+is the block average of $K_t^{-1}$.
 
 %\bibliographystyle{abbrv}
 \bibliography{simul}
