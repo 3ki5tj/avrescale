@@ -60,8 +60,8 @@ Galveston, Texas 77555-0304, USA}
   the magnitude of velocity scaling
   by a factor of the number of steps, $t$.
   %
-  This modification allows
-  the fluctuation of total energy to be negligible at long times,
+  In this way,
+  the fluctuation of total energy becomes negligible at long times,
   and the simulation ensemble becomes effectively
   a microcanonical one.
   %
@@ -84,13 +84,13 @@ kinetic energy of the past few steps, $\bar K$,
 to the expected value\cite{frenkel, haile},
 %
 \begin{equation}
-  K^* = \frac{1}{2} N_f \, k_B \, T
+  K^* = \frac{1}{2} N_f \, k_B \, T^*
   ,
   \label{eq:K_canon}
 \end{equation}
 %
-where $N_f$, $k_B$, and $T$ are the number of degrees of freedom,
-the Boltzmann constant, and temperature, respectively.
+where $N_f$, $k_B$, and $T^*$ are the number of degrees of freedom,
+the Boltzmann constant, and the target temperature, respectively.
 %
 In order words,
 the velocity is scaled by a factor of
@@ -100,10 +100,12 @@ in each scaling operation.
 We refer to this version as the regular velocity scaling below.
 %
 Velocity scaling has some variants,
-among which 
+among which
 the Berendsen thermostat\cite{berendsen1984}
 is a notable example.
-There the kinetic energy in each scaling operation
+%
+There,
+the kinetic energy in each scaling operation
 is given by
 $\left( K^* - \bar K \right)/\tau$,
 with $\tau^{-1}$ being the rate of damping.
@@ -179,11 +181,11 @@ varies with the number of steps, $t$.
 %Fortunately, we may borrow the optimal scheme $\alpha(t)$
 To find the optimal schedule of $\alpha(t)$,
 we may recall the $1/t$ prescription\cite{
-  belardinelli2007, belardinelli2007jcp, belardinelli2008,
-  zhou2005, zhou2008, morozov2007}
+  belardinelli2007, *belardinelli2007jcp, *belardinelli2008,
+  zhou2005, *zhou2008, *morozov2007}
 for improving the convergence of
 the Wang-Landau (WL) algorithm\cite{
-  wang2001, wang2001pre}.
+  wang2001, *wang2001pre}.
 %
 The WL algorithm,
 which falls in a larger class of free energy methods
@@ -197,7 +199,7 @@ for the parameters to reach their target values.
 By analogy, we may compare the total energy here
 to a parameter in the WL algorithm,
 and speculate that the optimal magnitude
-of velocity scaling would be 
+of velocity scaling would be
 the inverse number of steps.
 %inversely proportional to the number of steps.
 %
@@ -212,7 +214,7 @@ at an optimal rate.
 %microcanonical temperature\cite{rugh1997}
 %based on the surface or Boltzmann entropy\cite{
 %frenkel2015},
-%which turns out to be different 
+%which turns out to be different
 %from the usual definition, Eq. \eqref{eq:K_canon}.
 %
 As we shall see,
@@ -343,8 +345,8 @@ all previous independent estimates,
   \label{eq:Epsave}
 \end{equation}
 %
-The precision of the runtime average
-naturally improves over the simulation course.
+Naturally, the precision of the runtime average
+improves over the simulation course.
 
 
 
@@ -428,13 +430,13 @@ This amount of energy change is to be realized by velocity scaling.
 %
 Equation \eqref{eq:dE_opt} is essentially
 the $1/t$ prescription\cite{
-  belardinelli2007, belardinelli2007jcp, belardinelli2008,
-  zhou2005, zhou2008, morozov2007}
+  belardinelli2007, *belardinelli2007jcp, *belardinelli2008,
+  zhou2005, *zhou2008, *morozov2007}
 for the optimal control of the updating magnitude
-of the WL algorithm\cite{wang2001, wang2001pre},
+of the WL algorithm\cite{wang2001, *wang2001pre},
 and the above derivation results from its close connection\cite{
   marsili2006, barducci2008}
-to the adaptive biasing force method\cite{darve2001, darve2008}.
+to the adaptive biasing force method\cite{darve2001, *darve2008}.
 %
 In Appendix \ref{sec:error}, we give an alternative derivation of the result.
 
@@ -567,15 +569,17 @@ means the variance of quantity $A$.
 %We will use Eq. \eqref{eq:dbetadE} to gauge
 %the magnitude of adjusting the velocity-scaling factor.
 Note that the usual definition of temperature, Eq. \eqref{eq:K_canon},
-however, is based on the bulk or Gibbs entropy,
+however, is slightly different,
+and is based on the bulk or Gibbs entropy,
 cf. Appendix \ref{sec:microT}.
 %is derived from the canonical ensemble and
 %only approximate for the microcanonical ensemble.
 
 
 
-If we use the quantity in the brackets of
-Eq. \eqref{eq:betaE_invK} for the inverse temperature
+If we interpret the quantity in the brackets of
+Eq. \eqref{eq:betaE_invK} as
+the instantaneous inverse temperature
 $\beta_t$,
 then the optimal energy increment is given by
 Eq. \eqref{eq:dE_beta}:
@@ -630,10 +634,10 @@ only every $m$ MD steps.
 %
 Then,
 as shown in Appendix \ref{sec:block},
-we can interpret the $t$ in Eq. \eqref{eq:dE_final} as
-the number of velocity-scaling operations instead of
-the number of MD steps (i.e., $t \to t/m$), and
-the $1/K_t$ as the average inverse kinetic energy
+we can replace the number of MD steps, $t$, in Eq. \eqref{eq:dE_final} by
+the number of velocity-scaling operations
+(i.e., $t \to t/m$), and
+the $1/K_t$ by the average inverse kinetic energy
 of the $m$ steps right
 before the scaling operation.
 
@@ -774,7 +778,8 @@ and one under adaptive velocity scaling.
 Note that although Newton's equation conserves the total energy,
 MD simulations usually employ approximate integration schemes
 (such as the velocity Verlet),
-which lead to small fluctuation of the total energy.
+with
+small fluctuation of the total energy.
 %
 In all three cases,
 we set the initial total energy to the correct value, $-6141.2$ kcal/mol.
@@ -816,8 +821,8 @@ despite a low scaling frequency.
     from simulations under different types of velocity scaling.
     %
     Each simulation lasted $10^7$ steps,
-    and the standard deviation of the total energy
-    of the last $9 \times 10^6$ steps was reported.
+    and the standard deviation of the total energy,
+    excluding the first $10^6$ steps, was reported.
     %
     \note{
       The raw data were saved in
@@ -930,7 +935,7 @@ as a superposition of microcanonical ensembles of different $E$'s.
 
 
 Next, we wish to see if Eq. \eqref{eq:dE_final}
-is indeed the optimal in controlling the magnitude of velocity scaling.
+is indeed optimal in controlling the magnitude of velocity scaling.
 %
 To this end, we modified the energy change in
 the adaptive velocity scaling scheme as
@@ -1030,8 +1035,8 @@ behaved similarly to
 the Nos\'e-Hoover chain\cite{nose1984, nose1984mp, hoover1985, martyna1992},
 and velocity rescaling\cite{bussi2007}
 thermostats
-in the relaxation;
-and these velocity-scaling-based schemes
+in the relaxation process;
+and the velocity-scaling-based schemes
 appeared to be more efficient than Langevin dynamics.
 %
 Note that the relaxation
@@ -1132,9 +1137,9 @@ Our modified scheme gradually decreases the magnitude of the velocity scaling
 by a factor of the number of steps.
 %
 Like the $1/t$ prescription\cite{
-  belardinelli2007, belardinelli2007jcp, belardinelli2008,
-  zhou2005, zhou2008, morozov2007}
-for the WL algorithm\cite{wang2001, wang2001pre},
+  belardinelli2007, *belardinelli2007jcp, *belardinelli2008,
+  zhou2005, *zhou2008, *morozov2007}
+for the WL algorithm\cite{wang2001, *wang2001pre},
 the adaptive velocity scaling is able to reach
 the desired temperature at an optimal rate.
 %
@@ -1142,7 +1147,7 @@ Because of the magnitude control,
 the effect of velocity scaling often becomes negligible
 at long times so that
 a simulation under adaptive velocity scaling
-behaves similar to a regular MD simulation.
+behaves similarly to a regular MD simulation.
 
 We may view the adaptive velocity scaling scheme
 as an application of the $1/t$ prescription
@@ -1152,8 +1157,8 @@ to achieve the target temperature.
 More generally, we may apply this technique
 to a pair of strongly correlated variables $x$ and $y$,
 to find the optimal value of a parameter, $x$,
-that achieves a target value, $y^*$, of an observable, $y$,
-on the fly.
+that corresponds to a target value, $y^*$, of an observable, $y$.
+%on the fly.
 %
 Then, instead of Eq. \eqref{eq:dE_beta},
 we have
@@ -1186,7 +1191,9 @@ and
 the National Institutes of Health (GM-037657) for partial support of this work.
 %
 %This research used computing resources of the National Science Foundation XSEDE grid.
-
+We also acknowledge the Texas Advanced Computing Center (TACC) at The University of Texas
+at Austin for providing HPC and storage resources that have contributed to
+the research results reported within this paper.
 
 \appendix
 
@@ -1200,7 +1207,7 @@ the National Institutes of Health (GM-037657) for partial support of this work.
 
 Here we present an alternative derivation of Eq. \eqref{eq:dE_opt},
 which shows that if in each step, we can form an independent correction
-to the total energy,
+to the current estimate of the total energy,
 then optimally,
 this correction should be used
 with the weight of $1/t$.
@@ -1219,29 +1226,37 @@ The correction can be used in velocity scaling
 to guide the amount of energy change.
 %
 If the independent correction were exact,
-then velocity scaling needs to be done only once,
-with the energy change $\delta E_t = E_t - E_{t-1}$
+then it would suffice to perform
+only one operation of velocity scaling,
+with the energy change
+$\delta E_t = E_t - E_{t-1}$
 being identical to the correction.
 %
-But since in an MD simulation,
-the independent correction contains random error,
-velocity scaling must be done continually,
-and as we shall see,
-if we accept the correction with some
+But since
+the independent correction from an MD simulation
+always contains random error,
+velocity scaling must be done continually.
+%
+We can, however, minimize the error
+of the total energy, $E_T$,
+at the simulation end, $t = T$,
+by accepting the correction with some
 optimal time-dependent magnitude, $\alpha(t)$,
 as
-$\delta E_t = \alpha(t) \, \Delta \mathcal E_t$,
-or
 %
 \begin{equation}
-  \delta E_t = \alpha(t) \, \left( \mathcal E_t - E_{t - 1} \right)
-  ,
+  \delta E_t
+  =
+  \alpha(t) \, \Delta \mathcal E_t
+  =
+  \alpha(t) \, \left( \mathcal E_t - E_{t - 1} \right)
+  .
   \label{eq:Eupdate}
 \end{equation}
 %
-Our aim is to minimize
-the expected error of the total energy, $E_T$,
-at the end of the simulation, $t = T$.
+%Our aim is to minimize
+%the expected error of the total energy, $E_T$,
+%at the end of the simulation, $t = T$.
 
 To find the optimal $\alpha(t)$,
 we shall switch to the continuous-time framework.
@@ -1423,11 +1438,11 @@ $$
 with the minimal error being $\Gamma / (T + t_0)$.
 %
 However, for a long simulation, the influence of $t_0$
-is small, and we may approximately use
+is small, and for convenience we may approximately use
 $$
 \alpha(t) \approx \frac 1 t,
 $$
-which requires Eq. \eqref{eq:dE_opt}.
+which recovers Eq. \eqref{eq:dE_opt}.
 
 We can further show that Eq. \eqref{eq:dE_mod}
 %corresponds to a modified schedule
@@ -1484,19 +1499,25 @@ which is minimal at $z = 1$ for a long simulation.
   \end{equation}
 }
 
+
+
 \section{\label{sec:microT}
 Microcanonical temperature and its derivative}
 
 
+
 \subsection{Derivative of the surface entropy}
 
-Usually, the microcanonical entropy
-follows the surface or Boltzmann definition
+
+
+The usual microcanonical entropy,
+which we used in Eq. \eqref{eq:betaE_def},
+follows the surface or Boltzmann definition\cite{dunkel2014, frenkel2015},
 of $S_\omega(E) = k_B \ln \omega(E)$.
 %
-Then, from Eq. \eqref{eq:betaE_def},
-we can derive Eqs. \eqref{eq:betaE_invK} and \eqref{eq:dbetadE}
-as follows.
+The corresponding temperature and its derivative,
+Eqs. \eqref{eq:betaE_invK} and \eqref{eq:dbetadE},
+can be derived as follows.
 %
 We start by introducing a vector field, $\mathbf u$,
 in the phase space,
@@ -1520,7 +1541,8 @@ anywhere, then
   &= -\int \mathbf u \cdot
            \nabla \delta\bigl( H(\mathbf x) - E \bigr) \, d\mathbf x
      \notag \\
-  &= \int \nabla \cdot \mathbf u \,
+  &= \int
+     \left( \nabla \cdot \mathbf u \right) \,
      \delta\bigl( H(\mathbf x) - E \bigr) \, d\mathbf x
   .
   \notag
@@ -1532,7 +1554,9 @@ where we have integrated by parts in the last step.
 Thus, we have from Eq. \eqref{eq:betaE_def} that
 %
 \begin{equation}
-  \beta(E)
+  \beta_\omega(E)
+  =
+  \frac{ \omega'(E) } { \omega(E) }
   =
   \left\langle
     \nabla \cdot \mathbf u
@@ -1541,10 +1565,10 @@ Thus, we have from Eq. \eqref{eq:betaE_def} that
   \label{eq:betaE_average}
 \end{equation}
 %
-Although the vector field $\mathbf u$ may involve both coordinates and momenta,
-a convenient choice of $\mathbf u$ that satisfies
-Eq. \eqref{eq:unormalization}
-is one derived entirely from the momenta
+Although the vector field $\mathbf u$ can generally
+involve both coordinates and momenta,
+it is convenient to construct $\mathbf u$
+entirely from the momenta
 %
 \begin{equation}
   \mathbf u
@@ -1559,7 +1583,7 @@ with the coordinate components being zeroes,
 and $K = \frac 1 2 \mathbf p \cdot \mathbf M^{-1} \cdot \mathbf p$
 is the kinetic energy ($\mathbf M$ is the diagonal mass matrix).
 %
-Equation \eqref{eq:unormalization} is satisfied
+This vector field satisfies Eq. \eqref{eq:unormalization}
 because
 $\mathbf u \cdot \nabla H
 = (\mathbf p \cdot \nabla_{\mathbf p} K)/(2 \, K)
@@ -1571,13 +1595,7 @@ yields Eq. \eqref{eq:betaE_invK}.
 In a similar manner, we have
 %
 \begin{align*}
-  \frac
-  {
-    d \beta(E)
-  }
-  {
-    d E
-  }
+  \beta'_\omega(E)
   =
   \frac
   {
@@ -1603,8 +1621,9 @@ and since
 %
 \begin{align*}
   \omega''(E)
-  &= -\int \nabla \cdot \mathbf u \,
-     \delta'\bigl( H(\mathbf x) - E \bigr) \, d\mathbf x
+  &= -\int
+      \left( \nabla \cdot \mathbf u \right) \,
+      \delta'\bigl( H(\mathbf x) - E \bigr) \, d\mathbf x
   \\
   &= \int
      \nabla \cdot \bigl( (\nabla \cdot \mathbf u) \, \mathbf u \bigr) \,
@@ -1620,10 +1639,10 @@ and since
   ,
 \end{align*}
 %
-We have
+we have
 %
 \begin{align*}
-  \beta'(E)
+  \beta'_\omega(E)
   =
   \left\langle
      \mathbf u \cdot \nabla (\nabla \cdot \mathbf u)
@@ -1635,13 +1654,14 @@ We have
   .
 \end{align*}
 %
-With Eq. \eqref{eq:u_def},
-this yields Eq. \eqref{eq:dbetadE}.
+With the vector field given by Eq. \eqref{eq:u_def},
+we get Eq. \eqref{eq:dbetadE}.
 
-Note that in the above derivation,
+In the above derivation,
 we have, for simplicity, ignored the conservation
 of total momenta\cite{shirts2006, uline2008},
-which gives additional constraints satisfied in a typical MD simulation.
+which gives rise to additional constraints
+satisfied in a typical MD simulation.
 %
 Fortunately, with the particular choice given by Eq. \eqref{eq:u_def},
 one can show that this effect is negligible for a system
@@ -1657,14 +1677,10 @@ $\mathbf u \cdot \nabla P_\nu = P_\nu/(2K) = 0$\big].
 
 
 
-The above definition of temperature is based on the derivative
-of the surface (or Boltzmann) entropy\cite{frenkel2015},
-$S_\omega \equiv \ln \omega(E)$.
-%
-Some authors, however, prefer the definition based on
-the bulk (or Gibbs) entropy\cite{haile, dunkel2014},
-$S_\Omega \equiv \ln \Omega(E)$,
-where
+There is, however, an alternative definition of the bulk
+or Gibbs entropy\cite{haile, dunkel2014},
+$S_\Omega \equiv k_B \, \ln \Omega(E)$,
+that is based on the integrated density of states,
 %
 \begin{equation}
   \Omega(E)
@@ -1679,12 +1695,13 @@ where
   \notag
 \end{equation}
 %
-and we have $\Omega'(E) = \omega(E)$.
+which is the primitive function of the density of states,
+i.e., $\Omega'(E) = \omega(E)$.
 %is an adiabatic constant.
 
-The temperature defined from the bulk entropy
-agrees with the definition
-of Eq. \eqref{eq:K_canon}.
+This definition results in a temperature that
+agrees with the commonly-used definition,
+Eq. \eqref{eq:K_canon}.
 %
 To see this,
 consider a vector field $\mathbf w$
@@ -1705,10 +1722,9 @@ Then
     \, d\mathbf x
   \\
   &=
-  -
   \int
-    \mathbf w \cdot
-    \nabla H \,
+    \left( \mathbf w \cdot \nabla H \right)
+    \,
     \delta\bigl(
       E - H(\mathbf x)
     \bigr)
@@ -1720,9 +1736,11 @@ Then
   .
 \end{align*}
 %
-With $\mathbf w = \mathbf p / N_f$,
-we have
-$\mathbf w \cdot \nabla H = 2 \, K$,
+A convenient candidate of $\mathbf w$ is
+$\mathbf w = \mathbf p / N_f$.
+%
+Then,
+$\mathbf w \cdot \nabla H = 2 \, K / N_f$,
 and
 %
 \begin{equation}
@@ -1730,9 +1748,11 @@ and
   =
   \frac{ 1 } { \beta_\Omega(E) }
   =
-  \frac{ \Omega(E) }
-  { \omega(E) }
-  = \frac{ 2 \, \langle K \rangle_E } { N_f }
+  \frac{ \Omega(E) } { \Omega'(E) }
+  =
+  \frac{ \Omega(E) } { \omega(E) }
+  =
+  \frac{ 2 \, \langle K \rangle_E } { N_f }
   .
   \label{eq:Tbulk}
 \end{equation}
@@ -1815,7 +1835,7 @@ $T'_\Omega(E^*) / \bigl( T^* \, \overline{ K_t^{-1} } \bigr)$,
 %  \equiv
 %  \frac{ T'_\Omega(E^*) }
 %  {
-%    T^* \, 
+%    T^* \,
 %    \overline{ K_t^{-1} }
 %  }
 %  ,
@@ -1834,7 +1854,8 @@ $T'_\Omega(E^*) / \bigl( T^* \, \overline{ K_t^{-1} } \bigr)$,
 %  \notag
 %\end{equation}
 %%
-then Eq. \eqref{eq:dbeta_approx2} remains true, and
+then Eq. \eqref{eq:dbeta_approx2} remains true,
+or, equivalently,
 %
 \begin{equation}
   k_B \, T'_\Omega(E^*)
@@ -1845,8 +1866,9 @@ then Eq. \eqref{eq:dbeta_approx2} remains true, and
   \notag
 \end{equation}
 %
-We may thus reach a modified adaptive velocity scaling
-scheme, whose energy change is given by
+In the resulting adaptive velocity scaling
+scheme, the energy change is given by
+%
 \begin{equation}
   \delta E_t
   =
@@ -1854,7 +1876,8 @@ scheme, whose energy change is given by
   \frac{ T^* - T_t } { T'(E^*) }
   =
   \frac 1 t
-  \frac{ k_B \, T^* - 2 K_t / N_f } { k_B T'_\Omega(E^*) }
+  \frac{ k_B \, T^* - 2 \, K_t / N_f }
+       { k_B \, T'_\Omega(E^*) }
   ,
   \notag
 \end{equation}
@@ -1871,23 +1894,32 @@ $\tau = 2 \, t \, k_B \, T'_\Omega(E^*) / N_f$.
 This definition has several advantages.
 %
 First, the bulk entropy is an adiabatic invariant\cite{gibbs,
-  hertz1910a, *hertz1910b, rugh2001, adib2002, dunkel2014},
-  which means % in the mechanical sense
-  that it maintains a constant
-  under a slow parameter change.
+  hertz1910a, *hertz1910b, rugh2001, adib2002, dunkel2014}
+  that maintains constant
+  under a slow parameter change,
+  %in the mechanical sense.
+%
+which helps establish a mechanic model
+for the first law of thermodynamics.
+%
 Second, it is associated with a natural equipartition theorem\cite{
   khinchin, dunkel2014}
   that generalizes Eq. \eqref{eq:Tbulk}:
-  $\left\langle x_i \, \partial H/\partial x_j \right\rangle = \delta_{ij} \, T_G(E)$.
+$\left\langle x_i \, \partial H/\partial x_j \right\rangle = \delta_{ij} \, T_G(E)$,
+which makes comparison to results from the canonical ensemble easier.
 
 \note{
   To show that
-  the integrated density of states $\Omega(E, \lambda)$
+  the integrated density of states
   is an adiabatic invariant,
   we assume that
   the Hamiltonian $H(\mathbf x, \lambda)$
   depends on a parameter $\lambda$
-  that changes slowly, and
+  that changes slowly.
+  %
+  Then, the integrated density of states
+  depends on both $E$ and $\lambda$,
+  %
   $$
   \Omega(E, \lambda)
   =
@@ -1936,8 +1968,9 @@ Second, it is associated with a natural equipartition theorem\cite{
   .
   $$
   %
-  Thus, for a slowly changed $\lambda$,
-  we may time average $\partial H / \partial \lambda$,
+  For a slowly changed $\lambda$,
+  we may time average $\partial H / \partial \lambda$
+  to compute $dE/dt$,
   %
   \begin{align*}
   \frac{ d \Omega } { dt }
@@ -1945,7 +1978,11 @@ Second, it is associated with a natural equipartition theorem\cite{
   \left(
     \frac{ \partial \Omega } { \partial E }
   \right)_\lambda
-  \overline{ \frac{ \partial H } { \partial \lambda } } 
+  \overline{
+    \left(
+    \frac{ \partial H } { \partial \lambda }
+    \right)
+  }
   \frac{ d\lambda } { dt }
   +
   \left(
@@ -1985,19 +2022,23 @@ Second, it is associated with a natural equipartition theorem\cite{
     \frac{ \partial H } { \partial \lambda }
   \right\rangle
   \omega(E, \lambda)
-  ,
+  .
   \end{align*}
-  so
+  So
   \begin{align*}
   \frac{ d \Omega } { dt }
   &=
-  \left(
-    \overline{ \frac{ \partial H } { \partial \lambda } }
+  \left[
+    \overline{
+      \left(
+        \frac{ \partial H } { \partial \lambda }
+      \right)
+    }
     -
     \left\langle
       \frac{ \partial H } { \partial \lambda }
     \right\rangle
-  \right)
+  \right]
   \omega(E, \lambda) \,
   \frac{ d\lambda } { dt }
   .
@@ -2008,55 +2049,63 @@ Second, it is associated with a natural equipartition theorem\cite{
   are the same,
   the two terms in the parentheses cancel.
   %
-  In other words, $d\Omega/dt = 0$,
-  and $\Omega(E, \lambda)$
-  is an adiabatic invariant. 
+  Thus, $d\Omega/dt = 0$.
+  In other words,
+  $\Omega(E, \lambda)$, hence $S_\Omega(E, \lambda)$,
+  is an adiabatic invariant---a quantity that holds constant
+  during an adiabatic process.
 }
 
 \note{
-  The equipartion theorem
+  The equipartion theorem can be shown as follows,
+  %
   \begin{align*}
-  \left\langle
-    x_i \,
-    \frac{ \partial H } { \partial x_j }
-  \right\rangle
-  \omega(E)
-  &=
-  \left\langle
-    x_i \,
-    \frac{ \partial H } { \partial x_j }
-    \,
-    \delta\bigl(
-      E - H(\mathbf x)
-    \bigr)
-  \right\rangle \\
-  &=
-  -
-  \left\langle
-    x_i \,
-    \frac{ \partial } { \partial x_j }
-    \Theta\bigl(
-      E - H(\mathbf x)
-    \bigr)
-  \right\rangle
-  \\
-  &=
-  \left\langle
-    \frac{ \partial x_i } { \partial x_j }
-    \Theta\bigl(
-      E - H(\mathbf x)
-    \bigr)
-  \right\rangle
-  =
-  \delta_{i, j} \, \Omega(E).
+    \left\langle
+      x_i \,
+      \frac{ \partial H } { \partial x_j }
+    \right\rangle
+    \omega(E)
+    &=
+    \left\langle
+      x_i \,
+      \frac{ \partial H } { \partial x_j }
+      \,
+      \delta\bigl(
+        E - H(\mathbf x)
+      \bigr)
+    \right\rangle \\
+    &=
+    -
+    \left\langle
+      x_i \,
+      \frac{ \partial } { \partial x_j }
+      \Theta\bigl(
+        E - H(\mathbf x)
+      \bigr)
+    \right\rangle
+    \\
+    &=
+    \left\langle
+      \frac{ \partial x_i } { \partial x_j }
+      \Theta\bigl(
+        E - H(\mathbf x)
+      \bigr)
+    \right\rangle
+    =
+    \delta_{i, j} \, \Omega(E)
+    .
   \end{align*}
-  Thus
+  %
+  Thus,
+  %
   \begin{align*}
-  \left\langle
-    x_i \,
-    \frac{ \partial H } { \partial x_j }
-  \right\rangle
-  =\delta_{i, j} \, T_\Omega(E).
+    \left\langle
+      x_i \,
+      \frac{ \partial H } { \partial x_j }
+    \right\rangle
+    =
+    \delta_{i, j} \, T_\Omega(E)
+    .
   \end{align*}
 }
 
@@ -2100,12 +2149,12 @@ $
 
 In our case,
 $
-A_t = \beta^* - (\frac{ N_f } { 2 } - 1) K_t^{-1},
+A_t = \beta^* - \left(\frac {1} {2} N_f - 1\right) \, K_t^{-1},
 $
 and the block average is
 $
 A_{\tau*}
-= \beta^* - (\frac{N_f}{2} - 1) \, K_{\tau*}^{-1},
+= \beta^* - \left(\frac {1} {2} N_f - 1\right) \, K_{\tau*}^{-1},
 $
 where $K_{\tau*}^{-1}$
 is the block average of $K_t^{-1}$.
