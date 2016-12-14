@@ -34,7 +34,8 @@ unset key
 plot [:][:] \
     "../../data/wb/fix/Kfix.his"         u ($1):($2) w l  lt 1  lw 12.0 lc rgb "#c0c0c0" t "Microcanonical, {/Times-Italic NVE}", \
     "../../data/wb/adp/Kadp.his"         u ($1):($2) w l  lt 2  lw  3.0 t "Adaptive velocity scaling", \
-    "../../data/wb/can_vrs/Kcan_vrs.his" u ($1):($2) w l  lt 4  lw  5.0 t "Canonical, {/Times-Italic NVT}", \
+    "../../data/wb/reg100/Kreg.his"      u ($1):($2) every 2 w p  pt 6  ps 1.5 lw  2.0 t "Regular velocity scaling", \
+    "../../data/wb/can_vrs/Kcan_vrs.his" u ($1):($2) w l  lt 5  lw  5.0 t "Canonical, {/Times-Italic NVT}", \
 
 
 
@@ -53,22 +54,24 @@ unset key
 plot [:][:] \
     "../../data/wb/fix/Ufix.his"         u ($1):($2) w l  lt 1  lw 12.0 lc rgb "#c0c0c0" t "Microcanonical, {/Times-Italic NVE}", \
     "../../data/wb/adp/Uadp.his"         u ($1):($2) w l  lt 2  lw  3.0 t "Adaptive velocity scaling", \
-    "../../data/wb/can_vrs/Ucan_vrs.his" u ($1):($2) w l  lt 4  lw  5.0 t "Canonical, {/Times-Italic NVT}", \
+    "../../data/wb/reg100/Ureg.his"      u ($1):($2) every 2 w p  pt 6  ps 1.5 lw  2.0 t "Regular velocity scaling", \
+    "../../data/wb/can_vrs/Ucan_vrs.his" u ($1):($2) w l  lt 5  lw  5.0 t "Canonical, {/Times-Italic NVT}", \
 
 
 # dummy plots for the key
 reset
 set size 0.5, 1
-set origin 0.08, ht - 0.05
+set origin 0.06, ht - 0.05
 
 set key below horizontal Left reverse maxrows 1 spacing 1.3
 plot [] \
     x lt 1 lw 12.0 lc rgb "#c0c0c0" t "Microcanonical, {/Times-Italic NVE}", \
     x lt 2 lw  3.0 t "Adaptive velocity scaling"
 
-set origin 0.51, ht - 0.01
+set origin 0.51, ht - 0.05
 plot [] \
-    x lt 4 lw  5.0 t "Canonical, {/Times-Italic NVT}"
+    x w p pt 6 ps 2.0 lw  2.0 t "Regular velocity scaling", \
+    x lt 5 lw  5.0 t "Canonical, {/Times-Italic NVT}"
 
 
 unset multiplot

@@ -1,7 +1,8 @@
 etraj::
-	cd fix && ../mkhist.py --col=3 --t0=1000000 --dx=0.0001 -o null && cd ..
-	cd reg && ../mkhist.py --col=3 --t0=1000000 --dx=0.0001 -o null && cd ..
-	cd adp && ../mkhist.py --col=3 --t0=1000000 --dx=0.0001 -o null && cd ..
+	cd fix     && ../mkhist.py --col=3 --t0=1000000 --dx=0.0001 -o null && cd ..
+	cd reg     && ../mkhist.py --col=3 --t0=1000000 --dx=0.0001 -o null && cd ..
+	cd reg100  && ../mkhist.py --col=3 --t0=1000000 --dx=0.0001 -o null && cd ..
+	cd adp     && ../mkhist.py --col=3 --t0=1000000 --dx=0.0001 -o null && cd ..
 
 uhist::
 	cd adp     && ../mkhist.py --col=2   --t0=1000000 --dx=2 -o Uadp.his     && cd ..

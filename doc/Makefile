@@ -1,6 +1,6 @@
 prj=avrescale
 
-ver=0.1
+ver=1.1
 
 figgps=$(wildcard fig/*.gp)
 pdffigs=$(patsubst %.gp,%.pdf, $(figgps))

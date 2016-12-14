@@ -785,7 +785,7 @@ In all three cases,
 we set the initial total energy to the correct value, $-6141.2$ kcal/mol.
 %
 In the second case,
-velocity was scaled every $10^3$ MD steps.
+velocity was scaled every $100$ or $1000$ MD steps.
 %
 In the last case,
 velocity was scaled every $10$ MD steps with
@@ -798,20 +798,20 @@ which suggests that the influence of adaptive velocity scaling
 becomes negligible for long simulations.
 %
 However, regular velocity scaling
-produced a much larger energy fluctuation
-despite a low scaling frequency.
+produced much larger energy fluctuations
+that increases with the scaling frequency.
 
 \begin{table}[h]
   \setlength{\tabcolsep}{5pt}
   \renewcommand{\arraystretch}{1.5}
   \begin{center}
-    \begin{tabular}{ p{2.5cm} | c c c }
+    \begin{tabular}{ p{2.5cm} | c p{1.3cm} p{1.3cm} c }
       \hline
       Velocity scaling
-      &   None    &   Regular   &   Adaptive \\
+      &   None    &   Regular \newline $\nu =100 $   & Regular \newline $\nu = 1000$  &   Adaptive \\
       \hline
       $\sigma_E$ (kcal/mol)
-      &   $0.26$  &   $7.7$     &   $0.25$ \\
+      &   $0.26$  &   \red{$20$}    &  $7.7$     &   $0.25$ \\
       \hline
     \end{tabular}
   \end{center}
@@ -824,9 +824,13 @@ despite a low scaling frequency.
     and the standard deviation of the total energy,
     excluding the first $10^6$ steps, was reported.
     %
+    The frequency of regular velocity scaling
+    is denoted by $\nu$.
+    %
     \note{
       The raw data were saved in
       \texttt{data/wb/fix/ene0fix.log},
+      \texttt{data/wb/reg100/ene0reg.log},
       \texttt{data/wb/reg/ene0reg.log},
       and
       \texttt{data/wb/adp/ene0adp.log}.
@@ -884,8 +888,9 @@ despite a low scaling frequency.
 We then compared the kinetic and potential energy
 distributions from a regular MD simulation,
 a simulation under adaptive velocity scaling,
+a simulation under regular velocity scaling (performed every $100$ steps),
 and
-a simulation under the % velocity rescaling
+a simulation under the velocity rescaling
 thermostat\cite{bussi2007}
 (with $\tau = 0.03 \, \mathrm{ps}$).
 %
@@ -894,17 +899,18 @@ whereas the last targets a canonical ensemble.
 %
 As shown in Fig. \ref{fig:kuhist},
 adaptive velocity scaling and regular MD
-produced almost identical distributions,
+produced almost identical distributions for the microcanonical ensemble,
 while the simulation under the velocity rescaling thermostat
-produced wider distributions.
+produced wider distributions for the canonical ensemble.
 %
 We may understand the widening % of the distributions
 as a result of the construction of the canonical ensemble
 as a superposition of microcanonical ensembles of different $E$'s.
 %
-%The distribution from regular velocity scaling,
-%however, was visibly different from
-%that from the microcanonical or canonical ensemble.
+Regular velocity scaling, however, produced
+a potential energy distribution that
+was visibly different from
+those in the microcanonical and canonical ensembles.
 %
 %More interestingly,
 %Fig. 2 shows that the adaptive velocity scaling
@@ -920,6 +926,7 @@ as a superposition of microcanonical ensembles of different $E$'s.
     Kinetic and potential energy distributions
     from a regular MD simulation in the microcanonical ensemble,
     a simulation under adaptive velocity scaling,
+    one under regular velocity scaling,
     and one in the canonical ensemble.
     %
     %Each simulation had $10^7$ steps,
@@ -1170,7 +1177,12 @@ $$
 .
 $$
 %
-For example, one may determine the optimal move size ($x$)
+For example, we may determine the value of volume in the $NVT$ ensemble
+that corresponds to a certain value of pressure.
+%
+%For example, one may determine the optimal 
+Another example is the determination of the
+move size ($x$)
 in a Monte Carlo simulation
 in order to reaching a certain acceptance ratio ($y$).
 %
@@ -1506,6 +1518,21 @@ Microcanonical temperature and its derivative}
 
 
 
+There are at least two common definitions of
+the microcanonical entropy,
+leading to slightly different values of the temperature
+(although the difference disappears in the thermodynamic limit).
+%
+In the main text, we have followed the first or surface
+definition, whereas some authors prefer
+the alternative bulk definition.
+%
+Below, we review the difference,
+and the modifications needed to target the bulk temperature
+for the adaptive velocity scaling scheme.
+
+
+
 \subsection{Derivative of the surface entropy}
 
 
@@ -1695,9 +1722,13 @@ that is based on the integrated density of states,
   \notag
 \end{equation}
 %
-which is the primitive function of the density of states,
-i.e., $\Omega'(E) = \omega(E)$.
-%is an adiabatic constant.
+which is the primitive function of the density of states.
+%
+Here, $\Theta(y)$ is the step function,
+which gives $1.0$ for a positive $y$, or $0.0$ otherwise.
+%
+Since $\Theta'(y) = \delta(y)$, we have
+$\Omega'(E) = \omega(E)$.
 
 This definition results in a temperature that
 agrees with the commonly-used definition,
