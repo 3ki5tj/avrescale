@@ -87,16 +87,17 @@ static double geterrz_white(double z, const double *xx, double cnt,
 int main(int argc, char **argv)
 {
   int cnt;
-  double *xx, dt, z, zstep, err, err_white, err_res;
+  double *xx, dt, z, zstep = 0.1, err, err_white, err_res;
 
   if ( argc > 1 ) tottime = atof( argv[1] );
   if ( argc > 2 ) zstep = atof( argv[2] );
   xx = loadcorr(fncorr, &dt, &cnt);
   if ( xx == NULL ) return -1;
-  for ( z = 0.2; z <= 10; z += zstep ) {
+  for ( z = 0.1; z <= 10; z += zstep ) {
     err = geterrz(z, xx, cnt, dt, tottime);
-    err_white = geterrz_white(z, xx, cnt, dt, tottime);
-    err_res = initstd*initstd*exp(-2*z*log(tottime));
+    err_white = geterrz_white(z, xx, cnt, dt, tottime); // approximation of err by the white-noise approximation
+    err_res = initstd*initstd*pow(tottime, -2*z); // residual error
+    // the real error should be err + err_res
     printf("%g\t%g\t%g\t%g\n", z, err, err_white, err_res);
   }
   return 0;

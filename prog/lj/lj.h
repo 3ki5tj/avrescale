@@ -522,7 +522,10 @@ __inline static int lj_metro(lj_t *lj, double amp, double bet)
 
 /* Monte Carlo volume move
  * the scaling is r = r*s, p = p/s;
- * set cutoff to half of the box */
+ * set cutoff to half of the box
+ * the ensemble distribution is
+ *   distr. ~ V^(dof/D - ensx) exp(-beta * ep)
+ * */
 __inline int lj_mcvmov(lj_t *lj, double lnvamp, double tp, double pext,
     int ensx)
 {
@@ -535,9 +538,7 @@ __inline int lj_mcvmov(lj_t *lj, double lnvamp, double tp, double pext,
   lnlo = log(lo);
   lnln = lnlo + lnvamp/D * (rand01() * 2 - 1);
   ln = exp( lnln );
-  for ( vn = 1, i = 0; i < D; i++ ) {
-    vn *= ln;
-  }
+  vn = exp( D * lnln );
 
   epo = lj->epot;
   s = ln / lo;

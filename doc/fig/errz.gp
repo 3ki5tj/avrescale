@@ -37,18 +37,18 @@ set xlabel "{/Times-Italic z}" offset 0, 0.5
 
 set logscale y
 set format y "10^{/*0.8 %T}"
-set yrange [0.1:400]
+set yrange [0.1:1000]
 #set ytics 5
 #set mytics 5
 set ylabel "Error of the total energy" offset 1, 0
 
 # `width` to reduce the text length
-set key right Left reverse spacing 1.2 width -3
+set key right Left reverse spacing 1.2 width -5
 
-plot [0.25:][:] \
+plot [0.1:][:] \
     "../../data/wb/wb_t100000.dat"     u 1:2        w p  pt 7  ps 2.0 t "Simulation, {/Times-Italic T} = 10^{/*0.8 5}", \
     "../../data/wb/wberrz_t100000.dat" u 1:($2+$4)  w l  lt 1  lw 6   t "Prediction, {/Times-Italic T} = 10^{/*0.8 5}", \
-    "../../data/wb/wb_t1M.dat"         u 1:2        w p  pt 5  ps 1.8 t "Simulation, {/Times-Italic T} = 10^{/*0.8 6}", \
+    "../../data/wb/wb_t1M.dat"         u 1:2        w p  lw 3 pt 6  ps 1.8 t "Simulation, {/Times-Italic T} = 10^{/*0.8 6}", \
     "../../data/wb/wberrz_t1M.dat"     u 1:($2+$4)  w l  lt 3  lw 6   t "Prediction, {/Times-Italic T} = 10^{/*0.8 5}", \
 
 

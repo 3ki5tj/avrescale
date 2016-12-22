@@ -267,14 +267,14 @@ where $H(\mathbf x)$ is the Hamiltonian function.
 The area of the hypersurface gives the density of states,
 %
 \begin{equation}
-  \omega(E)
+  \Omega(E)
   =
   \int
     \delta\bigl( H(\mathbf x) - E \bigr)
     \, d\mathbf x
   ,
   \notag
-  %\label{eq:omegaE}
+  %\label{eq:OmegaE}
 \end{equation}
 %
 and the microcanonical temperature,
@@ -286,10 +286,10 @@ is given by
   \beta(E)
   =
   \frac{ d }{ dE }
-  \ln \omega(E)
+  \ln \Omega(E)
   =
-  \frac{ \omega'(E) }
-       { \omega(E)  }
+  \frac{ \Omega'(E) }
+       { \Omega(E)  }
   ,
   \label{eq:betaE_def}
 \end{equation}
@@ -530,7 +530,7 @@ and $\beta'(E)$ required in Eq. \eqref{eq:dE_beta}.
 %
 It can be shown that both the microcanonical temperature, $\beta(E)$,
 and $\beta'(E)$ can be evaluated as
-averages in the microcanonical ensemble\cite{rugh1997}:
+averages in the microcanonical ensemble\cite{cagin1988, rugh1997}:
 %
 \begin{equation}
   \beta(E)
@@ -637,7 +637,8 @@ as shown in Appendix \ref{sec:block},
 we can replace the number of MD steps, $t$, in Eq. \eqref{eq:dE_final} by
 the number of velocity-scaling operations
 (i.e., $t \to t/m$), and
-the $1/K_t$ by the average inverse kinetic energy
+the $1/K_t$ by the inverse kinetic energy 
+at the scaling step or the average value
 of the $m$ steps right
 before the scaling operation.
 
@@ -1539,8 +1540,9 @@ for the adaptive velocity scaling scheme.
 
 The usual microcanonical entropy,
 which we used in Eq. \eqref{eq:betaE_def},
-follows the surface or Boltzmann definition\cite{dunkel2014, frenkel2015},
-of $S_\omega(E) = k_B \ln \omega(E)$.
+follows the surface or Boltzmann definition\cite{
+  pearson1985, cagin1988, becker, dunkel2014, frenkel2015},
+of $S_\Omega(E) = k_B \ln \Omega(E)$.
 %
 The corresponding temperature and its derivative,
 Eqs. \eqref{eq:betaE_invK} and \eqref{eq:dbetadE},
@@ -1559,7 +1561,7 @@ such that
 anywhere, then
 %
 \begin{align}
-  \omega'(E)
+  \Omega'(E)
   &= -\int \delta'\bigl( H(\mathbf x) - E \bigr) \, d\mathbf x
      \notag \\
   &= -\int (\mathbf u \cdot \nabla H) \,
@@ -1573,7 +1575,7 @@ anywhere, then
      \delta\bigl( H(\mathbf x) - E \bigr) \, d\mathbf x
   .
   \notag
-  %\label{eq:domegaE}
+  %\label{eq:dOmegaE}
 \end{align}
 %
 where we have integrated by parts in the last step.
@@ -1581,9 +1583,9 @@ where we have integrated by parts in the last step.
 Thus, we have from Eq. \eqref{eq:betaE_def} that
 %
 \begin{equation}
-  \beta_\omega(E)
+  \beta_\Omega(E)
   =
-  \frac{ \omega'(E) } { \omega(E) }
+  \frac{ \Omega'(E) } { \Omega(E) }
   =
   \left\langle
     \nabla \cdot \mathbf u
@@ -1622,23 +1624,23 @@ yields Eq. \eqref{eq:betaE_invK}.
 In a similar manner, we have
 %
 \begin{align*}
-  \beta'_\omega(E)
+  \beta'_\Omega(E)
   =
   \frac
   {
-    \omega''(E)
+    \Omega''(E)
   }
   {
-    \omega(E)
+    \Omega(E)
   }
   -
   \left[
     \frac
     {
-      \omega'(E)
+      \Omega'(E)
     }
     {
-      \omega(E)
+      \Omega(E)
     }
   \right]^2
   ,
@@ -1647,7 +1649,7 @@ In a similar manner, we have
 and since
 %
 \begin{align*}
-  \omega''(E)
+  \Omega''(E)
   &= -\int
       \left( \nabla \cdot \mathbf u \right) \,
       \delta'\bigl( H(\mathbf x) - E \bigr) \, d\mathbf x
@@ -1669,7 +1671,7 @@ and since
 we have
 %
 \begin{align*}
-  \beta'_\omega(E)
+  \beta'_\Omega(E)
   =
   \left\langle
      \mathbf u \cdot \nabla (\nabla \cdot \mathbf u)
@@ -1688,7 +1690,7 @@ In the above derivation,
 we have, for simplicity, ignored the conservation
 of total momenta\cite{shirts2006, uline2008},
 which gives rise to additional constraints
-satisfied in a typical MD simulation.
+satisfied in a typical MD simulation\cite{lado1981, wallace1983}.
 %
 Fortunately, with the particular choice given by Eq. \eqref{eq:u_def},
 one can show that this effect is negligible for a system
@@ -1705,12 +1707,12 @@ $\mathbf u \cdot \nabla P_\nu = P_\nu/(2K) = 0$\big].
 
 
 There is, however, an alternative definition of the bulk
-or Gibbs entropy\cite{haile, dunkel2014},
-$S_\Omega \equiv k_B \, \ln \Omega(E)$,
+or Gibbs entropy\cite{cagin1988, haile, dunkel2014},
+$S_\Phi \equiv k_B \, \ln \Phi(E)$,
 that is based on the integrated density of states,
 %
 \begin{equation}
-  \Omega(E)
+  \Phi(E)
   =
   \int
   \Theta\bigl(
@@ -1728,7 +1730,7 @@ Here, $\Theta(y)$ is the step function,
 which gives $1.0$ for a positive $y$, or $0.0$ otherwise.
 %
 Since $\Theta'(y) = \delta(y)$, we have
-$\Omega'(E) = \omega(E)$.
+$\Phi'(E) = \Omega(E)$.
 
 This definition results in a temperature that
 agrees with the commonly-used definition,
@@ -1740,7 +1742,7 @@ that satisfies $\nabla \cdot \mathbf w = 1$.
 Then
 %
 \begin{align*}
-  \Omega(E)
+  \Phi(E)
   &=
   \int
     \left(
@@ -1763,7 +1765,7 @@ Then
   \\
   &= \langle \mathbf w \cdot \nabla H \rangle_E
     \,
-    \omega(E)
+    \Omega(E)
   .
 \end{align*}
 %
@@ -1775,31 +1777,32 @@ $\mathbf w \cdot \nabla H = 2 \, K / N_f$,
 and
 %
 \begin{equation}
-  k_B \, T_\Omega(E)
+  k_B \, T_\Phi(E)
   =
-  \frac{ 1 } { \beta_\Omega(E) }
+  \frac{ 1 } { \beta_\Phi(E) }
   =
-  \frac{ \Omega(E) } { \Omega'(E) }
+  \frac{ \Phi(E) } { \Phi'(E) }
   =
-  \frac{ \Omega(E) } { \omega(E) }
+  \frac{ \Phi(E) } { \Omega(E) }
   =
   \frac{ 2 \, \langle K \rangle_E } { N_f }
   .
   \label{eq:Tbulk}
 \end{equation}
 %
-Alternatively, this result may be derived from Laplace transform\cite{haile}.
+Alternatively, this result may be derived using
+Laplace transform\cite{pearson1985, haile}.
 %
-Further,
+Further\cite{cagin1988},
 %
 \begin{align}
-  k_B \, T'_\Omega(E)
+  k_B \, T'_\Phi(E)
   &=
-  1 - k_B \, T_\Omega(E) \, \beta_\omega(E)
+  1 - k_B \, T_\Phi(E) \, \beta_\Omega(E)
   \label{eq:dTbulk}
   \\
   &=
-  k_B \, T_\Omega(E)
+  k_B \, T_\Phi(E)
   \left\langle
   K^{-1}
   \right\rangle_E
@@ -1815,7 +1818,7 @@ Further,
 which can be approximated as a trajectory average
 %
 \begin{equation}
-  k_B \, T'_\Omega(E^*)
+  k_B \, T'_\Phi(E^*)
   =
   k_B \, T^* \overline{ K_t^{-1} }
   +
@@ -1828,30 +1831,30 @@ which can be approximated as a trajectory average
 %
 From Eq. \eqref{eq:dTbulk},
 it is also clear that the surface microcanonical temperature,
-$T_\omega(E)$,
-would be slightly greater than the bulk one, $T_\Omega(E)$.
+$T_\Omega(E)$,
+would be slightly greater than the bulk one, $T_\Phi(E)$.
 %
 %\begin{equation}
-%  \beta_\Omega(E)
+%  \beta_\Phi(E)
 %  =
-%  \frac{ 1 } { k_B \, T_\Omega(E) }
+%  \frac{ 1 } { k_B \, T_\Phi(E) }
 %  =
-%  \frac{ \omega(E) } { \Omega(E) }
+%  \frac{ \Omega(E) } { \Phi(E) }
 %  =
 %  \frac{ N_f } { 2 \langle K \rangle_E }
 %\end{equation}
 %
 %\begin{equation}
-%  \beta'_\Omega(E)
+%  \beta'_\Phi(E)
 %  =
-%  \beta_\Omega^2(E)
+%  \beta_\Phi^2(E)
 %  \left(
 %    \left\langle \frac 1 K \right\rangle_E
 %    \langle K \rangle_E
 %    -1
 %  \right)
 %  -
-%  \beta_\Omega(E)
+%  \beta_\Phi(E)
 %  \left\langle \frac 1 K \right\rangle_E
 %  ,
 %\end{equation}
@@ -1859,12 +1862,12 @@ would be slightly greater than the bulk one, $T_\Omega(E)$.
 
 To adapt the approximation introduced in Sec. \ref{sec:dbetadE},
 we can redefine $\gamma$ as
-$T'_\Omega(E^*) / \bigl( T^* \, \overline{ K_t^{-1} } \bigr)$,
+$T'_\Phi(E^*) / \bigl( T^* \, \overline{ K_t^{-1} } \bigr)$,
 %
 %\begin{equation}
 %  \gamma
 %  \equiv
-%  \frac{ T'_\Omega(E^*) }
+%  \frac{ T'_\Phi(E^*) }
 %  {
 %    T^* \,
 %    \overline{ K_t^{-1} }
@@ -1877,7 +1880,7 @@ $T'_\Omega(E^*) / \bigl( T^* \, \overline{ K_t^{-1} } \bigr)$,
 %\begin{equation}
 %  \gamma
 %  \equiv
-%  \frac{ -\beta'_\Omega(E) }
+%  \frac{ -\beta'_\Phi(E) }
 %  { \frac{N_f}{2}
 %    \left\langle K^{-1} \right\rangle_E
 %    \left\langle K \right\rangle_E }
@@ -1889,7 +1892,7 @@ then Eq. \eqref{eq:dbeta_approx2} remains true,
 or, equivalently,
 %
 \begin{equation}
-  k_B \, T'_\Omega(E^*)
+  k_B \, T'_\Phi(E^*)
   =
   \frac{ \gamma }
   { \frac 1 2 N_f + \gamma - 2 }
@@ -1908,7 +1911,7 @@ scheme, the energy change is given by
   =
   \frac 1 t
   \frac{ k_B \, T^* - 2 \, K_t / N_f }
-       { k_B \, T'_\Omega(E^*) }
+       { k_B \, T'_\Phi(E^*) }
   ,
   \notag
 \end{equation}
@@ -1918,14 +1921,14 @@ This variant may be understood
 as a variant of the Berendsen thermostat
 in the Introduction
 with
-$\tau = 2 \, t \, k_B \, T'_\Omega(E^*) / N_f$.
+$\tau = 2 \, t \, k_B \, T'_\Phi(E^*) / N_f$.
 
 
 
 This definition has several advantages.
 %
 First, the bulk entropy is an adiabatic invariant\cite{gibbs,
-  hertz1910a, *hertz1910b, rugh2001, adib2002, dunkel2014}
+  hertz1910a, *hertz1910b, munster, becker, cagin1988, rugh2001, adib2002, dunkel2014}
   that maintains constant
   under a slow parameter change,
   %in the mechanical sense.
@@ -1952,7 +1955,7 @@ which makes comparison to results from the canonical ensemble easier.
   depends on both $E$ and $\lambda$,
   %
   $$
-  \Omega(E, \lambda)
+  \Phi(E, \lambda)
   =
   \int \Theta\bigl(
     E - H(\mathbf p, \mathbf q, \lambda)
@@ -1963,15 +1966,15 @@ which makes comparison to results from the canonical ensemble easier.
   %
   The rate of change is
   \begin{align*}
-  \frac{ d \Omega } { dt }
+  \frac{ d \Phi } { dt }
   &=
   \left(
-    \frac{ \partial \Omega } { \partial E }
+    \frac{ \partial \Phi } { \partial E }
   \right)_\lambda
   \frac{ dE } { dt }
   +
   \left(
-    \frac{ \partial \Omega } { \partial \lambda }
+    \frac{ \partial \Phi } { \partial \lambda }
   \right)_E
   \frac{ d\lambda } { dt }
   .
@@ -2004,10 +2007,10 @@ which makes comparison to results from the canonical ensemble easier.
   to compute $dE/dt$,
   %
   \begin{align*}
-  \frac{ d \Omega } { dt }
+  \frac{ d \Phi } { dt }
   &=
   \left(
-    \frac{ \partial \Omega } { \partial E }
+    \frac{ \partial \Phi } { \partial E }
   \right)_\lambda
   \overline{
     \left(
@@ -2017,7 +2020,7 @@ which makes comparison to results from the canonical ensemble easier.
   \frac{ d\lambda } { dt }
   +
   \left(
-    \frac{ \partial \Omega } { \partial \lambda }
+    \frac{ \partial \Phi } { \partial \lambda }
   \right)_E
   \frac{ d\lambda } { dt }
   .
@@ -2026,7 +2029,7 @@ which makes comparison to results from the canonical ensemble easier.
   But we also have
   \begin{align*}
   \left(
-    \frac{ \partial \Omega } { \partial E }
+    \frac{ \partial \Phi } { \partial E }
   \right)_\lambda
   &=
   \int
@@ -2035,11 +2038,11 @@ which makes comparison to results from the canonical ensemble easier.
   \bigr)
   \, d\mathbf p \, d\mathbf q
   =
-  \omega(E, \lambda)
+  \Omega(E, \lambda)
   ,
   \\
   \left(
-    \frac{ \partial \Omega } { \partial \lambda }
+    \frac{ \partial \Phi } { \partial \lambda }
   \right)_E
   &=
   -\int
@@ -2052,12 +2055,12 @@ which makes comparison to results from the canonical ensemble easier.
   -\left\langle
     \frac{ \partial H } { \partial \lambda }
   \right\rangle
-  \omega(E, \lambda)
+  \Omega(E, \lambda)
   .
   \end{align*}
   So
   \begin{align*}
-  \frac{ d \Omega } { dt }
+  \frac{ d \Phi } { dt }
   &=
   \left[
     \overline{
@@ -2070,7 +2073,7 @@ which makes comparison to results from the canonical ensemble easier.
       \frac{ \partial H } { \partial \lambda }
     \right\rangle
   \right]
-  \omega(E, \lambda) \,
+  \Omega(E, \lambda) \,
   \frac{ d\lambda } { dt }
   .
   \end{align*}
@@ -2080,9 +2083,9 @@ which makes comparison to results from the canonical ensemble easier.
   are the same,
   the two terms in the parentheses cancel.
   %
-  Thus, $d\Omega/dt = 0$.
+  Thus, $d\Phi/dt = 0$.
   In other words,
-  $\Omega(E, \lambda)$, hence $S_\Omega(E, \lambda)$,
+  $\Phi(E, \lambda)$, hence $S_\Phi(E, \lambda)$,
   is an adiabatic invariant---a quantity that holds constant
   during an adiabatic process.
 }
@@ -2095,7 +2098,7 @@ which makes comparison to results from the canonical ensemble easier.
       x_i \,
       \frac{ \partial H } { \partial x_j }
     \right\rangle
-    \omega(E)
+    \Omega(E)
     &=
     \left\langle
       x_i \,
@@ -2123,7 +2126,7 @@ which makes comparison to results from the canonical ensemble easier.
       \bigr)
     \right\rangle
     =
-    \delta_{i, j} \, \Omega(E)
+    \delta_{i, j} \, \Phi(E)
     .
   \end{align*}
   %
@@ -2135,7 +2138,7 @@ which makes comparison to results from the canonical ensemble easier.
       \frac{ \partial H } { \partial x_j }
     \right\rangle
     =
-    \delta_{i, j} \, T_\Omega(E)
+    \delta_{i, j} \, T_\Phi(E)
     .
   \end{align*}
 }
