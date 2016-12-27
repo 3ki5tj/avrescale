@@ -264,58 +264,79 @@ defined by
 $H(\mathbf x) = E$,
 where $H(\mathbf x)$ is the Hamiltonian function.
 %
-The area of the hypersurface gives the density of states,
+The volume enclosed by the hypersurface,
+%
+\begin{equation}
+  \Phi(E)
+  =
+  \int
+    \Theta\bigl( E - H(\mathbf x) \bigr)
+    \, d\mathbf x
+  ,
+  %\notag
+  \label{eq:PhiE}
+\end{equation}
+%
+defines a bulk entropy as $S_\Phi = \ln \Phi(E)$,
+where, $\Theta(y)$ is the step function,
+which gives $1.0$ for a positive $y$, or $0.0$ otherwise.
+%
+The derivative of the entropy
+%
+\begin{equation}
+  \beta(E)
+  =
+  \frac{1}{ k_B \, T(E) }
+  =
+  \frac{ d }{ dE }
+  \ln \Phi(E)
+  =
+  \frac{ \Phi'(E) }
+       { \Phi(E)  }
+  .
+  \label{eq:betaE_def}
+\end{equation}
+%
+defines a microcanonical temperature,
+which is a function of $E$.
+%
+Alternatively, the entropy may be defined
+as the logarithm of the derivative,
+$\Phi'(E) = \Omega(E)$,
 %
 \begin{equation}
   \Omega(E)
   =
   \int
-    \delta\bigl( H(\mathbf x) - E \bigr)
+    \delta\bigl( E - H(\mathbf x) \bigr)
     \, d\mathbf x
   ,
   \notag
   %\label{eq:OmegaE}
 \end{equation}
 %
-and the microcanonical temperature,
-defined via the inverse temperature,
-$\beta = 1/(k_B T)$,
-is given by
-%
-\begin{equation}
-  \beta(E)
-  =
-  \frac{ d }{ dE }
-  \ln \Omega(E)
-  =
-  \frac{ \Omega'(E) }
-       { \Omega(E)  }
-  ,
-  \label{eq:betaE_def}
-\end{equation}
-%
-and is, therefore, a function of $E$.
-%
+
+
 
 By velocity scaling, we wish to
 find a value of the total energy, $E^*$,
 such that the microcanonical temperature
-is equal to the target value, $\beta^*$,
+is equal to the target value, $T^*$,
 i.e., the solution of
 %
 \begin{equation}
-  \beta(E^*)
+  T(E^*)
   =
-  \beta^*
+  T^*
   .
-  \label{eq:beta_star}
+  \label{eq:T_star}
 \end{equation}
 %
-Unfortunately, the temperature function, $\beta(E)$,
+Unfortunately, the temperature function, $T(E)$,
 is usually unknown in advance
 and must be learned gradually from simulation.
 %
-So is the solution of Eq. \eqref{eq:beta_star}.
+So is the solution of Eq. \eqref{eq:T_star}.
 %
 Below, we review an adaptive averaging technique
 which offers a way of gradually improving
@@ -453,9 +474,9 @@ For this, we shall form
 an independent estimate of
 the instantaneous temperature, $\beta_t$,
 (detailed in the next subsection)
-and solve a linearized version of Eq. \eqref{eq:beta_star}.
+and solve a linearized version of Eq. \eqref{eq:T_star}.
 
-Linearizing Eq. \eqref{eq:beta_star} around the solution
+Linearizing Eq. \eqref{eq:T_star} around the solution
 yields
 %
 \begin{equation*}
@@ -1726,11 +1747,6 @@ that is based on the integrated density of states,
 %
 which is the primitive function of the density of states.
 %
-Here, $\Theta(y)$ is the step function,
-which gives $1.0$ for a positive $y$, or $0.0$ otherwise.
-%
-Since $\Theta'(y) = \delta(y)$, we have
-$\Phi'(E) = \Omega(E)$.
 
 This definition results in a temperature that
 agrees with the commonly-used definition,
