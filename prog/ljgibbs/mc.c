@@ -15,11 +15,14 @@ const char *fnpos = "lj.pos";
 
 
 /* energy increase of a new position */
-double lj_denp(lj_t *lj, double *xi)
+double lj_widom(lj_t *lj, double beta)
 {
-  double dx[D], l = lj->l, invl = 1/l;
-  double dr2, ir2, ir6, ep, ep6 = 0, ep12 = 0, eptail = 0;
-  int j, n = lj->n;
+  double xi[D], dx[D], l = lj->l, invl = 1/l;
+  double dr2, ir2, ir6, de, ep, ep6 = 0, ep12 = 0, eptail = 0;
+  int d, j, n = lj->n;
+
+  /* randomly choose a position */
+  for ( d = 0; d < D; d++ ) xi[d] = rand01() * lj->l;
 
   /* compute the energy change */
   for ( j = 0; j < n; j++ ) {
@@ -36,20 +39,12 @@ double lj_denp(lj_t *lj, double *xi)
 
   /* compute the change of tail correction */
   eptail = lj_gettail(lj->rc, (n + 1)/lj->vol, n, NULL);
-  return ep + eptail - lj->epot_tail;
+  de = ep + eptail - lj->epot_tail;
+
+  return exp(-beta * de);
 }
 
-double lj_widom(lj_t *lj, double beta)
-{
-  double xi[D], de;
-  int d;
 
-  /* randomly choose a position */
-  for ( d = 0; d < D; d++ ) xi[d] = rand01() * lj->l;
-
-  de = lj_denp(lj, xi);
-  return exp(-beta*de);
-}
 
 int main(void)
 {
