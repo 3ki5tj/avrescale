@@ -96,9 +96,7 @@ int lj_vmove(lj_t *lj, double beta, double cvol, double kvol)
     for ( i = 0; i < lj->n; i++ ) {
       vsmul(lj->x[i], s);
     }
-    for ( i = 0; i < lj->n * lj->n; i++ ) {
-      lj->r2ij[i] *= ss;
-    }
+    lj_energy(lj);
   }
   return acc;
 }
@@ -143,6 +141,7 @@ int lj_nmove(lj_t *lj, double beta, double cnr, double knr)
       lj->n = n + 1;
       lj_setrho(lj, lj->n/lj->vol);
       lj->dof = lj->n * D;
+      lj_energy(lj);
       //printf("de %g\n", de);
     }
 
@@ -182,6 +181,7 @@ int lj_nmove(lj_t *lj, double beta, double cnr, double knr)
       lj->n = n - 1;
       lj_setrho(lj, lj->n/lj->vol);
       lj->dof = lj->n * D;
+      lj_energy(lj);
     }
   }
 
@@ -289,11 +289,11 @@ int main(void)
     }
     if ( t % nstvmov == 0 ) {
       vexchange(lj, cvol, beta, t / nstvmov, avp);
+      //nexchange(lj, cnr, beta, t / nstvmov, avwid);
       //printf("cvol %g, %g, vol %g, %g, p %g, %g, cnr %g, %g\n",
       //    cvol[0], cvol[1], lj[0]->vol, lj[1]->vol,
       //    av_getave(&avp[0]), av_getave(&avp[1]),
       //    cnr[0], cnr[1]);
-      //nexchange(lj, cnr, beta, t / nstvmov, avwid);
       //getchar();
     }
     if ( t % 100000 == 0 ) {

@@ -1,15 +1,16 @@
 /* basic Monte Carlo simulation */
-#include "lj.h"
+#include "lj_npr.h"
+#include "av.h"
+#include "bpav.h"
 
 
 
 int n = 108;
 int nequil = 100000;
 int nsteps = 1000000;
-double rho = 0.08;
+double rho = 0.62;
 double tp = 1.15;
 double rcdef = 1e9; /* half-box cutoff */
-double amp = 0.2; /* Monte Carlo move size */
 const char *fnpos = "lj.pos";
 
 
@@ -51,10 +52,14 @@ int main(void)
   int t, acc;
   lj_t *lj;
   double epsm = 0, psm = 0, accsm = 0, widsm = 0;
-  double mu;
+  double mu, beta = 1/tp, bp, dbp, amp = 0.1/rho;
+  bpav_t bpav[1];
 
   mtscramble(time(NULL));
+  bpav_clear(bpav);
   lj = lj_open(n, rho, rcdef);
+  lj->dof = n * D;
+  //lj->vol -= 0.5; lj_setrho(lj, n / lj->vol); 
   lj_energy(lj);
   /* equilibration */
   for ( t = 1; t <= nequil; t++ )
@@ -65,14 +70,17 @@ int main(void)
     epsm += lj->epot;
     psm += lj_calcp(lj, tp);
     accsm += acc;
-    widsm += lj_widom(lj, 1/tp);
+    widsm += lj_widom(lj, beta);
+    bpav_add(bpav, lj, beta);
   }
   lj_writepos(lj, lj->x, lj->v, fnpos);
   lj_close(lj);
   mu = tp * log((n+1)/lj->vol) - tp * log(widsm/nsteps);
+  bp = bpav_get(bpav, &dbp);
   printf("rho %g, tp %g, ep %g, p %g, mu %g, acc %g%%\n",
       rho, tp, epsm/nsteps/n, psm/nsteps,
       mu, 100.*accsm/nsteps);
+  printf("vol %g, bp %g, dbp %g\n", lj->vol, bp, dbp);
   return 0;
 }
 

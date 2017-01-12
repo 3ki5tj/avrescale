@@ -95,9 +95,6 @@ int lj_vmove(lj_t *lj, double beta, double vol, double kvol)
     for ( i = 0; i < lj->n; i++ ) {
       vsmul(lj->x[i], s);
     }
-    for ( i = 0; i < lj->n * lj->n; i++ ) {
-      lj->r2ij[i] *= ss;
-    }
   }
   return acc;
 }

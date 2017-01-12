@@ -14,6 +14,16 @@ static double av_getave(av_t *av)
   return av->cnt > 0 ? av->sumx / av->cnt : 0;
 }
 
+static double av_getvar(av_t *av)
+{
+  double x = av_getave(av);
+  if ( av->cnt > 0 ) {
+    return av->sumx2 / av->cnt - x * x;
+  } else {
+    return 0;
+  }
+}
+
 static void av_clear(av_t *av)
 {
   av->cnt = 0;
