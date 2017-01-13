@@ -82,6 +82,7 @@ void bpav_add(bpav_t *bpav, lj_t *lj, double beta)
 {
   bpav->bp = lj_getbp(lj, beta, &bpav->bvir, &bpav->dbp);
   bpav->de = lj_denp(lj, &bpav->dvir);
+
   bpav->w = exp(-beta * bpav->de);
   bpav->bp1 = bpav->bp + bpav->dvir * beta / (D * lj->vol);
 

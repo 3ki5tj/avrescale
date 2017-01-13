@@ -7,8 +7,9 @@
 
 int n = 108;
 int nequil = 100000;
-int nsteps = 10000000;
-double rho = 0.7;
+int nsteps = 5000000;
+double rho = 0.605; // 0.07; // 0.605;
+//double rho = 0.07;
 double tp = 1.15;
 double rcdef = 1e9; /* half-box cutoff */
 const char *fnpos = "lj.pos";
@@ -43,6 +44,8 @@ int main(void)
   lj_writepos(lj, lj->x, lj->v, fnpos);
   lj_close(lj);
   bp = bpav_get(bpav, &dbp, &w, &dlnw);
+  w *= lj->vol / lj->n;
+  dlnw += 1./lj->vol;
   printf("rho %g, tp %g, vol %g, ep %g, bp %g, dbp %g, w %g, lnw %g, dlnw %g, acc %g%%\n",
       rho, tp, lj->vol, epsm / nsteps, bp, dbp, w, log(w), dlnw,
       100.*accsm / nsteps);
