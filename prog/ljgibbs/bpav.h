@@ -1,11 +1,13 @@
 typedef struct {
   double cnt, sbp, sdbp, sbvir, sbvir2;
-  double sw, swbp;
+  double sw, sw1, swbp;
   double bp, dbp, bvir, w, de, dvir, bp1;
+  int n;
+  double vol;
 } bpav_t;
 
 
-void bpav_clear(bpav_t *bpav)
+__inline void bpav_clear(bpav_t *bpav)
 {
   bpav->cnt = 0;
   bpav->sbp = 0;
@@ -16,8 +18,8 @@ void bpav_clear(bpav_t *bpav)
   bpav->swbp = 0;
 }
 
-/* get pressure and derivative */
-static double lj_getbp(lj_t *lj, double beta,
+/* get beta * pressure and the derivative d(beta*p)/d(1/vol) */
+__inline static double lj_getbp(lj_t *lj, double beta,
     double *bvir, double *dbp)
 {
   int n = lj->n;
@@ -31,15 +33,15 @@ static double lj_getbp(lj_t *lj, double beta,
   /* the tail correction for 3D */
   virtail = 32 * M_PI * rho * n / 3 * (irc6 - 1.5) * irc3;
   ytail = 32 * M_PI * rho * n * (4*irc6 - 3) * irc3;
-  *bvir = beta * (lj->vir + virtail) / (D * vol);
-  bp = n / vol + *bvir;
+  *bvir = beta * (lj->vir + virtail) / D;
+  bp = (n + *bvir) / vol;
   y = 144 * lj->ep12 - 36 * lj->ep6 + ytail;
-  *dbp = -bp/vol - beta * y / (D*D*vol*vol);
+  *dbp = bp*vol + beta * y / (D*D);
   return bp;
 }
 
 /* energy and virial increase of adding a new particle */
-double lj_denp(lj_t *lj, double *dvir)
+__inline static double lj_denp(lj_t *lj, double *dvir)
 {
   double xi[D], dx[D], l = lj->l, invl = 1/l, vol = lj->vol;
   double dr2, ir2, ir6, de, ep, ep6 = 0, ep12 = 0, eptail = 0;
@@ -78,15 +80,15 @@ double lj_denp(lj_t *lj, double *dvir)
   return de;
 }
 
-void bpav_add(bpav_t *bpav, lj_t *lj, double beta)
+__inline void bpav_add(bpav_t *bpav, lj_t *lj, double beta)
 {
   bpav->bp = lj_getbp(lj, beta, &bpav->bvir, &bpav->dbp);
   bpav->de = lj_denp(lj, &bpav->dvir);
 
-  bpav->w = exp(-beta * bpav->de);
+  bpav->w = exp(-beta * bpav->de) * lj->vol / (lj->n + 1);
   bpav->bp1 = bpav->bp + bpav->dvir * beta / (D * lj->vol);
 
-  if ( fabs(bpav->dbp) > 10000 ) {
+  if ( fabs(bpav->dbp) > 1e20 ) {
     fprintf(stderr, "dbp %g\n", bpav->dbp);
     exit(1);
   }
@@ -98,11 +100,21 @@ void bpav_add(bpav_t *bpav, lj_t *lj, double beta)
   bpav->sbvir2 += bpav->bvir * bpav->bvir;
   bpav->sw += bpav->w;
   bpav->swbp += bpav->w * bpav->bp1;
+
+  /* save the number of particle and volume */
+  bpav->n = lj->n;
+  bpav->vol = lj->vol;
 }
 
-double bpav_get(bpav_t *bpav, double *dbp, double *w, double *dlnw)
+/* return the beta * pressure
+ *   *dbp: d(beta*p)/d(rho)
+ *   *w: < exp(-beta DU) >
+ *   *dlnw: d(lnw)/d(lnV)
+ * */
+__inline double bpav_get(bpav_t *bpav, double *dbp, double *w, double *dlnw)
 {
-  double cnt = bpav->cnt, bp, bvir, var;
+  int n = bpav->n;
+  double cnt = bpav->cnt, bp, bvir, var, vol = bpav->vol;
   if ( cnt <= 0 ) {
     *dbp = 0;
     *w = 0;
@@ -112,9 +124,9 @@ double bpav_get(bpav_t *bpav, double *dbp, double *w, double *dlnw)
   bp = bpav->sbp / cnt;
   bvir = bpav->sbvir / cnt;
   var = bpav->sbvir2 / cnt - bvir * bvir;
-  *dbp = bpav->sdbp / cnt + var;
+  *dbp = (bpav->sdbp / cnt - var) / n;
   *w = bpav->sw / cnt;
-  *dlnw = bpav->swbp / bpav->sw - bp;
+  *dlnw = 1 + (bpav->swbp / bpav->sw - bp) * vol;
   return bp;
 }
 

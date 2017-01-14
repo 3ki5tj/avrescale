@@ -465,7 +465,6 @@ __inline static double lj_depot(lj_t *lj, int i, double *xi,
 __inline static void lj_commit(lj_t *lj, int i, const double *xi,
     double du6, double du12, double dvir)
 {
-  int j, n = lj->n;
   double du = du12 - du6;
 
   vwrap( vcopy(lj->x[i], xi), lj->l );

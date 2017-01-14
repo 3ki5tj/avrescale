@@ -1,7 +1,7 @@
 /* Monte Carlo simulation with harmonic restraints */
 #include <time.h>
 #include "av.h"
-#include "lj.h"
+#include "lj_npr.h"
 
 
 
