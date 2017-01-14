@@ -86,6 +86,11 @@ void bpav_add(bpav_t *bpav, lj_t *lj, double beta)
   bpav->w = exp(-beta * bpav->de);
   bpav->bp1 = bpav->bp + bpav->dvir * beta / (D * lj->vol);
 
+  if ( fabs(bpav->dbp) > 10000 ) {
+    fprintf(stderr, "dbp %g\n", bpav->dbp);
+    exit(1);
+  }
+
   bpav->cnt += 1;
   bpav->sbp += bpav->bp;
   bpav->sdbp += bpav->dbp;
@@ -100,6 +105,8 @@ double bpav_get(bpav_t *bpav, double *dbp, double *w, double *dlnw)
   double cnt = bpav->cnt, bp, bvir, var;
   if ( cnt <= 0 ) {
     *dbp = 0;
+    *w = 0;
+    *dlnw = 0;
     return 0;
   }
   bp = bpav->sbp / cnt;

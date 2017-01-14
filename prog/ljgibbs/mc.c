@@ -8,7 +8,7 @@
 int n = 108;
 int nequil = 100000;
 int nsteps = 5000000;
-double rho = 0.605; // 0.07; // 0.605;
+double rho = 0.10; // 0.07; // 0.605;
 //double rho = 0.07;
 double tp = 1.15;
 double rcdef = 1e9; /* half-box cutoff */
@@ -16,7 +16,7 @@ const char *fnpos = "lj.pos";
 
 
 
-int main(void)
+int main(int argc, char **argv)
 {
   int t, acc;
   lj_t *lj;
@@ -24,6 +24,8 @@ int main(void)
   double beta = 1/tp, bp, dbp, w, dlnw, amp = 0.1/rho;
   bpav_t bpav[1];
 
+  if ( argc > 1 ) rho = atof(argv[1]);
+  if ( argc > 2 ) nsteps = atoi(argv[2]);
   mtscramble(time(NULL));
   bpav_clear(bpav);
   lj = lj_open(n, rho, rcdef);
