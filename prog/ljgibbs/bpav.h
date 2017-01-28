@@ -1,21 +1,19 @@
 typedef struct {
-  double cnt, sbp, sdbp, sbvir, sbvir2;
-  double sw, sw1, swbp;
-  double bp, dbp, bvir, w, de, dvir, bp1;
-  int n;
-  double vol;
+  double cnt, sbpV, sdbp, sbvir, sbvir2;
+  double sw, swbpV;
+  double bp, dbp, bvir, w, de, dvir, bpV1;
 } bpav_t;
 
 
 __inline void bpav_clear(bpav_t *bpav)
 {
   bpav->cnt = 0;
-  bpav->sbp = 0;
+  bpav->sbpV = 0;
   bpav->sdbp = 0;
   bpav->sbvir = 0;
   bpav->sbvir2 = 0;
   bpav->sw = 0;
-  bpav->swbp = 0;
+  bpav->swbpV = 0;
 }
 
 /* get beta * pressure and the derivative d(beta*p)/d(1/vol) */
@@ -82,11 +80,13 @@ __inline static double lj_denp(lj_t *lj, double *dvir)
 
 __inline void bpav_add(bpav_t *bpav, lj_t *lj, double beta)
 {
+  double vol = lj->vol;
+
   bpav->bp = lj_getbp(lj, beta, &bpav->bvir, &bpav->dbp);
   bpav->de = lj_denp(lj, &bpav->dvir);
 
-  bpav->w = exp(-beta * bpav->de) * lj->vol / (lj->n + 1);
-  bpav->bp1 = bpav->bp + bpav->dvir * beta / (D * lj->vol);
+  bpav->w = exp(-beta * bpav->de) * vol / (lj->n + 1);
+  bpav->bpV1 = bpav->bp * vol + beta * bpav->dvir / D;
 
   if ( fabs(bpav->dbp) > 1e20 ) {
     fprintf(stderr, "dbp %g\n", bpav->dbp);
@@ -94,16 +94,12 @@ __inline void bpav_add(bpav_t *bpav, lj_t *lj, double beta)
   }
 
   bpav->cnt += 1;
-  bpav->sbp += bpav->bp;
+  bpav->sbpV += bpav->bp * vol;
   bpav->sdbp += bpav->dbp;
   bpav->sbvir += bpav->bvir;
   bpav->sbvir2 += bpav->bvir * bpav->bvir;
   bpav->sw += bpav->w;
-  bpav->swbp += bpav->w * bpav->bp1;
-
-  /* save the number of particle and volume */
-  bpav->n = lj->n;
-  bpav->vol = lj->vol;
+  bpav->swbpV += bpav->w * bpav->bpV1;
 }
 
 /* return the beta * pressure
@@ -111,23 +107,23 @@ __inline void bpav_add(bpav_t *bpav, lj_t *lj, double beta)
  *   *w: < exp(-beta DU) >
  *   *dlnw: d(lnw)/d(lnV)
  * */
-__inline double bpav_get(bpav_t *bpav, double *dbp, double *w, double *dlnw)
+__inline double bpav_get(bpav_t *bpav, lj_t *lj, double *dbp, double *w, double *dlnw)
 {
-  int n = bpav->n;
-  double cnt = bpav->cnt, bp, bvir, var, vol = bpav->vol;
+  double cnt = bpav->cnt, bpV, bvir, var, vol = lj->vol;
+
   if ( cnt <= 0 ) {
     *dbp = 0;
     *w = 0;
     *dlnw = 0;
     return 0;
   }
-  bp = bpav->sbp / cnt;
+  bpV = bpav->sbpV / cnt;
   bvir = bpav->sbvir / cnt;
   var = bpav->sbvir2 / cnt - bvir * bvir;
-  *dbp = (bpav->sdbp / cnt - var) / n;
+  *dbp = (bpav->sdbp / cnt - var) / lj->n;
   *w = bpav->sw / cnt;
-  *dlnw = 1 + (bpav->swbp / bpav->sw - bp) * vol;
-  return bp;
+  *dlnw = 1 + bpav->swbpV / bpav->sw - bpV;
+  return bpV / vol;
 }
 
 

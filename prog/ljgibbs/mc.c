@@ -1,4 +1,5 @@
 /* basic Monte Carlo simulation */
+#include <time.h>
 #include "lj_npr.h"
 #include "av.h"
 #include "bpav.h"
@@ -46,7 +47,7 @@ int main(int argc, char **argv)
   }
   lj_writepos(lj, lj->x, lj->v, fnpos);
   lj_close(lj);
-  bp = bpav_get(bpav, &dbp, &w, &dlnw);
+  bp = bpav_get(bpav, lj, &dbp, &w, &dlnw);
   printf("rho %g, tp %g, vol %g, ep %g, bp %g, d(bp)/d(rho) %g, "
          "w %g, lnw %g, d(lnw)/d(lnV) %g, acc %g%%\n",
       rho, tp, lj->vol, epsm / nsteps, bp, dbp, w, log(w), dlnw,
