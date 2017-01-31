@@ -2,8 +2,7 @@
 
 set encoding cp1250 # make the minus sign longer
 set terminal push
-# dl 3.0 make dashed line longer
-set terminal postscript eps enhanced dl 3.0 size 5, 3.7 font "Times, 32"
+set terminal postscript eps enhanced size 5, 3.7 font "Times, 32"
 set output "etraj.eps"
 set multiplot
 

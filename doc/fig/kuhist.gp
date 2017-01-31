@@ -1,11 +1,12 @@
 #!/usr/bin/env gnuplot
 
-# For the raw data, `make uhist` under data/wb
+# Modified for GNUplot 5.0
+# For the raw data, `make uhist khist` under data/wb
 
 set encoding cp1250 # make the minus sign longer
 set terminal push
 # dl 3.0 make dashed line longer
-set terminal postscript eps enhanced dl 3.0 size 7, 3.5 font "Times, 32"
+set terminal postscript eps enhanced color dl 1.0 size 7, 3.5 font "Times, 32"
 set output "kuhist.eps"
 set multiplot
 
@@ -28,14 +29,19 @@ set mytics 5
 set yrange [:0.018]
 #set ylabel "Total energy, {/Times-Italic E}" offset 0.5, 0
 
+set linetype 1 lw 12.0 lc rgb "#c0c0c0"
+set linetype 2 lw  4.0 lc rgb "#000000" dt (10,6)
+set linetype 3 lw  2.0 lc rgb "#000000"
+set linetype 5 lw  6.0 lc rgb "#000000" dt (1,2)
+
 #set key right Left reverse spacing 1.1 width -7
 unset key
 
 plot [:][:] \
-    "../../data/wb/fix/Kfix.his"         u ($1):($2) w l  lt 1  lw 12.0 lc rgb "#c0c0c0" t "Microcanonical, {/Times-Italic NVE}", \
-    "../../data/wb/adp/Kadp.his"         u ($1):($2) w l  lt 2  lw  3.0 t "Adaptive velocity scaling", \
-    "../../data/wb/reg100/Kreg.his"      u ($1):($2) every 2 w p  pt 6  ps 1.5 lw  2.0 t "Regular velocity scaling", \
-    "../../data/wb/can_vrs/Kcan_vrs.his" u ($1):($2) w l  lt 5  lw  5.0 t "Canonical, {/Times-Italic NVT}", \
+    "../../data/wb/fix/Kfix.his"         u ($1):($2) w l  lt 1  t "Microcanonical, {/Times-Italic NVE}", \
+    "../../data/wb/adp/Kadp.his"         u ($1):($2) w l  lt 2  t "Adaptive velocity scaling", \
+    "../../data/wb/reg100/Kreg.his"      u ($1):($2) every 2 w p  pt 6  ps 1.5 lt 3 t "Regular velocity scaling", \
+    "../../data/wb/can_vrs/Kcan_vrs.his" u ($1):($2) w l  lt 5  t "Canonical, {/Times-Italic NVT}", \
 
 
 
@@ -52,10 +58,10 @@ set format y ""
 unset key
 
 plot [:][:] \
-    "../../data/wb/fix/Ufix.his"         u ($1):($2) w l  lt 1  lw 12.0 lc rgb "#c0c0c0" t "Microcanonical, {/Times-Italic NVE}", \
-    "../../data/wb/adp/Uadp.his"         u ($1):($2) w l  lt 2  lw  3.0 t "Adaptive velocity scaling", \
-    "../../data/wb/reg100/Ureg.his"      u ($1):($2) every 2 w p  pt 6  ps 1.5 lw  2.0 t "Regular velocity scaling", \
-    "../../data/wb/can_vrs/Ucan_vrs.his" u ($1):($2) w l  lt 5  lw  5.0 t "Canonical, {/Times-Italic NVT}", \
+    "../../data/wb/fix/Ufix.his"         u ($1):($2) w l  lt 1  t "Microcanonical, {/Times-Italic NVE}", \
+    "../../data/wb/adp/Uadp.his"         u ($1):($2) w l  lt 2  t "Adaptive velocity scaling", \
+    "../../data/wb/reg100/Ureg.his"      u ($1):($2) every 2 w p  pt 6  ps 1.5 lt 3 t "Regular velocity scaling", \
+    "../../data/wb/can_vrs/Ucan_vrs.his" u ($1):($2) w l  lt 5  t "Canonical, {/Times-Italic NVT}", \
 
 
 # dummy plots for the key
@@ -65,13 +71,13 @@ set origin 0.06, ht - 0.05
 
 set key below horizontal Left reverse maxrows 1 spacing 1.3
 plot [] \
-    x lt 1 lw 12.0 lc rgb "#c0c0c0" t "Microcanonical, {/Times-Italic NVE}", \
-    x lt 2 lw  3.0 t "Adaptive velocity scaling"
+    x lt 1 t "Microcanonical, {/Times-Italic NVE}", \
+    x lt 2 t "Adaptive velocity scaling"
 
 set origin 0.51, ht - 0.05
 plot [] \
-    x w p pt 6 ps 2.0 lw  2.0 t "Regular velocity scaling", \
-    x lt 5 lw  5.0 t "Canonical, {/Times-Italic NVT}"
+    x w p pt 6 ps 1.5 lt 3 t "Regular velocity scaling", \
+    x lt 5 t "Canonical, {/Times-Italic NVT}"
 
 
 unset multiplot

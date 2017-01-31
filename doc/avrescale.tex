@@ -105,9 +105,14 @@ the Berendsen thermostat\cite{berendsen1984}
 is a notable example.
 %
 There,
-the kinetic energy in each scaling operation
-is given by
-$\left( K^* - \bar K \right)/\tau$,
+the kinetic energy is changed in each scaling operation
+by
+%
+\begin{equation}
+  \delta E = \frac{ K^* - \bar K } { \tau },
+  \label{eq:Berendsen}
+\end{equation}
+%
 with $\tau^{-1}$ being the rate of damping.
 
 The above schemes, albeit effective,
@@ -324,8 +329,7 @@ $\Omega(E) \equiv \Phi'(E)$,
     \delta\bigl( E - H(\mathbf x) \bigr)
     \, d\mathbf x
   ,
-  \notag
-  %\label{eq:OmegaE}
+  \label{eq:DOSE}
 \end{equation}
 %
 which gives rise to a surface microcanonical temperature
@@ -347,20 +351,16 @@ which gives rise to a surface microcanonical temperature
 
 
 Both temperature definitions can be converted to
-ensemble averages (cf. Appendix \ref{sec:microT})
-that are equivalent to
-the corresponding averages from the MD trajectory
-under the ergodicity hypothesis.
+ensemble averages (cf. Appendix \ref{sec:microT}),
+which can be measured as the equivalent
+trajectory averages from MD simulations.
 %
 For example, for the bulk definition, we have
 %
 \begin{equation}
   k_B \, T_\Phi(E)
   =
-  \frac{ 2 } { N_f }
-  \left\langle
-    K
-  \right\rangle_E
+  \frac{ 2 \left\langle K \right\rangle_E } { N_f }
   ,
   \label{eq:TE_K}
 \end{equation}
@@ -668,7 +668,8 @@ can be computed as\cite{cagin1988}
   %  \Delta K
   %  \Delta \left( K^{-1} \right)
   %\right\rangle
-  \label{eq:dTdE}
+  \notag
+  %\label{eq:dTdE}
   \\
   &\approx
   1
@@ -756,7 +757,8 @@ such that
   =
   \frac{ 2 \, \gamma } { N_f }
   .
-  \label{eq:dT_approx}
+  \notag
+  %\label{eq:dT_approx}
 \end{equation}
 %
 For a physical system, we expect $0 \le \gamma \le 1$.
@@ -764,10 +766,27 @@ For a physical system, we expect $0 \le \gamma \le 1$.
 %The value of $\gamma$ is computed for a model system
 %in Appendix \ref{sec:model}.
 
-We may use the ratio in two ways.
+With the above definition, we can rewrite Eq. \eqref{eq:dE_final} as
 %
-First, as a safeguard,
-we may propose a minimal value of $\gamma$, say $0.1$,
+\begin{equation}
+  \delta E_t
+  =
+  \frac{ K^* - K_t } { \gamma \, t }
+  .
+  \notag
+  %\label{eq:dE_gamma}
+\end{equation}
+%
+Comparing this to Eq. \eqref{eq:Berendsen},
+we find the adaptive velocity scaling scheme
+can be considered as a modification of the Berendsen thermostat
+with the damping factor $\tau$ being $\gamma \, t$,
+which increases as simulation progresses.
+
+
+We can use the ratio in two ways.
+%
+First, we may propose a minimal value of $\gamma$, say $0.1$,
 to prevent an overly small value from Eq. \eqref{eq:dT}.
 
 Second,
@@ -778,6 +797,42 @@ For example,
 for an explicit solvent simulation of TIP3P water\cite{jorgensen1983}
 at 300K, we find that the optimal $\gamma$
 to be around $0.33$.
+
+
+\subsection{Generalization}
+
+
+The adaptive velocity scaling scheme
+is a special application of the $1/t$ prescription
+in which we adjust the total energy
+to achieve the target temperature.
+%
+More generally, we may apply this technique
+to a pair of strongly correlated variables $x$ and $y$,
+to find the optimal value of a parameter, $x$,
+that corresponds to a target value, $y^*$, of an observable, $y$.
+%on the fly.
+%
+Then, instead of Eq. \eqref{eq:dE_beta},
+we have
+\begin{equation}
+  \delta x_t = \frac 1 t
+  \cdot
+  \frac{ y^* - y_t }
+       { y'(x^*) }
+  .
+  \label{eq:adjustxy}
+\end{equation}
+%
+For example, we may determine the value of volume in the $NVT$ ensemble
+that corresponds to a certain value of pressure.
+%
+%For example, one may determine the optimal
+Another example is the determination of the
+move size ($x$)
+in a Monte Carlo simulation
+in order to reaching a certain acceptance ratio ($y$).
+
 
 
 
@@ -989,9 +1044,9 @@ the adaptive velocity scaling scheme as
 \begin{equation}
   \delta E_t
   =
-  \frac{ \alpha(t) } { T'(E^*) }
+  \frac{ \alpha(t) } { k_B \, T'(E^*) }
   \left(
-   T^* -
+   k_B \, T^* -
    \frac{ 2 \, K_t } { N_f }
   \right)
   ,
@@ -1201,27 +1256,8 @@ to achieve the target temperature.
 More generally, we may apply this technique
 to a pair of strongly correlated variables $x$ and $y$,
 to find the optimal value of a parameter, $x$,
-that corresponds to a target value, $y^*$, of an observable, $y$.
+that corresponds to a target value of $y^*$.
 %on the fly.
-%
-Then, instead of Eq. \eqref{eq:dE_beta},
-we have
-$$
-\delta x_t = \frac 1 t
-\cdot
-\frac{ y^* - y_t }
-     { y'(x^*) }
-.
-$$
-%
-For example, we may determine the value of volume in the $NVT$ ensemble
-that corresponds to a certain value of pressure.
-%
-%For example, one may determine the optimal
-Another example is the determination of the
-move size ($x$)
-in a Monte Carlo simulation
-in order to reaching a certain acceptance ratio ($y$).
 %
 We expect this and similar parameter control schemes
 to be useful in molecular simulations.
@@ -1231,7 +1267,7 @@ to be useful in molecular simulations.
 
 \section{Acknowledgment}
 
-We thank Dr. J. Ma, Dr. M. W. Deem, Dr. Y. Mei, J. Wang,
+We thank Dr. J. Ma, Dr. M. W. Deem, Dr. Y. Mei,
 O. Nassar, Dr. C. Lai, Dr. S. Ou and D. Stuhlsatz
 for helpful discussions.
 We gratefully acknowledge the Robert A. Welch Foundation (H-0037),
@@ -1251,547 +1287,32 @@ the research results reported within this paper.
 
 
 
-\section{\label{sec:microT}
-Microcanonical temperature and its derivative}
+\section{\label{sec:Tsurf}
+Modification for the surface temperature}
 
 
 
-As mentioned in the main text,
-there are at least two common definitions of
-the microcanonical entropy,
-leading to slightly different values of the temperature
-(although the difference disappears in the thermodynamic limit).
+The adaptive velocity rescaling in the main text
+targets the bulk temperature.
 %
-In the main text, we have followed the bulk
-definition, as it appears to be more consistent
-with context of MD simulations.
-%
-Below, we review the difference,
-and the modifications needed to target the bulk temperature
-for the adaptive velocity scaling scheme.
+Below we list a few changes that need to be made
+for targeting the alternative surface definition.
 
-
-
-\subsection{Derivative of the bulk entropy}
-
-
-
-The bulk
-or Gibbs entropy\cite{cagin1988, haile, dunkel2014},
-$S_\Phi \equiv k_B \, \ln \Phi(E)$,
-is based on the hypervolume enclosed by an isoenergetic surface,
-Eq. \eqref{eq:PhiE}.
-%
-This definition results in a temperature, Eq. \eqref{eq:TE_K}
-that agrees with the commonly-used definition,
-Eq. \eqref{eq:K_canon}.
-%
-To derive this result,
-consider a vector field $\mathbf w$
-that satisfies $\nabla \cdot \mathbf w = 1$.
-Then
-%
-\begin{align*}
-  \Phi(E)
-  &=
-  \int
-    \left(
-      \nabla \cdot \mathbf w
-    \right)
-    \,
-    \Theta\bigl(
-      E - H(\mathbf x)
-    \bigr)
-    \, d\mathbf x
-  \\
-  &=
-  \int
-    \left( \mathbf w \cdot \nabla H \right)
-    \,
-    \delta\bigl(
-      E - H(\mathbf x)
-    \bigr)
-    \, d\mathbf x
-  \\
-  &= \langle \mathbf w \cdot \nabla H \rangle_E
-    \,
-    \Omega(E)
-  .
-\end{align*}
-%
-A convenient candidate of $\mathbf w$ is
-$\mathbf w = \mathbf p / N_f$.
-%
-Then,
-$\mathbf w \cdot \nabla H = 2 \, K / N_f$,
-and
-%
-\begin{equation}
-  k_B \, T_\Phi(E)
-  =
-  \frac{ \Phi(E) } { \Phi'(E) }
-  =
-  \frac{ \Phi(E) } { \Omega(E) }
-  =
-  \frac{ 2 \, \langle K \rangle_E } { N_f }
-  .
-  \label{eq:Tbulk}
-\end{equation}
-%
-Alternatively, this result may be derived using
-Laplace transform\cite{pearson1985, haile}.
-%
-%Further
-%%
-%\begin{align}
-%  k_B \, T'_\Phi(E)
-%  &=
-%  1 - k_B \, T_\Phi(E) \, \beta_\Omega(E)
-%  \label{eq:dTbulk}
-%  \\
-%  &=
-%  k_B \, T_\Phi(E)
-%  \left\langle
-%  K^{-1}
-%  \right\rangle_E
-%  +
-%  \left\langle
-%  \Delta \left( K^{-1} \right)
-%  \Delta K
-%  \right\rangle_E
-%  ,
-%  \notag
-%\end{align}
-%%
-%which can be approximated as a trajectory average
-%%
-%\begin{equation}
-%  k_B \, T'_\Phi(E^*)
-%  =
-%  k_B \, T^* \overline{ K_t^{-1} }
-%  +
-%  \mathrm{Cov}\left(
-%    K_t, K_t^{-1}
-%  \right)
-%  .
-%  \notag
-%\end{equation}
-%%
-%From Eq. \eqref{eq:dTbulk},
-%it is also clear that the surface microcanonical temperature,
-%$T_\Omega(E)$,
-%would be slightly greater than the bulk one, $T_\Phi(E)$.
-%
-%\begin{equation}
-%  \beta_\Phi(E)
-%  =
-%  \frac{ 1 } { k_B \, T_\Phi(E) }
-%  =
-%  \frac{ \Omega(E) } { \Phi(E) }
-%  =
-%  \frac{ N_f } { 2 \langle K \rangle_E }
-%\end{equation}
-%
-%\begin{equation}
-%  \beta'_\Phi(E)
-%  =
-%  \beta_\Phi^2(E)
-%  \left(
-%    \left\langle \frac 1 K \right\rangle_E
-%    \langle K \rangle_E
-%    -1
-%  \right)
-%  -
-%  \beta_\Phi(E)
-%  \left\langle \frac 1 K \right\rangle_E
-%  ,
-%\end{equation}
-%
-
-This definition has several advantages.
-%
-First, the bulk entropy is an adiabatic invariant\cite{gibbs,
-  hertz1910a, *hertz1910b, munster, becker, cagin1988, rugh2001, adib2002, dunkel2014}
-  that maintains constant
-  under a slow parameter change,
-  %in the mechanical sense.
-%
-which helps establish a mechanic model
-for the first law of thermodynamics.
-%
-Second, it is associated with a natural equipartition theorem\cite{
-  khinchin, dunkel2014}
-  that generalizes Eq. \eqref{eq:Tbulk}:
-$\left\langle x_i \, \partial H/\partial x_j \right\rangle = \delta_{ij} \, T_G(E)$,
-which makes comparison to results from the canonical ensemble easier.
-
-\note{
-  To show that
-  the integrated density of states
-  is an adiabatic invariant,
-  we assume that
-  the Hamiltonian $H(\mathbf x, \lambda)$
-  depends on a parameter $\lambda$
-  that changes slowly.
-  %
-  Then, the integrated density of states
-  depends on both $E$ and $\lambda$,
-  %
-  $$
-  \Phi(E, \lambda)
-  =
-  \int \Theta\bigl(
-    E - H(\mathbf p, \mathbf q, \lambda)
-  \bigr)
-  \, d\mathbf p \, d\mathbf q
-  .
-  $$
-  %
-  The rate of change is
-  \begin{align*}
-  \frac{ d \Phi } { dt }
-  &=
-  \left(
-    \frac{ \partial \Phi } { \partial E }
-  \right)_\lambda
-  \frac{ dE } { dt }
-  +
-  \left(
-    \frac{ \partial \Phi } { \partial \lambda }
-  \right)_E
-  \frac{ d\lambda } { dt }
-  .
-  \end{align*}
-  %
-  Under Newton's equation,
-  $d\mathbf p/dt = -\partial H/\partial \mathbf q$
-  and
-  $d\mathbf q/dt = \partial H/\partial \mathbf p$,
-  we have
-  $$
-  \frac{ dE } { dt }
-  =
-  \frac{ \partial H } { \partial \mathbf p }
-  \frac{ d \mathbf p } { d t }
-  +
-  \frac{ \partial H } { \partial \mathbf q }
-  \frac{ d \mathbf q } { d t }
-  +
-  \frac{ \partial H } { \partial \lambda }
-  \frac{ d \lambda } { dt }
-  =
-  \frac{ \partial H } { \partial \lambda }
-  \frac{ d \lambda } { dt }
-  .
-  $$
-  %
-  For a slowly changed $\lambda$,
-  we may time average $\partial H / \partial \lambda$
-  to compute $dE/dt$,
-  %
-  \begin{align*}
-  \frac{ d \Phi } { dt }
-  &=
-  \left(
-    \frac{ \partial \Phi } { \partial E }
-  \right)_\lambda
-  \overline{
-    \left(
-    \frac{ \partial H } { \partial \lambda }
-    \right)
-  }
-  \frac{ d\lambda } { dt }
-  +
-  \left(
-    \frac{ \partial \Phi } { \partial \lambda }
-  \right)_E
-  \frac{ d\lambda } { dt }
-  .
-  \end{align*}
-  %
-  But we also have
-  \begin{align*}
-  \left(
-    \frac{ \partial \Phi } { \partial E }
-  \right)_\lambda
-  &=
-  \int
-  \delta\bigl(
-    E - H(\mathbf p, \mathbf q, \lambda)
-  \bigr)
-  \, d\mathbf p \, d\mathbf q
-  =
-  \Omega(E, \lambda)
-  ,
-  \\
-  \left(
-    \frac{ \partial \Phi } { \partial \lambda }
-  \right)_E
-  &=
-  -\int
-  \frac{ \partial H } { \partial \lambda }
-  \delta\bigl(
-    E - H(\mathbf p, \mathbf q, \lambda)
-  \bigr)
-  \, d\mathbf p \, d\mathbf q
-  =
-  -\left\langle
-    \frac{ \partial H } { \partial \lambda }
-  \right\rangle
-  \Omega(E, \lambda)
-  .
-  \end{align*}
-  So
-  \begin{align*}
-  \frac{ d \Phi } { dt }
-  &=
-  \left[
-    \overline{
-      \left(
-        \frac{ \partial H } { \partial \lambda }
-      \right)
-    }
-    -
-    \left\langle
-      \frac{ \partial H } { \partial \lambda }
-    \right\rangle
-  \right]
-  \Omega(E, \lambda) \,
-  \frac{ d\lambda } { dt }
-  .
-  \end{align*}
-  %
-  Under the ergodicity hypothesis,
-  the trajectory and ensemble average
-  are the same,
-  the two terms in the parentheses cancel.
-  %
-  Thus, $d\Phi/dt = 0$.
-  In other words,
-  $\Phi(E, \lambda)$, hence $S_\Phi(E, \lambda)$,
-  is an adiabatic invariant---a quantity that holds constant
-  during an adiabatic process.
-}
-
-\note{
-  The equipartion theorem can be shown as follows,
-  %
-  \begin{align*}
-    \left\langle
-      x_i \,
-      \frac{ \partial H } { \partial x_j }
-    \right\rangle
-    \Omega(E)
-    &=
-    \left\langle
-      x_i \,
-      \frac{ \partial H } { \partial x_j }
-      \,
-      \delta\bigl(
-        E - H(\mathbf x)
-      \bigr)
-    \right\rangle \\
-    &=
-    -
-    \left\langle
-      x_i \,
-      \frac{ \partial } { \partial x_j }
-      \Theta\bigl(
-        E - H(\mathbf x)
-      \bigr)
-    \right\rangle
-    \\
-    &=
-    \left\langle
-      \frac{ \partial x_i } { \partial x_j }
-      \Theta\bigl(
-        E - H(\mathbf x)
-      \bigr)
-    \right\rangle
-    =
-    \delta_{i, j} \, \Phi(E)
-    .
-  \end{align*}
-  %
-  Thus,
-  %
-  \begin{align*}
-    \left\langle
-      x_i \,
-      \frac{ \partial H } { \partial x_j }
-    \right\rangle
-    =
-    \delta_{i, j} \, T_\Phi(E)
-    .
-  \end{align*}
-}
-
-
-
-
-\subsection{Derivative of the surface entropy}
-
-
-
-In common textbook of statistical mechanics, however,
-the microcanonical entropy
-follows the surface or Boltzmann definition\cite{
-  pearson1985, cagin1988, becker, dunkel2014, frenkel2015},
-$S_\Omega(E) = k_B \ln \Omega(E)$.
-%
-The corresponding temperature and its derivative
-can be derived as follows.
-%
-We start by introducing a vector field, $\mathbf u$,
-in the phase space,
-such that
-%
-\begin{equation}
-  \mathbf u \cdot \nabla H = 1
-  ,
-  \label{eq:unormalization}
-\end{equation}
-%
-anywhere, then
-%
+According to the definition from
+Eqs. \eqref{eq:DOSE} and \eqref{eq:betaE_surf_def},
+we have
 \begin{align}
-  \Omega'(E)
-  &= -\int \delta'\bigl( H(\mathbf x) - E \bigr) \, d\mathbf x
-     \notag \\
-  &= -\int (\mathbf u \cdot \nabla H) \,
-           \delta'\bigl( H(\mathbf x) - E \bigr) \, d\mathbf x
-     \notag \\
-  &= -\int \mathbf u \cdot
-           \nabla \delta\bigl( H(\mathbf x) - E \bigr) \, d\mathbf x
-     \notag \\
-  &= \int
-     \left( \nabla \cdot \mathbf u \right) \,
-     \delta\bigl( H(\mathbf x) - E \bigr) \, d\mathbf x
-  .
-  \notag
-  %\label{eq:dOmegaE}
-\end{align}
-%
-where we have integrated by parts in the last step.
-%
-Thus, we have from Eq. \eqref{eq:betaE_def} that
-%
-\begin{equation}
   \beta_\Omega(E)
-  =
-  \frac{ \Omega'(E) } { \Omega(E) }
-  =
-  \left\langle
-    \nabla \cdot \mathbf u
-  \right\rangle_E
-  .
-  \label{eq:betaE_average}
-\end{equation}
-%
-Although the vector field $\mathbf u$ can generally
-involve both coordinates and momenta,
-it is convenient to construct $\mathbf u$
-entirely from the momenta
-%
-\begin{equation}
-  \mathbf u
-  =
-  \frac{ \mathbf p }
-       {  2 \, K }
-  ,
-  \label{eq:u_def}
-\end{equation}
-where $\mathbf p$ is the momenta vector in the phase space
-with the coordinate components being zeroes,
-and $K = \frac 1 2 \mathbf p \cdot \mathbf M^{-1} \cdot \mathbf p$
-is the kinetic energy ($\mathbf M$ is the diagonal mass matrix).
-%
-This vector field satisfies Eq. \eqref{eq:unormalization}
-because
-$\mathbf u \cdot \nabla H
-= (\mathbf p \cdot \nabla_{\mathbf p} K)/(2 \, K)
-= \mathbf p \cdot (\mathbf M^{-1} \cdot \mathbf p) / (2 \, K) = 1$.
-%
-Using Eq. \eqref{eq:u_def} in Eq. \eqref{eq:betaE_average}
-yields
-%
-\begin{equation}
-  \beta_\Omega(E)
-  =
+  &=
   \left\langle
     \frac{ \frac{1}{2}N_f - 1 } { K }
   \right\rangle
-  .
-  \label{eq:betaE_invK}
-\end{equation}
-
-In a similar manner, we have
-%
-\begin{align*}
-  \beta'_\Omega(E)
-  =
-  \frac
-  {
-    \Omega''(E)
-  }
-  {
-    \Omega(E)
-  }
-  -
-  \left[
-    \frac
-    {
-      \Omega'(E)
-    }
-    {
-      \Omega(E)
-    }
-  \right]^2
   ,
-\end{align*}
-%
-and since
-%
-\begin{align*}
-  \Omega''(E)
-  &= -\int
-      \left( \nabla \cdot \mathbf u \right) \,
-      \delta'\bigl( H(\mathbf x) - E \bigr) \, d\mathbf x
+  \notag
+  %\label{eq:betaE_invK}
   \\
-  &= \int
-     \nabla \cdot \bigl( (\nabla \cdot \mathbf u) \, \mathbf u \bigr) \,
-     \delta\bigl( H(\mathbf x) - E \bigr) \, d\mathbf x
-  \\
-  &= \int
-     \left[
-     \mathbf u \cdot \nabla (\nabla \cdot \mathbf u)
-     +
-     (\nabla \cdot \mathbf u)^2
-     \right]
-     \delta\bigl( H(\mathbf x) - E \bigr) \, d\mathbf x
-  ,
-\end{align*}
-%
-we have
-%
-\begin{align*}
   \beta'_\Omega(E)
-  =
-  \left\langle
-     \mathbf u \cdot \nabla (\nabla \cdot \mathbf u)
-  \right\rangle_E
-  +
-  \left\langle
-    \Delta (\nabla \cdot \mathbf u)^2
-  \right\rangle_E
-  .
-\end{align*}
-%
-With the vector field given by Eq. \eqref{eq:u_def},
-we get
-\begin{equation}
-  \beta'(E)
-  =
+  &=
   -
   \left\langle
     \frac{ \frac{1}{2} N_f - 1 } { K^2 }
@@ -1803,31 +1324,19 @@ we get
       \frac{ \frac{1}{2} N_f - 1 } { K }
     \right)^2
   \right\rangle
+  ,
+  \notag
+\end{align}
+
+The velocity scaling formula is given by
+\begin{equation}
+  \delta E_t
+  =
+  \frac{1}{t} \cdot
+  \frac{ \beta^* - (\frac{1}{2} N_f - 1)/K_t }
+  { \beta'_\Omega(E) }
   .
-  \label{eq:dbetadE}
 \end{equation}
-
-In the above derivation,
-we have, for simplicity, ignored the conservation
-of total momenta\cite{shirts2006, uline2008},
-which gives rise to additional constraints
-satisfied in a typical MD simulation\cite{lado1981, wallace1983}.
-%
-Fortunately, with the particular choice given by Eq. \eqref{eq:u_def},
-one can show that this effect is negligible for a system
-with zero total momenta\cite{uline2008}
-\big[a key observation here is
-that for the total momenta $P_\nu = \sum_{i} p_{i, \nu}$,
-$\nu = x,y,z$, we have
-$\mathbf u \cdot \nabla P_\nu = P_\nu/(2K) = 0$\big].
-
-
-
-
-
-
-
-
 
 
 \section{\label{sec:error}
