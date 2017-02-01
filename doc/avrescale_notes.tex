@@ -742,6 +742,313 @@ k_B \, T_\Omega(E)
 $$
 which is indeed less than the surface counterpart $1/\beta_\omega(E)$.
 
+
+
+\section{\label{sec:error}
+  Alternative derivation of
+  the optimal scaling magnitude
+  %Eq. \eqref{eq:dE_opt}
+}
+
+\newcommand{\tmax}{\mathcal T}
+
+Here we present an alternative derivation of Eq. \eqref{eq:dE_opt},
+which shows that if in each step, we can form an independent correction
+to the current estimate of the total energy,
+then optimally,
+this correction should be used
+with the weight of $1/t$.
+
+Let $E_t$ be the total energy at step $t$,
+then the aim of velocity scaling is to converge $E_t$
+to the desired value of $E^*$.
+%
+We assume that we can form an independent estimate of $E^*$
+in step $t$, $\mathcal E_t$,
+which means, equivalently, an independent correction
+to the current total energy,
+$\Delta \mathcal E_t = \mathcal E_t - E_{t-1}$.
+%
+The correction can be used in velocity scaling
+to guide the amount of energy change.
+%
+If the independent correction were exact,
+then it would suffice to perform
+only one operation of velocity scaling,
+with the energy change
+$\delta E_t = E_t - E_{t-1}$
+being identical to the correction.
+%
+But since
+the independent correction from an MD simulation
+always contains random error,
+velocity scaling must be done continually.
+%
+We can, however, minimize the error
+of the total energy, $E_T$,
+at the simulation end, $t = \tmax$,
+by accepting the correction with some
+optimal time-dependent magnitude, $\alpha(t)$,
+as
+%
+\begin{equation}
+  \delta E_t
+  =
+  \alpha(t) \, \Delta \mathcal E_t
+  =
+  \alpha(t) \, \left( \mathcal E_t - E_{t - 1} \right)
+  .
+  \label{eq:Eupdate}
+\end{equation}
+%
+%Our aim is to minimize
+%the expected error of the total energy, $E_T$,
+%at the end of the simulation, $t = \tmax$.
+
+To find the optimal $\alpha(t)$,
+we will switch to the continuous-time framework.
+%
+We define the error of the total energy at step $t$ as
+$x(t) = E_{t-1} - E^*$,
+then $\dot x(t) \approx \delta E_t$,
+and Eq. \eqref{eq:Eupdate} can be approximated as
+%
+\begin{equation}
+  \dot x(t)
+  =
+  -\alpha(t) \, x(t) + \alpha(t) \, \xi(t)
+  ,
+  \label{eq:x_diffeq}
+\end{equation}
+%
+where $\xi(t) \equiv \mathcal E_t - E^*$
+denotes the random fluctuation of the independent estimate at step $t$.
+%
+The solution of Eq. \eqref{eq:x_diffeq} is
+%
+\begin{equation}
+  x(t)
+  =
+  x(1) \, e^{ -A(t) }
+  +
+  \int_1^t \dot u_t(\tau) \, \xi(\tau) \, d\tau
+  ,
+  %\label{eq:x_sol}
+  \notag
+\end{equation}
+%
+where
+\begin{align*}
+  A(t)
+  &=
+  \int_1^t \alpha(s) \, ds
+  ,
+\\
+  u_t(\tau)
+  &= \exp\left(
+    -\int_\tau^t \alpha(s) \, ds
+  \right)
+  .
+  \notag
+\end{align*}
+%
+Thus, the average error at the end of simulation $t = \tmax$
+is given by
+%
+\begin{align}
+  \left\langle
+    x(\tmax)
+  \right\rangle
+  &=
+  \left\langle
+    x(1)
+  \right\rangle
+  \, e^{ -A(t) }
+  ,
+  \label{eq:abserr}
+\end{align}
+%
+and the square error
+can be measured as
+%
+\begin{align}
+  \left\langle
+    x^2(\tmax)
+  \right\rangle
+  &=
+  \left\langle
+    x^2(1)
+  \right\rangle
+  \, e^{ -2 \, A(t) }
+  \notag \\
+  &+
+  \int_1^{\tmax}
+  \int_1^{\tmax}
+  \dot u_{\tmax}(t) \, \dot u_{\tmax}(t') \,
+  \left\langle
+    \xi(t) \, \xi(t')
+  \right\rangle
+  \, dt \, dt'
+  .
+  \label{eq:err_functional}
+\end{align}
+%
+Below we will find the optimal functional form of $\alpha(t)$
+that minimizes the square error.
+
+
+
+%\subsection{\label{sec:whitenoise}
+%White-noise approximation
+%}
+
+For a very long simulation,
+we may approximate $\xi(t)$ as a white noise,
+such that
+\begin{equation}
+  \left\langle \xi(t) \, \xi(t') \right\rangle
+  = \Gamma \, \delta(t - t').
+  \notag
+  %\label{eq:noise_corr}
+\end{equation}
+%
+Note that this is justifiable only
+if the simulation length, $\tmax$, is much longer than
+the autocorrelation time of $\xi(t)$,
+as shown in Fig. \ref{fig:errz}.
+%
+Under this assumption,
+Eq. \eqref{eq:err_functional} is simplified as
+%
+\begin{equation}
+  \left\langle
+    x^2(\tmax)
+  \right\rangle
+  =
+  \left\langle
+    x^2(1)
+  \right\rangle
+  \, e^{ -2 \, A(t) }
+  +
+  \Gamma
+  \int_1^{\tmax}
+    \dot u_{\tmax}^2(t) \, dt
+  .
+  \label{eq:err_functional_wn}
+\end{equation}
+%
+This expression is a functional of $\alpha(t)$,
+or equivalently, a functional of $u_{\tmax}(t)$.
+%
+To minimize it under a fixed value of $A(\tmax)$,
+which implies fixed values of $u_{\tmax}(1)$ and $u_{t_m}(t_m)$,
+we get, from the Euler-Lagrange equation,
+$$
+\dot u_{\tmax}(t) = \mathrm{const},
+$$
+which leads to the solution,
+$u_{\tmax}(t) = (t + t_0) / (t_m + t_0)$,
+with $c$ and $t_0$ being two constants.
+%
+As a result, we get the optimal scaling magnitude
+%
+\begin{equation}
+  \alpha(t) = \frac{ 1 } { t + t_0 }
+  ,
+  \notag
+  %\label{eq:alpha_opt}
+\end{equation}
+%
+and the error is
+%
+$$%\begin{equation}
+  \left\langle
+    x^2(\tmax)
+  \right\rangle
+  =
+  \frac{
+    \left\langle x^2(1) \right\rangle
+    \, (1 + t_0)^2
+    + \Gamma \, (\tmax - 1)
+  }
+  {
+    (\tmax + t_0)^2
+  }
+  ,
+$$%\end{equation}
+
+We can further determine the optimal value of $t_0$ as
+$$
+t_0 = \frac{ \Gamma } { \left\langle x^2(1) \right\rangle } - 1,
+$$
+%
+with the minimal error being $\Gamma / (\tmax + t_0)$.
+%
+However, for a long simulation, the influence of $t_0$
+is small, and for convenience we may approximately use
+$$
+\alpha(t) \approx \frac 1 t,
+$$
+which recovers Eq. \eqref{eq:dE_opt}.
+
+We can further show that Eq. \eqref{eq:dE_mod}
+%corresponds to a modified schedule
+%$\alpha(t) = z/t$,
+results in an expected error of
+\begin{equation}
+  \left\langle
+  x^2(\tmax)
+  \right\rangle
+  =
+  \frac{ \langle x^2(1) \rangle } { \tmax^{2z} }
+  +
+  \frac{ \Gamma \, z^2 } { 2 \, z - 1 }
+  \frac{
+    \tmax^{2 \, z - 1} - 1
+  }
+  {
+    \tmax^{2 \, z}
+  }
+  ,
+  \notag
+  %\label{eq:err_zovert}
+\end{equation}
+which is minimal at $z = 1$ for a long simulation.
+
+\note{
+  To determine the value of $\Gamma$ of an unknown system,
+  we may conduct a simulation
+  with the scaling magnitude of velocity scaling
+  being a constant, $\alpha(t) = \alpha_0$.
+  %
+  From Eq. \eqref{eq:err_functional_wn}, we find that
+  the error
+  $\left\langle
+    x^2(\tmax)
+  \right\rangle
+  =
+  \Gamma \, \alpha_0 / 2$
+  is independent of time $\tmax$.
+  Thus, we can compute $\Gamma$ from the trajectory average
+  after equilibration,
+  \begin{equation}
+  \Gamma
+  =
+  \frac{ 2 } { \alpha_0 } \,
+  \overline{
+    \bigl(
+      E - \overline E
+    \bigr)^2
+  }
+  .
+  \notag
+  %\label{eq:Gamma_alpha0}
+  \end{equation}
+}
+
+
+
+
 %\bibliographystyle{abbrv}
 \bibliography{simul}
 \end{document}
