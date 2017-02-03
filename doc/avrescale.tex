@@ -244,9 +244,9 @@ of the microcanonical ensemble.
 %controlling the temperature for an MD simulation.
 Our goal is to design a temperature controller for a plain MD simulation.
 %
-Since Newton's equation of motion
-conserves the total energy, $E$,
-the resulting MD trajectory can be described in statistical mechanics
+Since MD follows Newton's equation of motion
+that conserves the total energy, $E$,
+the resulting trajectory can be described in statistical mechanics
 by a microcanonical or $NVE$ ensemble,
 which is a collection of configurations in the phase space
 with the same total energy, $E$.
@@ -254,15 +254,18 @@ with the same total energy, $E$.
 Unlike the more commonly-used canonical or $NVT$ ensemble,
 temperature, $T$, is not a parameter of the microcanonical ensemble,
 but only an observable
-that is influenced by the ensemble parameter, $E$,
-i.e., temperature is a function of the total energy, $T = T(E)$,
+that is influenced by the ensemble parameter, $E$.
+%
+In other words,
+we may write temperature
+only as a function of the total energy, $T = T(E)$,
 in the microcanonical ensemble.
 %
 Accordingly, the desired controller must adjust the total energy
 to effect temperature changes.
 
 
-Let us now review the definition of the function, $T(E)$,
+Let us now review the temperature function, $T(E)$,
 %relation between temperature, $T$,
 %and total energy, $E$,
 in the microcanonical ensemble.
@@ -279,11 +282,11 @@ defined by
 $H(\mathbf x) = E$,
 where $H(\mathbf x)$ is the Hamiltonian function.
 %
-Thermodynamic properties, such as the entropy and temperature,
+Then, thermodynamic properties, such as the entropy and temperature,
 of the MD trajectory
-can thus be described by the geometry of the phase space.
+can be described by the geometry of the isoenergetic hypersurface.
 %
-For example, the hypervolume enclosed by the above isoenergetic hypersurface
+In particular, the hypervolume enclosed by the hypersurface
 %
 \begin{equation}
   \Phi(E)
@@ -296,15 +299,26 @@ For example, the hypervolume enclosed by the above isoenergetic hypersurface
   \label{eq:PhiE}
 \end{equation}
 %
-defines a bulk entropy as $S_\Phi = \ln \Phi(E)$,
-where, $\Theta(y)$ is the step function,
+defines a bulk or volume entropy\cite{
+  cagin1988, haile, dunkel2014}
+as $S_\Phi = \ln \Phi(E)$,
+where $\Theta(y)$ is the step function,
 which gives $1.0$ for a positive $y$, or $0.0$ otherwise.
+%
+The hypervolume is
+an adiabatic invariant\cite{
+  gibbs, hertz1910a, hertz1910b, munster, becker,
+  cagin1988, rugh2001, adib2002, dunkel2014}
+in the mechanical sense,
+i.e. it would remain a constant
+when a system parameter, such as volume,
+changes slowly,
+and, therefore, its logarithm serves as
+a natural definition of the entropy.
 %
 The derivative of the entropy
 %
 \begin{equation}
-  \beta_\Phi(E)
-  =
   \frac{1}{ k_B \, T_\Phi(E) }
   =
   \frac{ d }{ dE }
@@ -316,10 +330,11 @@ The derivative of the entropy
   \label{eq:betaE_def}
 \end{equation}
 %
-defines a microcanonical temperature function, $T_\Phi(E)$.
-%
+defines the corresponding temperature function, $T_\Phi(E)$,
+for the microcanonical ensemble.
+
 Alternatively, the entropy may be defined
-as the logarithm of the surface density of states,
+as the logarithm of the density of states,
 $\Omega(E) \equiv \Phi'(E)$,
 %
 \begin{equation}
@@ -335,8 +350,6 @@ $\Omega(E) \equiv \Phi'(E)$,
 which gives rise to a surface microcanonical temperature
 %
 \begin{equation}
-  \beta_\Omega(E)
-  =
   \frac{1}{ k_B \, T_\Omega(E) }
   =
   \frac{ d }{ dE }
@@ -350,10 +363,20 @@ which gives rise to a surface microcanonical temperature
 
 
 
-Both temperature definitions can be converted to
-ensemble averages (cf. Appendix \ref{sec:microT}),
-which can be measured as the equivalent
-trajectory averages from MD simulations.
+Either temperature definition can be converted to
+an average in the microcanonical ensemble,
+which is defined for quantity, $A(\mathbf x)$, as
+$$
+  \langle A \rangle_E
+  \equiv
+  \frac{ 1 } { \Omega(E) }
+  \int A(\mathbf x) \,
+    \delta\bigl( E - H(\mathbf x) \bigr) \, d\mathbf x
+  .
+$$
+Under the ergodicity hypothesis,
+this ensemble average is equivalent to a trajectory average
+which can be readily computed from MD.
 %
 For example, for the bulk definition, we have
 %
@@ -365,24 +388,34 @@ For example, for the bulk definition, we have
   \label{eq:TE_K}
 \end{equation}
 %
-where $\langle \dots \rangle_E$ denotes
-an average in the microcanonical ensemble of total energy, $E$.
+and for the surface definition,
 %
-In this study,
-we will assume the bulk version, Eq. \eqref{eq:betaE_def},
+\begin{equation}
+  \frac{ 1 } { k_B \, T_\Omega(E) }
+  =
+  \left\langle
+  \frac{ \frac{1}{2} N_f - 1 } { K }
+  \right\rangle_E
+  .
+  \notag
+  %\label{eq:betaE_invK}
+\end{equation}
+%
+Since Eq. \eqref{eq:TE_K} is compatible
+with the conventional definition,
+Eq. \eqref{eq:K_canon},
+we will assume the bulk definition
 unless specified otherwise,
-i.e., $T(E)$ means $T_\Phi(E)$.
+i.e. $T(E)$ means $T_\Phi(E)$.
 %
-This choice has the advantage of being compatible
-with the commonly-used temperature definition, Eq. \eqref{eq:K_canon}.
 %
 
 
 By velocity scaling, we wish to
 find a value of the total energy, $E^*$,
-such that the microcanonical temperature
-is equal to the target value, $T^*$,
-i.e., the solution of
+at which the microcanonical temperature
+matches the target value, $T^*$,
+i.e. the solution of
 %
 \begin{equation}
   T(E^*)
@@ -392,16 +425,16 @@ i.e., the solution of
   \label{eq:T_star}
 \end{equation}
 %
-Unfortunately, the temperature function, $T(E)$,
-is usually unknown in advance
-and must be learned gradually from simulation.
+For an unknown system,
+both the temperature function, $T(E)$,
+and the solution of Eq. \eqref{eq:T_star}
+must be learned gradually from simulation.
 %
-So is the solution of Eq. \eqref{eq:T_star}.
-%
-Below, we review an adaptive averaging technique
-which offers a way of gradually improving
+To gradually improve
 our knowledge of the temperature function,
-and hence the precision of the target energy, $E^*$.
+and hence the estimate of the target energy, $E^*$,
+we will resort to the adaptive averaging technique
+described below.
 
 
 
@@ -431,10 +464,10 @@ improves over the simulation course.
 
 
 
-Our adaptive velocity scaling is based on
-the above runtime averaging,
-and it differs from the regular velocity scaling
-in that we use $\bar{\mathcal E}_t$
+Our adaptive velocity scaling
+improves over the regular velocity scaling
+by using the above runtime average,
+$\bar{\mathcal E}_t$,
 instead of $\mathcal E_t$
 to guide the amount of energy change in each step.
 %
@@ -510,6 +543,7 @@ for each MD step
 This amount of energy change is to be realized by velocity scaling.
 %
 Equation \eqref{eq:dE_opt} is essentially
+an application of
 the $1/t$ prescription\cite{
   belardinelli2007, *belardinelli2007jcp, *belardinelli2008,
   zhou2005, *zhou2008, *morozov2007}
@@ -531,8 +565,7 @@ $\mathcal E_t$ of $E^*$.
 %
 For this, we will form
 an independent estimate of
-the instantaneous temperature, $\beta_t$,
-(detailed in the next subsection)
+the instantaneous temperature, $T_t$,
 and solve a linearized version of Eq. \eqref{eq:T_star}.
 
 Linearizing Eq. \eqref{eq:T_star} around the solution
@@ -696,7 +729,7 @@ In this case,
 we can replace the number of MD steps, $t$,
 in Eq. \eqref{eq:dE_final} by
 the number of velocity-scaling operations
-(i.e., $t \to t/m$).
+(i.e. $t \to t/m$).
 %
 The $K_t$ in the formula can be interpreted as
 the kinetic energy right before scaling
@@ -1157,7 +1190,7 @@ This is no so, as the alternative functional forms
 would be less effective in the long run
 in eliminating the cumulative random error
 caused by velocity scaling itself,
-i.e., the error bar of Fig. \ref{fig:equil} (not shown).
+i.e. the error bar of Fig. \ref{fig:equil} (not shown).
 %
 For the canonical ensemble, the fluctuation is unimportant
 as the total energy is intrinsically fluctuating.
