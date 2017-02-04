@@ -1,7 +1,7 @@
 /* Monte Carlo simulation with harmonic restraints */
 #include <time.h>
 #include "av.h"
-#include "lj_npr.h"
+#include "lj.h"
 
 
 
@@ -18,6 +18,7 @@ double tp = 1.15;
 double rcdef = 1e9; /* half-box cutoff */
 double amp = 0.2; /* Monte Carlo move size */
 const char *fnpos = "lj.pos";
+int dopr = 0;
 
 
 
@@ -217,7 +218,7 @@ static void vexchange(lj_t *lj[2], double cvol[2],
 
 
 static void nexchange(lj_t *lj[2], double cnr[2],
-    double beta, double time, av_t *avwid)
+    double time, av_t *avwid)
 {
   double wid[2], dwid, dnr, k;
   int i;
@@ -248,12 +249,12 @@ int main(void)
   lj_t *lj[2];
   av_t avep[2], avacc[2], avnr[2], avvol[2];
   av_t avp[2], avwid[2], avgp[2], avgwid[2];
-  double beta = 1/tp, bmu = 0;
+  double beta = 1/tp;
 
   mtscramble(time(NULL));
 
   for ( i = 0; i < 2; i++ ) {
-    lj[i] = lj_open(nmax, rho, rcdef);
+    lj[i] = lj_open(nmax, rho, rcdef, dopr);
     lj_energy(lj[i]);
   }
 
@@ -289,7 +290,7 @@ int main(void)
     }
     if ( t % nstvmov == 0 ) {
       vexchange(lj, cvol, beta, t / nstvmov, avp);
-      //nexchange(lj, cnr, beta, t / nstvmov, avwid);
+      //nexchange(lj, cnr, t / nstvmov, avwid);
       //printf("cvol %g, %g, vol %g, %g, p %g, %g, cnr %g, %g\n",
       //    cvol[0], cvol[1], lj[0]->vol, lj[1]->vol,
       //    av_getave(&avp[0]), av_getave(&avp[1]),

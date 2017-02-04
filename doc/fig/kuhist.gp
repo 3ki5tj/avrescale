@@ -10,11 +10,12 @@ set terminal postscript eps enhanced color dl 1.0 size 7, 3.5 font "Times, 32"
 set output "kuhist.eps"
 set multiplot
 
-rt = 0.543
-ht = 0.88
+rt = 0.525
+ht = 0.89
 
 set size rt, ht
 set origin 0, 0
+set lmargin 3.5
 set rmargin 0
 
 set xtics 100 offset 0, 0.3
@@ -24,7 +25,7 @@ set mxtics 10
 set xrange [1320:1540]
 set xlabel "Kinetic energy, {/Times-Italic K} (kcal/mol)" offset 0, 0.5
 
-set ytics 0.005
+set ytics 0.01 offset 0.5, 0
 set mytics 5
 set yrange [:0.018]
 #set ylabel "Total energy, {/Times-Italic E}" offset 0.5, 0
@@ -48,7 +49,7 @@ plot [:][:] \
 set size 1 - rt, ht
 set origin rt, 0
 set lmargin 0.5
-set rmargin 2.5
+set rmargin 0.5
 
 set xrange [-7720:-7430]
 set xlabel "Potential energy, {/Times-Italic K} (kcal/mol)" offset 0, 0.5
@@ -67,14 +68,14 @@ plot [:][:] \
 # dummy plots for the key
 reset
 set size 0.5, 1
-set origin 0.06, ht - 0.05
+set origin 0.0, ht - 0.07
 
 set key below horizontal Left reverse maxrows 1 spacing 1.3
 plot [] \
     x lt 1 t "Microcanonical, {/Times-Italic NVE}", \
     x lt 2 t "Adaptive velocity scaling"
 
-set origin 0.51, ht - 0.05
+set origin 0.47, ht - 0.07
 plot [] \
     x w p pt 6 ps 1.5 lt 3 t "Regular velocity scaling", \
     x lt 5 t "Canonical, {/Times-Italic NVT}"

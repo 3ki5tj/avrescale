@@ -1,7 +1,7 @@
 /* Monte Carlo simulation with fractional number of particles */
 #include <time.h>
 #include "av.h"
-#include "lj_npr.h"
+#include "lj.h"
 
 
 
@@ -13,6 +13,7 @@ double tp = 1.15;
 double rcdef = 1e9; /* half-box cutoff */
 double amp = 0.2; /* Monte Carlo move size */
 const char *fnpos = "lj.pos";
+int dopr = 0;
 int adaptive = 1;
 
 
@@ -140,7 +141,7 @@ int main(void)
   av_clear(avacc);
   av_clear(avnr);
   av_clear(avwid);
-  lj = lj_open((int) nr + 1, rho, rcdef);
+  lj = lj_open((int) nr + 1, rho, rcdef, dopr);
   lj_energy(lj);
   /* equilibration */
   for ( t = 1; t <= nequil; t++ )

@@ -1,6 +1,6 @@
 /* pseudo-Gibbs ensemble Monte Carlo simulation */
 #include <time.h>
-#include "lj_npr.h"
+#include "lj.h"
 #include "av.h"
 #include "bpav.h"
 
@@ -11,6 +11,7 @@ int nsteps = 50000000;
 double rho[2] = {0.05, 0.6};
 double tp = 1.15;
 double rcdef = 1e9; /* half-box cutoff */
+int dopr = 0;
 int nstvol = 1000;
 int nstreport = 1000000;
 double mageql = 0.1; /* scaling magnitude during equilibration */
@@ -124,7 +125,7 @@ static int volmove(lj_t *lj[2], double beta, double mag0, int *ntimes,
     //getchar();
   }
 
-  if ( vol[0] > vol[1] ) { /* filter out unreasonable moves */
+  if ( lj[0]->n/vol[0] < lj[1]->n/vol[1] ) { /* filter out unreasonable moves */
     /* compute the energy change */
     acc = 1;
     for ( i = 0; i < 2; i++ ) {
@@ -172,7 +173,7 @@ int main(void)
 
   mtscramble(time(NULL));
   for ( i = 0; i < 2; i++ ) {
-    lj[i] = lj_open(n[i], rho[i], rcdef);
+    lj[i] = lj_open(n[i], rho[i], rcdef, dopr);
     lj[i]->dof = n[i] * D; /* MC */
     lj_energy(lj[i]);
   }

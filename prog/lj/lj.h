@@ -163,7 +163,7 @@ static void lj_setrho(lj_t *lj, double rho)
 
 
 /* open an LJ system */
-static lj_t *lj_open(int n, double rho, double rcdef)
+static lj_t *lj_open(int n, double rho, double rcdef, int dopr)
 {
   lj_t *lj;
   int i, d;
@@ -176,8 +176,14 @@ static lj_t *lj_open(int n, double rho, double rcdef)
   xnew(lj->x, n);
   xnew(lj->v, n);
   xnew(lj->f, n);
-  xnew(lj->r2ij, n * n);
-  xnew(lj->r2i, n);
+
+  if ( dopr ) {
+    xnew(lj->r2ij, n * n);
+    xnew(lj->r2i, n);
+  } else {
+    lj->r2ij = NULL;
+    lj->r2i = NULL;
+  }
 
   lj_setrho(lj, rho);
 
@@ -455,8 +461,16 @@ __inline static double lj_depot(lj_t *lj, int i, double *xi,
 
   *u6 = *u12 = *vir = 0.0;
   for ( j = 0; j < n; j++ ) { /* pair */
-    if ( j == i ) continue;
-    r2 = lj->r2ij[i*n + j];
+    if ( j == i ) {
+      if ( lj->r2i != NULL )
+        lj->r2i[j] = 0;
+      continue;
+    }
+    if ( lj->r2ij != NULL ) {
+      r2 = lj->r2ij[i*n + j];
+    } else {
+      r2 = lj_pbcdist2(dx, lj->x[i], lj->x[j], l, invl);
+    }
     if ( lj_pair(r2, rc2, &du6, &du12, &dvir) ) {
       *u6 -= du6;
       *u12 -= du12;
@@ -468,9 +482,9 @@ __inline static double lj_depot(lj_t *lj, int i, double *xi,
       *u12 += du12;
       *vir += dvir;
     }
-    lj->r2i[j] = r2;
+    if ( lj->r2i != NULL )
+      lj->r2i[j] = r2;
   }
-  lj->r2i[i] = 0;
   return *u12 - *u6;
 }
 
@@ -489,9 +503,11 @@ __inline static void lj_commit(lj_t *lj, int i, const double *xi,
   lj->ep0 += du;
   lj->epot += du;
   lj->vir += dvir;
-  for ( j = 0; j < n; j++ ) {
-    lj->r2ij[i*n + j] = lj->r2i[j];
-    lj->r2ij[j*n + i] = lj->r2i[j];
+  if ( lj->r2ij != NULL ) {
+    for ( j = 0; j < n; j++ ) {
+      lj->r2ij[i*n + j] = lj->r2i[j];
+      lj->r2ij[j*n + i] = lj->r2i[j];
+    }
   }
 }
 
@@ -526,7 +542,7 @@ __inline static int lj_metro(lj_t *lj, double amp, double bet)
  * the ensemble distribution is
  *   distr. ~ V^(dof/D - ensx) exp(-beta * ep)
  * */
-__inline int lj_mcvmov(lj_t *lj, double lnvamp, double tp, double pext,
+__inline static int lj_mcvmov(lj_t *lj, double lnvamp, double tp, double pext,
     int ensx)
 {
   int acc = 0, i;
@@ -571,8 +587,10 @@ __inline int lj_mcvmov(lj_t *lj, double lnvamp, double tp, double pext,
     for ( i = 0; i < lj->n; i++ ) {
       vsmul(lj->x[i], s);
     }
-    for ( i = 0; i < lj->n * lj->n; i++ ) {
-      lj->r2ij[i] *= ss;
+    if ( lj->r2ij != NULL ) {
+      for ( i = 0; i < lj->n * lj->n; i++ ) {
+        lj->r2ij[i] *= ss;
+      }
     }
   }
   return acc;

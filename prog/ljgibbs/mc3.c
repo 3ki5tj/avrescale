@@ -1,7 +1,7 @@
 /* Monte Carlo simulation with harmonic restraints */
 #include <time.h>
 #include "av.h"
-#include "lj_npr.h"
+#include "lj.h"
 
 
 
@@ -17,6 +17,7 @@ double tp = 1.15;
 double rcdef = 1e9; /* half-box cutoff */
 double amp = 0.2; /* Monte Carlo move size */
 const char *fnpos = "lj.pos";
+int dopr = 0;
 
 
 
@@ -200,7 +201,7 @@ int main(void)
   av_clear(avnr);
   av_clear(avvol);
   av_clear(avwid);
-  lj = lj_open(nmax, rho, rcdef);
+  lj = lj_open(nmax, rho, rcdef, dopr);
   lj_energy(lj);
   /* equilibration */
   for ( t = 1; t <= nequil; t++ )
@@ -227,11 +228,10 @@ int main(void)
   }
   lj_writepos(lj, lj->x, lj->v, fnpos);
   lj_close(lj);
+  bmu = -log(av_getave(avwid)*lj->vol/nr);
   printf("tp %g, ep %g, nr %g, vol %g, acc %g%%, p %g, bmu %g\n",
-      tp, av_getave(avep)/nr, av_getave(avp),
-      av_getave(avnr), av_getave(avvol),
-      100.*av_getave(avacc), av_getave(avp),
-      -log(av_getave(avwid)*lj->vol/nr) );
+      tp, av_getave(avep)/nr, av_getave(avnr), av_getave(avvol),
+      100.*av_getave(avacc), av_getave(avp), bmu);
   return 0;
 }
 

@@ -11,6 +11,7 @@ double tp = 1.5;
 double rcdef = 2.5;
 double dt = 0.002;
 const char *fnpos = "lj.pos";
+int dopr = 0;
 
 int adaptive = 1; /* adaptive velocity scaling */
 double initene = 0; /* -255.7; */
@@ -238,7 +239,7 @@ int main(int argc, char **argv)
   doargs(argc, argv);
 
   mtscramble(time(NULL) + 314159 * clock());
-  lj = lj_open(n, rho, rcdef);
+  lj = lj_open(n, rho, rcdef, dopr);
   lj->dof = n * 3 - 3;
   matchetot(lj, 3, 100);
   eitot = lj->epot + lj->ekin;

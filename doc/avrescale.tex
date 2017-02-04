@@ -113,7 +113,7 @@ by
   \label{eq:Berendsen}
 \end{equation}
 %
-with $\tau^{-1}$ being the rate of damping.
+with $\tau$ being a damping constant.
 
 The above schemes, albeit effective,
 do not result in exact sampling for the microcanonical ($NVE$) ensemble\cite{hermansson1988},
@@ -134,7 +134,7 @@ e.g., the Nos\'e-Hoover\cite{nose1984, nose1984mp, hoover1985, martyna1992}
 and Langevin-style velocity rescaling\cite{bussi2007} thermostats.
 %
 There,
-the velocity scaling operation is carefully
+the magnitude of velocity scaling is carefully
 controlled to make
 the resulting fluctuation of the total energy
 compatible with the underlying canonical distribution.
@@ -150,8 +150,8 @@ However, we immediately face a dilemma:
 as the microcanonical temperature is a function of the total energy, $E$,
 one must somehow change the total energy to control the temperature;
 %
-but doing so too often affects the conservation of the total energy,
-and hence the accuracy of the simulation\cite{hermansson1988}.
+but doing so affects the conservation of the total energy,
+and hence the accuracy of the MD simulation\cite{hermansson1988}.
 %resulting in deviation from the desired microcanonical ensemble.
 %
 In this study, we will follow a compromised solution,
@@ -175,7 +175,7 @@ which will be referred to as adaptive velocity scaling below,
 aiming for an \emph{asymptotic} microcanonical ensemble,
 in which
 the total energy gradually tends to the value
-corresponding to the target temperature.
+at the target temperature.
 %
 The effectiveness of this modification,
 in terms of the convergence of the total energy,
@@ -185,7 +185,7 @@ varies with the number of steps, $t$.
 %
 %Fortunately, we may borrow the optimal scheme $\alpha(t)$
 To find the optimal schedule of $\alpha(t)$,
-we may recall the $1/t$ prescription\cite{
+we will borrow the recipe from the $1/t$ prescription\cite{
   belardinelli2007, *belardinelli2007jcp, *belardinelli2008,
   zhou2005, *zhou2008, *morozov2007}
 for improving the convergence of
@@ -789,8 +789,7 @@ such that
   =
   \frac{ 2 \, \gamma } { N_f }
   .
-  \notag
-  %\label{eq:dT_approx}
+  \label{eq:dT_approx}
 \end{equation}
 %
 For a physical system, we expect $0 \le \gamma \le 1$.
@@ -812,7 +811,7 @@ With the above definition, we can rewrite Eq. \eqref{eq:dE_final} as
 Comparing this to Eq. \eqref{eq:Berendsen},
 we find the adaptive velocity scaling scheme
 can be considered as a modification of the Berendsen thermostat
-with the damping factor $\tau$ being $\gamma \, t$,
+with the damping factor, $\tau$, being replaced by $\gamma \, t$,
 which increases as simulation progresses.
 
 
@@ -827,8 +826,9 @@ that is applicable for a class of similar systems.
 %
 For example,
 for an explicit solvent simulation of TIP3P water\cite{jorgensen1983}
-at 300K, we find that the optimal $\gamma$
-to be around $0.33$.
+at $T = 300\mathrm K$, we find that the optimal $\gamma$
+to be around $0.33$,
+more generally, $\gamma \approx 0.279\ln T - 1.255$.
 
 
 \subsection{Generalization}
@@ -935,7 +935,7 @@ that increases with the scaling frequency.
       &   None    &   Regular \newline $\nu =100 $   & Regular \newline $\nu = 1000$  &   Adaptive \\
       \hline
       $\sigma_E$ (kcal/mol)
-      &   $0.26$  &   $20$    &  $7.7$     &   $0.25$ \\
+      &   $0.32$  &   $20$    &  $7.8$     &   $0.23$ \\
       \hline
     \end{tabular}
   \end{center}
@@ -1093,8 +1093,8 @@ $T = 10^5$ and $10^6$ steps,
 and used the variance of the total energy at the simulation end
 to represent the error.
 %
-For $\beta'(E^*)$,
-Eq. \eqref{eq:dbeta_approx2} was used with the heuristic value of
+For $T'(E^*)$,
+Eq. \eqref{eq:dT_approx} was used with the heuristic value of
 $\gamma = 0.33$,
 which was obtained from Eq. \eqref{eq:gamma_def}
 using the data of the first test.

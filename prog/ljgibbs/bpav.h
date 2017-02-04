@@ -78,7 +78,7 @@ __inline static double lj_denp(lj_t *lj, double *dvir)
   return de;
 }
 
-__inline void bpav_add(bpav_t *bpav, lj_t *lj, double beta)
+__inline static void bpav_add(bpav_t *bpav, lj_t *lj, double beta)
 {
   double vol = lj->vol;
 

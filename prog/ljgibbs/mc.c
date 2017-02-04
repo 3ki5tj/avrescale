@@ -1,6 +1,6 @@
 /* basic Monte Carlo simulation */
 #include <time.h>
-#include "lj_npr.h"
+#include "lj.h"
 #include "av.h"
 #include "bpav.h"
 
@@ -14,6 +14,7 @@ double rho = 0.10; // 0.07; // 0.605;
 double tp = 1.15;
 double rcdef = 1e9; /* half-box cutoff */
 const char *fnpos = "lj.pos";
+int dopr = 0;
 
 
 
@@ -30,7 +31,7 @@ int main(int argc, char **argv)
   amp = 0.1/rho;
   mtscramble(time(NULL));
   bpav_clear(bpav);
-  lj = lj_open(n, rho, rcdef);
+  lj = lj_open(n, rho, rcdef, dopr);
   lj->dof = n * D;
   //lj->vol -= 0.5; lj_setrho(lj, n / lj->vol);
   //lj->vol += 0.5; lj_setrho(lj, n / lj->vol);
