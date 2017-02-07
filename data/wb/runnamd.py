@@ -151,6 +151,10 @@ class Ave:
     ave = self.xsum / self.n
     return self.x2sum / self.n - ave * ave
 
+  def load(self, cnt, ave, var):
+    self.n = cnt
+    self.xsum = cnt * ave
+    self.x2sum = cnt * (ave * ave + var)
 
 
 def getprogdir(build = True):
@@ -374,64 +378,63 @@ def dotrace(zoom, build = True, fntrace = None):
   if not fntrace: fntrace = "etot.tr"
   fntrace = "../" + fntrace
 
-  print "CMD: %s; TRACE %s" % (cmd, fntrace)
 
-  eparr = []
-  ekarr = []
-  etarr = []
-  # multiple trials
-  for i in range(ntrials):
-    # write the configuration file
-    fnene = "ene0.log"
+  # construct a configuration file
+  fnene = "ene0.log"
 
-    strcfg = scfg + '''
+  strcfg = scfg + '''
 energyLogFile             %s
 energyLogFreq             1
 energyLogTotal            on
 ''' % (fnene)
 
-    if not thermostat:
-      strcfg += '''
+  if not thermostat:
+    strcfg += '''
 rescaleAdaptive           on
 rescaleAdaptiveZoom       %s
 rescaleAdaptiveFileFreq   1000
 ''' % (zoom)
-      if dKdE > 0:
-        strcfg += "rescaleAdaptiveDKdE       %s\n" % dKdE
-
-    elif thermostat == "NH":
-      # Nose-Hoover thermostat
-      strcfg += '''
+    if dKdE > 0:
+      strcfg += "rescaleAdaptiveDKdE       %s\n" % dKdE
+  elif thermostat == "NH":
+    # Nose-Hoover thermostat
+    strcfg += '''
 tNHC              on
 tNHCTemp          $temperature
 tNHCLen           5
 tNHCPeriod        %g
 ''' % (tNHCPeriod)
-
-    elif thermostat.startswith("VR"):
-      # Langevin-style velocity rescaling
-      strcfg += '''
+  elif thermostat.startswith("VR"):
+    # Langevin-style velocity rescaling
+    strcfg += '''
 langRescale       on
 langRescaleTemp   $temperature
 langRescaleDt     %g
 ''' % (langRescaleDt)
-
-    else: # if thermostat.startswith("L"):
-      # Langevin thermostat
-      strcfg += '''
+  else: # if thermostat.startswith("L"):
+    # Langevin thermostat
+    strcfg += '''
 langevin          on
 langevinDamping   1
 langevinTemp      $temperature
 '''
 
-    if Etot != None:
-      strcfg += "rescaleInitTotal          %s\n" % Etot
-    if Edev != None:
-      strcfg += "rescaleInitDev            %s\n" % Edev
+  if Etot != None:
+    strcfg += "rescaleInitTotal          %s\n" % Etot
+  if Edev != None:
+    strcfg += "rescaleInitDev            %s\n" % Edev
 
-    strcfg += "run %s\n" % nsteps
-    open(fncfg, "w").write(strcfg)
+  strcfg += "run %s\n" % nsteps
+  open(fncfg, "w").write(strcfg)
 
+  print "CMD: %s; TRACE %s; CFG %s" % (cmd, fntrace, fncfg)
+
+  eparr = []
+  ekarr = []
+  etarr = []
+  # multiple trials
+  i = 0
+  while i < ntrials:
     # clear the directory
     os.system("rm -rf *.dat *.BAK *.old ene*.log *.vel *.xsc *.xst *.coor")
 
@@ -441,11 +444,28 @@ langevinTemp      $temperature
     ssplit = [ln.strip().split() for ln in ss]
     tm = len(ss)
 
-    # update accumulators and print results
+    # initialize the accumulators
     if i == 0:
       etarr = [ Ave() for k in range(tm) ]
       eparr = [ Ave() for k in range(tm) ]
       ekarr = [ Ave() for k in range(tm) ]
+      if os.path.exists(fntrace): # load previous record
+        s = open(fntrace).readlines()
+        tags = s[0].split()
+        cnt = int( tags[2][:-1] )
+        fzoom = float( tags[4][:-1] )
+        nsteps = int( tags[6][:-1] )
+        if nsteps != tm - 1: # loading previous data
+          print "previous nsteps %s is not %s" % (nsteps, tm - 1)
+        else:
+          for k in range(tm):
+            arr = [float(x) for x in s[k+1].split()]
+            etarr[k].load(cnt, arr[1], arr[2])
+            eparr[k].load(cnt, arr[3], arr[4])
+            ekarr[k].load(cnt, arr[5], arr[6])
+          i = cnt
+
+    # update the accumulators for the total, potential and kinetic energies
     for k in range(tm):
       epot = float( ssplit[k][1] )
       eparr[k].add(epot)
@@ -460,12 +480,16 @@ langevinTemp      $temperature
 
     strace = "# count %s, zoom %s, nsteps %s, dKdE %s, Etot %s, Edev %s\n" % (
       etarr[0].n, zoom, nsteps, dKdE, Etot, Edev)
+
+    # output the trace file
     for k in range(tm):
       strace += "%s\t%g\t%g\t%g\t%g\t%g\t%g\n" % ( ssplit[k][0],
           etarr[k].getave(), etarr[k].getvar(),
           eparr[k].getave(), eparr[k].getvar(),
           ekarr[k].getave(), ekarr[k].getvar() )
     open(fntrace, "w").write(strace)
+
+    i += 1
 
   # go back to the parent directory
   os.chdir("..")
