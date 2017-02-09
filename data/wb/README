@@ -15,7 +15,7 @@ trace     directory for the equilibration test, used to for doc/fig/equil.gp
 The template NAMD script is `normal/300Krand.conf`.
 ```
 cd run1
-rm -f *.log && ../runnamd.py -p 2 -t 1000000 -M 1000 -G 0.33 -Z 1
+../runnamd.py -G 0.33 -Z 1 -M 1000 -t 1000000 -p 2
 ```
 
 

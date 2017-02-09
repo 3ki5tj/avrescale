@@ -51,23 +51,28 @@ Galveston, Texas 77555-0304, USA}
   We present a modification of the commonly-used
   temperature control scheme: velocity scaling.
   %
-  The usual velocity scaling scheme produces a perturbation to
-  the microcanonical ($NVE$) ensemble
-  as the regular scaling operations cause the total energy to fluctuate continually.
+  Albeit its simplicity and effectiveness,
+  velocity scaling creates unnatural fluctuation
+  of the total energy, which distorts
+  the intended sampling distribution
+  from the underlying microcanonical ensemble.
   %
-  Inspired by the $1/t$ prescription for improving the Wang-Landau algorithm,
-  we reduce
-  the magnitude of velocity scaling
-  by a factor of the number of steps, $t$.
+  We can minimize this adverse effect by
+  gradually reducing the magnitude of velocity scaling.
+  %
+  %Using the $1/t$ prescription for improving the Wang-Landau algorithm,
+  We show that the optimal reduction factor of the scaling magnitude
+  is given by the general $1/t$ prescription,
+  with $t$ being the number of velocity scaling operations.
   %
   In this way,
-  the fluctuation of total energy becomes negligible at long times,
-  and the simulation ensemble becomes effectively
-  a microcanonical one.
+  the total energy can quickly tend to the value
+  at the target temperature
+  with minimal fluctuation,
+  and the simulation ensemble often becomes
+  indistinguishable from a microcanonical one.
   %
-  Further, we will show that the $1/t$ reduction factor
-  allows the microcanonical temperature to tend to the target value
-  at an optimal rate.
+  TODO: extensions. 
 \end{abstract}
 
 \maketitle
@@ -834,9 +839,10 @@ more generally, $\gamma \approx 0.279\ln T - 1.255$.
 \subsection{Generalization}
 
 
-The adaptive velocity scaling scheme
-is a special application of the $1/t$ prescription
-in which we adjust the total energy
+We may think the above adaptive velocity scaling scheme
+as a special application of the $1/t$ prescription.
+%
+In this case we have adjusted the total energy
 to achieve the target temperature.
 %
 More generally, we may apply this technique
@@ -855,14 +861,205 @@ Then, the change of $x$ in each step is given by
   \label{eq:adjustxy}
 \end{equation}
 %
-For example, we may determine the value of volume in the $NVT$ ensemble
-that corresponds to a certain value of pressure.
+Below, we list a few applications of this technique.
+
+\subsubsection{Pressure versus volume}
+
+We can dynamically adjust the volume, $V$, of a system
+in the canonical ensemble
+so that the pressure can reach the target value, $p = p^*$.
 %
-%For example, one may determine the optimal
-Another example is the determination of the
-move size ($x$)
-in a Monte Carlo simulation
-in order to reaching a certain acceptance ratio ($y$).
+%This permits simulation in the canonical ensemble
+%as an alternative to the isothermal-isobaric ensemble approach.
+%
+Here volume, $V$, serves as a length scale parameter
+of the simulation box,
+and for a cubic box
+the side length is given by $L = \sqrt[3]{V}$.
+%
+The coordinates are often scaled according to the scale, $L$,
+such that reduced coordinates, defined as
+$\mathbf R = \mathbf r / L$,
+stays constant before and after a volume change.
+%
+To ensure the positivity of volume,
+we change it by the logarithm, $x = \ln V$,
+and Eq. \eqref{eq:adjustxy} specifies
+the change in each step as
+$$
+\delta \ln V_t
+=
+\frac{1}{t} \cdot
+\frac{ p^* - p_t }
+     { \partial \, p / \partial \ln V }
+,
+$$
+and the new volume is given by $V_{t+1} = V_t \, \exp(\delta \ln V_t)$.
+
+For the canonical ensemble,
+we have
+%
+\begin{align*}
+  p
+  &=
+  \frac{
+    k_B \, T \, N_f + \left\langle \mathrm{vir} \right\rangle
+  } { 3 \, V }
+  ,
+  \\
+  \frac{ \partial \, p } { \partial (1/V) }
+  &=
+  p \, V
+  -
+  \frac{1}{3} \left\langle
+    \frac{ \partial \, \mathrm{vir} } { \partial \ln V }
+  \right\rangle
+  -
+  \frac{\beta}{9} \left\langle
+  \delta( \mathrm{vir} )^2
+  \right\rangle
+  ,
+\end{align*}
+%
+where $\beta = 1/(k_B \, T)$, and
+the virial is defined as
+%
+\begin{equation*}
+  \mathrm{vir}
+  =
+  \mathbf F \cdot \mathbf r
+  =
+  -3 \frac{ \partial \, U\left( \sqrt[3]{V} \, \mathbf R \right) }
+  { \partial (\ln V) }
+  .
+\end{equation*}
+%
+Thus, we may choose the instantaneous pressure, $p_t$,
+to be
+%
+\begin{equation*}
+  p_t
+  =
+  \frac{ k_B \, T \, N_f + \mathrm{vir} }
+  { 3 \, V }
+  ,
+\end{equation*}
+%
+and compute the derivative as
+%
+\begin{equation*}
+  \frac{ \partial \, p } { \partial \ln V }
+  =
+  - \frac{1}{V}
+  \left[ \,
+    \overline{ p \, V }
+    - \frac{1}{3} \,
+    \overline{ \frac{ \partial \, \mathrm{vir} } { \partial \ln V } }
+    - \frac{\beta}{9} \, \mathrm{var} ( \mathrm{vir} )
+  \right]
+  .
+\end{equation*}
+%
+Note that we have included a factor of $V$
+in the trajectory averages in the square brackets
+such that the value,
+$\overline{p \, V}$,
+would approach a constant in the ideal-gas limit
+even with a fluctuating volume.
+
+If the potential energy is pairwise,
+$U = \sum_{i < j} \phi(r_{ij})$,
+we have
+%
+\begin{align*}
+  \mathrm{vir}
+  &=
+  \sum_{i < j} \phi_1(r_{ij}),
+  \\
+  -\frac{ \partial \, \mathrm{vir} }
+        { \partial \ln V }
+  &=
+  \frac{1}{3}
+  \sum_{i < j} \phi_2(r_{ij}),
+\end{align*}
+%
+where $\phi_1(r) = - r \, \phi'(r)$
+and $\phi_2(r) = -r \, \phi'_1(r)$.
+%
+For the Lennard-Jones potential, particularly, we have
+%
+\begin{align*}
+  \phi(r)
+  &=
+  4 \, \epsilon
+  \left[
+    \left( \frac{\sigma}{r} \right)^{12}
+    -
+    \left( \frac{\sigma}{r} \right)^{6}
+  \right]
+  ,
+  \\
+  \phi_1(r)
+  &=
+  4 \, \epsilon
+  \left[
+    12
+    \left( \frac{\sigma}{r} \right)^{12}
+    -
+    6
+    \left( \frac{\sigma}{r} \right)^{6}
+  \right]
+  ,
+  \\
+  \phi_2(r)
+  &=
+  4 \, \epsilon
+  \left[
+    144
+    \left( \frac{\sigma}{r} \right)^{12}
+    -
+    36
+    \left( \frac{\sigma}{r} \right)^{6}
+  \right]
+  .
+\end{align*}
+
+In simulating a finite system,
+we often have to truncate the potential at a cutoff distance,
+$r_c$, and thus need to include long-range tail corrections
+for Eqs. \eqref{eq:vir_pair} and \eqref{eq:dvir_pair},
+which can be written as
+%
+$$
+  \frac{ 2 \, \pi \, N^2 } { V }
+  \left(
+    \frac{ C_{12} } { 9 \, C_9 }
+    -
+    \frac{ C_6 } { 3 \, r_c^3 }
+  \right)
+  ,
+$$
+%
+where $C_6/(\epsilon \, \sigma^6)$ is $4$, $24$ and $48$,
+for $U$, $-\mathrm{vir}$ and $-\partial\,\mathrm{vir}/\partial \ln V$,
+respectively,
+and $C_{12}/(\epsilon \, sigma^{12})$ is
+$4$, $48$ and $192$, respectively.
+
+
+
+
+\subsubsection{Chemical potential versus volume}
+
+We can also adjust the volume to calibrate the chemical potential.
+%
+
+
+%
+%Another example is the determination of the
+%move size ($x$)
+%in a Monte Carlo simulation
+%in order to reaching a certain acceptance ratio ($y$).
 
 
 

@@ -252,14 +252,14 @@ def dosimul(zoom, build = True, fnlog = None):
   os.system("cp %s ." % fnpdb)
   os.system("cp %s ." % fnprm)
 
-  if nsteps == None: nsteps = 10
+  if nsteps == None: nsteps = 1000
 
   # command line
   fncfg = "run.conf"
   cmd = "%s %s %s" % (prog, cmdopt, fncfg)
 
   # output file
-  if not fnlog: fnlog = "ez%s.log" % zoom
+  if not fnlog: fnlog = "ez%s_t%s.log" % (zoom, nsteps)
   fnlog = "../" + fnlog
 
   ln = "# zoom %s, nsteps %s, dKdE %s, Etot %s, Edev %s\n" % (
