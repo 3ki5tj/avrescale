@@ -7,19 +7,24 @@ int dof = 4785;
 double kB = 0.001987191;
 double tp = 300;
 double gam = 0.33661; // from adp/avrescale.dat
-const char *fncorr = "fix/ene0fix_invk.acf";
+int surf = 0; // surface
+const char *fncorr = "fix/ene0fix_k.acf";
+//const char *fncorr = "fix/ene0fix_invk.acf";
 double initstd = 100;
 double tottime = 1000000;
 
 /* load the autocorrelation function from file */
 static double *loadcorr(const char *fn, double *dt, int *cnt)
 {
-  double c = kB*tp*kB*tp*(dof*0.5-1)*(dof*0.5+gam-2)/gam;
+  double c;
   FILE *fp;
   char buf[1024];
   int i, ifr, n = 0, m = 0;
   double *xx, y, ave = 0, var = 0;
 
+  if ( surf ) {
+    c = kB*tp*kB*tp*(dof*0.5-1)*(dof*0.5+gam-2)/gam;
+  }
   if ( (fp = fopen(fn, "r")) == NULL ) {
     fprintf(stderr, "cannot read %s\n", fn);
     return NULL;

@@ -85,7 +85,7 @@ __inline static void bpav_add(bpav_t *bpav, lj_t *lj, double beta)
   bpav->bp = lj_getbp(lj, beta, &bpav->bvir, &bpav->dbp);
   bpav->de = lj_denp(lj, &bpav->dvir);
 
-  bpav->w = exp(-beta * bpav->de) * vol / (lj->n + 1);
+  bpav->w = exp(-beta * bpav->de);
   bpav->bpV1 = bpav->bp * vol + beta * bpav->dvir / D;
 
   if ( fabs(bpav->dbp) > 1e20 ) {
@@ -105,16 +105,16 @@ __inline static void bpav_add(bpav_t *bpav, lj_t *lj, double beta)
 /* return the beta * pressure
  *   *dbp: d(beta*p)/d(rho)
  *   *w: < exp(-beta DU) >
- *   *dlnw: d(lnw)/d(lnV)
+ *   *dw: d(w)/d(lnV)
  * */
-__inline double bpav_get(bpav_t *bpav, lj_t *lj, double *dbp, double *w, double *dlnw)
+__inline double bpav_get(bpav_t *bpav, lj_t *lj, double *dbp, double *w, double *dw)
 {
   double cnt = bpav->cnt, bpV, bvir, var, vol = lj->vol;
 
   if ( cnt <= 0 ) {
     *dbp = 0;
     *w = 0;
-    *dlnw = 0;
+    *dw = 0;
     return 0;
   }
   bpV = bpav->sbpV / cnt;
@@ -122,7 +122,7 @@ __inline double bpav_get(bpav_t *bpav, lj_t *lj, double *dbp, double *w, double 
   var = bpav->sbvir2 / cnt - bvir * bvir;
   *dbp = (bpav->sdbp / cnt - var) / lj->n;
   *w = bpav->sw / cnt;
-  *dlnw = 1 + bpav->swbpV / bpav->sw - bpV;
+  *dw = bpav->swbpV / cnt - bpV * (*w);
   return bpV / vol;
 }
 
