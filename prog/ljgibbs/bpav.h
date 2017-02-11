@@ -1,3 +1,6 @@
+#ifndef BPAV_H__
+#define BPAV_H__
+
 typedef struct {
   double cnt, sbpV, sdbp, sbvir, sbvir2;
   double sw, swbpV;
@@ -5,7 +8,7 @@ typedef struct {
 } bpav_t;
 
 
-__inline void bpav_clear(bpav_t *bpav)
+__inline static void bpav_clear(bpav_t *bpav)
 {
   bpav->cnt = 0;
   bpav->sbpV = 0;
@@ -105,16 +108,16 @@ __inline static void bpav_add(bpav_t *bpav, lj_t *lj, double beta)
 /* return the beta * pressure
  *   *dbp: d(beta*p)/d(rho)
  *   *w: < exp(-beta DU) >
- *   *dw: d(w)/d(lnV)
+ *   *dlnw: d(lnw)/d(lnV)
  * */
-__inline double bpav_get(bpav_t *bpav, lj_t *lj, double *dbp, double *w, double *dw)
+__inline static double bpav_get(bpav_t *bpav, lj_t *lj, double *dbp, double *w, double *dlnw)
 {
   double cnt = bpav->cnt, bpV, bvir, var, vol = lj->vol;
 
   if ( cnt <= 0 ) {
     *dbp = 0;
     *w = 0;
-    *dw = 0;
+    *dlnw = 0;
     return 0;
   }
   bpV = bpav->sbpV / cnt;
@@ -122,9 +125,9 @@ __inline double bpav_get(bpav_t *bpav, lj_t *lj, double *dbp, double *w, double 
   var = bpav->sbvir2 / cnt - bvir * bvir;
   *dbp = (bpav->sdbp / cnt - var) / lj->n;
   *w = bpav->sw / cnt;
-  *dw = bpav->swbpV / cnt - bpV * (*w);
+  *dlnw = bpav->swbpV / bpav->sw - bpV;
   return bpV / vol;
 }
 
 
-
+#endif /* BPAV_H__ */

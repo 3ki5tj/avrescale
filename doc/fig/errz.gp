@@ -46,10 +46,10 @@ set ylabel "Error of the total energy" offset 1, 0
 set key right Left reverse spacing 1.2 width -5
 
 plot [0.1:][:] \
-    "../../data/wb/wb_t100000.dat"     u 1:2        w p  pt 7  ps 2.0 t "Simulation, {/Times-Italic T} = 10^{/*0.8 5}", \
-    "../../data/wb/wberrz_t100000.dat" u 1:($2+$4)  w l  lt 1  lw 6   t "Prediction, {/Times-Italic T} = 10^{/*0.8 5}", \
-    "../../data/wb/wb_t1M.dat"         u 1:2        w p  lw 3 pt 6  ps 1.8 t "Simulation, {/Times-Italic T} = 10^{/*0.8 6}", \
-    "../../data/wb/wberrz_t1M.dat"     u 1:($2+$4)  w l  lt 3  lw 6   t "Prediction, {/Times-Italic T} = 10^{/*0.8 5}", \
+    "../../data/wb/errz/wb_t100000.dat"     u 1:2        w p  pt 7  ps 2.0 t "Simulation, {/Times-Italic T} = 10^{/*0.8 5}", \
+    "../../data/wb/errz/wberrz_t100000.dat" u 1:($2+$4)  w l  lt 1  lw 6   t "Prediction, {/Times-Italic T} = 10^{/*0.8 5}", \
+    "../../data/wb/errz/wb_t1M.dat"         u 1:2        w p  lw 3 pt 6  ps 1.8 t "Simulation, {/Times-Italic T} = 10^{/*0.8 6}", \
+    "../../data/wb/errz/wberrz_t1M.dat"     u 1:($2+$4)  w l  lt 3  lw 6   t "Prediction, {/Times-Italic T} = 10^{/*0.8 5}", \
 
 
 #"../../data/wb/wberrz_t100000.dat" u 1:($3+$4)  w l  lt 1  lw 2   lc rgb "#808080" notitle,

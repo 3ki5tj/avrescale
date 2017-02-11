@@ -5,17 +5,19 @@
 #include "bpav.h"
 
 
-int n[2] = {100, 100};
-int nequil = 500000;
-int nsteps = 50000000;
-double den[2] = {0.05, 0.6};
-double tp = 1.15;
+int n[2] = {200, 200};
+int nequil = 1000000;
+int nsteps = 100000000;
+double den[2] = {0.13, 0.43};
+double rholimit[2] = {0.25, 0.35};
+double tp = 1.25;
 double rcdef = 1e9; /* half-box cutoff */
 int dopr = 0;
 int nstvol = 1000;
-int nstreport = 1000000;
-double mageql = 0.1; /* scaling magnitude during equilibration */
-int flipmin = 10; /* minimal number of flips to start stage 1 */
+int nstreport = 100000;
+double mageql = 0.01; /* scaling magnitude during equilibration */
+int flipmin = 100; /* minimal number of flips to start stage 1 */
+int force_simple = 0; /* always use ideal-gas formula */
 
 
 /* change the volume */
@@ -50,68 +52,77 @@ static void lj_changevol(lj_t *lj, double vol, double ep6, double ep12)
  * if magnitude `mag` is equal 0, then we will use the 1/t scheme */
 static int volmove(lj_t *lj[2], double beta, double mag0, int *ntimes,
     int simple, double del[2], int nflips[2], int verbose,
-    av_t *avbp, double gdbp[2], av_t *avwv, double gdwv[2])
+    av_t *avbp, double gdbp[2], av_t *avwv, double gwv[2], double gdlnwv[2])
 {
   double bp[2], nvol[2], ln[2], s[2], ep6[2], ep12[2], eptail[2];
-  double rho[2], spv[2], wv[2];
+  double rho[2], wv[2];
   double a[2][2] = {{0, 0}, {0, 0}}, det = 0, mag;
-  double delbp, delwv, dlnvol[2], de, ds, dse;
-  int i, acc = 0;
+  double delbp, dellnwv, dlnvol[2], de, ds, dse;
+  int i, acc = 0, holdv1;
 
   for ( i = 0; i < 2; i++ ) {
     bp[i] = av_getave(&avbp[i]);
     wv[i] = av_getave(&avwv[i]);
   }
   delbp = bp[0] - bp[1];
-  delwv = wv[0] - wv[1];
+  /* approximate formula for ln(wv[0] / wv[1]) */
+  dellnwv = (wv[0] - wv[1]) * 2 / (gwv[0] + gwv[1]);
   /* update the number of flips */
   if ( fabs(del[0]) > 0 && fabs(del[1]) ) {
     if ( delbp * del[0] < 0 ) nflips[0] += 1;
-    if ( delwv * del[1] < 0 ) nflips[1] += 1;
+    if ( dellnwv * del[1] < 0 ) nflips[1] += 1;
   }
   del[0] = delbp;
-  del[1] = delwv; /* difference of < exp(-dU) V / (N+1) > */
+  del[1] = dellnwv; /* difference of < exp(-dU) V / (N+1) > */
 
+  /* compute the current density and specific volume */
   for ( i = 0; i < 2; i++ ) {
     rho[i] = lj[i]->n / lj[i]->vol;
-    spv[i] = lj[i]->vol / (lj[i]->n + 1);
   }
+
+  holdv1 = (gdbp[1] < 0);
 
   if ( simple ) {
     /* Use ideal-gas formula
      * pressure depends more critically on the liquid-phase
      * -delbp  = (dbp0/dlnV0) dlnV0 - (dbp1/dlnV1) dlnV1
      *         ~ -rho0 dlnV0 + rho1 dlnV1
-     * -delwv  = (dw0/dlnV0) dlnV0 - (dw1/dlnV1) dlnV1
-     *         ~ (1/rho0) dlnV0 - (1/rho1) dlnV1 */
+     * -dellnwv  = (dlnw0/dlnV0) dlnV0 - (dlnw1/dlnV1) dlnV1
+     *           ~ dlnV0 - dlnV1 */
     a[0][0] = -rho[0];
     a[0][1] =  rho[1];
-    a[1][0] =  spv[0];
-    a[1][1] = -spv[1];
+    a[1][0] =  1;
+    a[1][1] = -1;
   } else {
-    /* use ideal gas values for unstable values */
+    /* safeguarding the derivatives */
     for ( i = 0; i < 2; i++ ) {
       if ( gdbp[i] < 0.1 ) gdbp[i] = 0.1;
-      if ( gdwv[i] < 0.1*spv[i] ) gdwv[i] = 0.1*spv[i];
+      if ( gdlnwv[i] < 0.1 ) gdlnwv[i] = 0.1;
     }
 
     /* solve the following equations
-     * -delbp  = a00 * dlnvol0 + a01 * dlnvol1
-     * -delwv  = a10 * dlnvol0 + a11 * dlnvol1
+     * -delbp   = a00 * dlnvol0 + a01 * dlnvol1
+     * -dellnwv = a10 * dlnvol0 + a11 * dlnvol1
      */
     a[0][0] = -gdbp[0] * rho[0]; /*  dbp0/dlnvol0 = -dbp0/drho0*rho0 */
     a[0][1] =  gdbp[1] * rho[1]; /* -dbp1/dlnvol1 =  dbp1/drho1*rho1 */
-    a[1][0] =  gdwv[0]; /*  dwv0/dlnvol0 */
-    a[1][1] = -gdwv[1]; /* -dwv1/dlnvol1 */
+    /* by thermodynamics gdlnwv == gdbp
+     * i.e. rho * d(mu)/d(rho) = d p/d(rho) */
+    // a[1][0] =  gdlnwv[0]; /*  dlnwv0/dlnvol0 */
+    // a[1][1] = -gdlnwv[1]; /* -dlnwv1/dlnvol1 */
+    a[1][0] =  gdbp[0]; /*  dlnwv0/dlnvol0 =  dbp0/drho0 */
+    a[1][1] = -gdbp[1]; /* -dlnwv1/dlnvol1 = -dbp1/drho1 */
   }
   det = a[0][0] * a[1][1] - a[1][0] * a[0][1];
-  dlnvol[0] = (-delbp * a[1][1] + delwv * a[0][1]) / det;
-  dlnvol[1] = ( delbp * a[1][0] - delwv * a[0][0]) / det;
-  //printf("%g, %g, %g, %g; %g %g; %g, %g; mag %g\n", a[0][0], a[0][1], a[1][0], a[1][1], delbp, delw, dlnvol[0], dlnvol[1], mag0);
+  dlnvol[0] = (-delbp * a[1][1] + dellnwv * a[0][1]) / det;
+  dlnvol[1] = ( delbp * a[1][0] - dellnwv * a[0][0]) / det;
+  /* volume of the liquid phase too small */
+  if ( holdv1 && dlnvol[1] < 0.1 ) dlnvol[1] = 0.1;
+  //printf("%g, %g, %g, %g; %g %g; %g, %g; mag %g\n", a[0][0], a[0][1], a[1][0], a[1][1], delbp, dellnwv, dlnvol[0], dlnvol[1], mag0);
 
   /* modify the values by 1/t */
   if ( ntimes != NULL ) {
-    mag = 1. / (*ntimes + 1);
+    mag = 1. / (*ntimes + 2.0/mag0);
     *ntimes += 1;
   } else {
     mag = mag0;
@@ -125,16 +136,17 @@ static int volmove(lj_t *lj[2], double beta, double mag0, int *ntimes,
 
   if ( verbose ) {
     printf("vol %7.2f*%5.3f=%7.2f, %6.2f*%5.3f=%6.2f; rho %.4f, %.4f, "
-           "(%.4f, %8.3f, %8.3f, %8.3f) det %8.2f, dbp %+.4f%+.4f=%+8.3f, dwv %6.3f%+6.3f=%+8.3f\n",
+           "(%.4f, %8.3f, %8.3f, %8.3f) det %8.2f, dbp %+.4f%+.4f=%+8.3f, dwv %6.3f%+6.3f=%+8.3f, mag %g\n",
         lj[0]->vol, exp(dlnvol[0]), nvol[0],
         lj[1]->vol, exp(dlnvol[1]), nvol[1],
         rho[0], rho[1],
         a[0][0], a[0][1], a[1][0], a[1][1], det,
-        bp[0], bp[1], del[0], wv[0], wv[1], del[1]);
+        bp[0], bp[1], del[0], wv[0], wv[1], del[1], mag);
     //getchar();
   }
 
-  if ( lj[0]->n/nvol[0] < lj[1]->n/nvol[1] ) { /* filter out unreasonable moves */
+  if ( lj[0]->n/nvol[0] < rholimit[0]
+    && lj[1]->n/nvol[1] > rholimit[1] ) { /* filter out unreasonable moves */
     /* compute the energy change */
     acc = 1;
     for ( i = 0; i < 2; i++ ) {
@@ -179,13 +191,13 @@ int main(void)
   int i, t, acc[2], volacc, nvol = 0, nflips[2] = {0, 0};
   int stage = 0, simple, *pvol = NULL, verbose;
   lj_t *lj[2];
-  av_t avbp[2], avwv[2], avacc[2], avvol[2], avvolacc[1];
+  av_t avbp[2], avwv[2], avacc[2], avvolacc[1];
   bpav_t bpav[2];
   double beta = 1.0/tp, amp, mag;
   double rho[2], spv[2];
-  double gbp[2], gdbp[2], gw[2], gdw[2], gdwv[2], del[2] = {0, 0};
+  double gbp[2], gdbp[2], gw[2], gdlnw[2], gwv[2], gdlnwv[2], del[2] = {0, 0};
 
-  mtscramble(time(NULL));
+  //mtscramble(time(NULL));
   for ( i = 0; i < 2; i++ ) {
     lj[i] = lj_open(n[i], den[i], rcdef, dopr);
     lj[i]->dof = n[i] * D; /* MC */
@@ -206,7 +218,6 @@ int main(void)
     av_clear(&avwv[i]);
     av_clear(&avacc[i]);
     bpav_clear(&bpav[i]);
-    av_clear(&avvol[i]);
   }
   av_clear(avvolacc);
 
@@ -214,6 +225,9 @@ int main(void)
     for ( i = 0; i < 2; i++ ) {
       rho[i] = lj[i]->n / lj[i]->vol;
       spv[i] = lj[i]->vol / (lj[i]->n + 1);
+      /* recalibrate the energy to avoid accumulated
+       * numerical error, unnecessary but only for safety */
+      if ( t % 10000 == 0 ) lj_energy(lj[i]);
       amp = 0.1 / rho[i]; /* empirical MC move size */
       acc[i] = lj_metro(lj[i], amp, beta);
       av_add(&avacc[i], acc[i]);
@@ -228,8 +242,9 @@ int main(void)
     if ( t % nstvol == 0 ) {
       /* get the global averages */
       for ( i = 0; i < 2; i++ ) {
-        gbp[i] = bpav_get(&bpav[i], lj[i], &gdbp[i], &gw[i], &gdw[i]);
-        gdwv[i] = spv[i] * (gw[i] + gdw[i]);
+        gbp[i] = bpav_get(&bpav[i], lj[i], &gdbp[i], &gw[i], &gdlnw[i]);
+        gwv[i] = gw[i] * spv[i];
+        gdlnwv[i] = 1 + gdlnw[i];
       }
 
       if ( stage == 0 ) { /* equilibration */
@@ -238,40 +253,42 @@ int main(void)
         simple = 1; /* use simplified formula in the equilibration phase */
         verbose = 1;
       } else if ( stage == 1 ) {
+        mag = mageql;
+        pvol = &nvol;
+        simple = 1;
+#if 0
         mag = 0; /* stop updating */
         pvol = NULL;
         simple = 0;
+#endif
         verbose = 1;
       } else { /* production */
         mag = mageql;
         pvol = &nvol;
-        simple = 0;
+        simple = force_simple;
         verbose = (t > 0 && t % nstreport == 0);
       }
 
       /* adjust the two volumes */
       volacc = volmove(lj, beta, mag, pvol,
-          simple, del, nflips, verbose, avbp, gdbp, avwv, gdwv);
+          simple, del, nflips, verbose, avbp, gdbp, avwv, gwv, gdlnwv);
 
-      if ( stage == 0 && nflips[0] >= flipmin && nflips[1] >= flipmin ) {
-        stage = 1;
-        fprintf(stderr, "starting stage 1 at t %d, rho %g, %g, nflips %d, %d\n",
-            t, rho[0], rho[1], nflips[0], nflips[1]);
+      /* check if we need to change stages */
+      if ( ( stage == 0 && nflips[0] >= flipmin && nflips[1] >= flipmin ) 
+        || ( stage == 1 && t >= nequil && gdbp[0] > 0 && gdbp[1] > 0 ) ) {
+        stage += 1;
+        fprintf(stderr, "starting stage %d at t %d, rho %g, %g, nflips %d, %d, gdbp %g, %g\n",
+            stage, t, rho[0], rho[1], nflips[0], nflips[1], gdbp[0], gdbp[1]);
         t = 0;
         nflips[0] = nflips[1] = 0;
-        for ( i = 0; i < 2; i++ ) bpav_clear(&bpav[i]);
-      } else if ( stage == 1 && t >= nequil ) {
-        stage = 2;
-        fprintf(stderr, "starting stage 2 at t %d, rho %g, %g, nflips %d, %d\n",
-            t, rho[0], rho[1], nflips[0], nflips[1]);
-        t = 0;
-        nflips[0] = nflips[1] = 0;
-      } else if ( stage == 2 ) {
+        if ( stage == 1 ) {
+          for ( i = 0; i < 2; i++ ) bpav_clear(&bpav[i]);
+        }
+      }
+
+      if ( stage == 2 ) {
         /* production stage */
         av_add(avvolacc, volacc);
-        for ( i = 0; i < 2; i++ ) {
-          av_add(&avvol[i], lj[i]->vol);
-        }
       }
     }
 
@@ -279,15 +296,16 @@ int main(void)
     if ( t > 0 && t % nstreport == 0 ) {
       /* get the global averages */
       for ( i = 0; i < 2; i++ ) {
-        gbp[i] = bpav_get(&bpav[i], lj[i], &gdbp[i], &gw[i], &gdw[i]);
-        gdwv[i] = spv[i] * (gw[i] + gdw[i]);
+        gbp[i] = bpav_get(&bpav[i], lj[i], &gdbp[i], &gw[i], &gdlnw[i]);
+        gwv[i] = gw[i] * spv[i];
+        gdlnwv[i] = 1 + gdlnw[i];
         //bpav_clear(&bpav[i]);
       }
-      printf("t %d@%d: rho %8.6f %8.6f, bp %8.6f %8.6f, dbp %g, %g, wv %7.4f, %7.4f, dwv %g, %g, "
-             "vmove %.2f%%, acc %.0f%%, %.0f%%, flips %d, %d, del %+.3f, %+6.2f\n",
+      printf("t %d@%d: rho %8.6f %8.6f, bp %8.6f %8.6f, dbp %g %g, wv %7.4f %7.4f, dlnwv %g %g, "
+             "vmove %.3f%%, acc %.0f%% %.0f%%, flips %d %d, del %+.3f %+6.2f\n",
           stage, t, rho[0], rho[1],
           gbp[0], gbp[1], gdbp[0], gdbp[1],
-          gw[0] * spv[0], gw[1] * spv[1], gdwv[0], gdwv[1],
+          gwv[0], gwv[1], gdlnwv[0], gdlnwv[1],
           av_getave(avvolacc)*100,
           av_getave(&avacc[0])*100, av_getave(&avacc[1])*100,
           nflips[0], nflips[1], del[0], del[1]);

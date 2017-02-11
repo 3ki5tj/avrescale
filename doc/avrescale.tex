@@ -72,7 +72,7 @@ Galveston, Texas 77555-0304, USA}
   and the simulation ensemble often becomes
   indistinguishable from a microcanonical one.
   %
-  TODO: extensions. 
+  TODO: extensions.
 \end{abstract}
 
 \maketitle
@@ -861,7 +861,13 @@ Then, the change of $x$ in each step is given by
   \label{eq:adjustxy}
 \end{equation}
 %
-Below, we list a few applications of this technique.
+
+
+In many cases, the derivative, $y'(x)$,
+can be computed from rigorous expressions
+derived from statistical mechanics.
+%
+Below, we list a few applications.
 
 \subsubsection{Pressure versus volume}
 
@@ -890,38 +896,44 @@ $$
 \delta \ln V_t
 =
 \frac{1}{t} \cdot
-\frac{ p^* - p_t }
-     { \partial \, p / \partial \ln V }
+\frac{ \beta \, p^* - \beta \, p_t }
+     { \partial \, ( \beta \, p) / \partial \ln V }
 ,
 $$
+where we have included a factor of $\beta = 1/(k_B \, T)$
+for convenience,
 and the new volume is given by $V_{t+1} = V_t \, \exp(\delta \ln V_t)$.
 
 For the canonical ensemble,
 we have
 %
 \begin{align*}
-  p
+  \beta \, p
   &=
   \frac{
-    k_B \, T \, N_f + \left\langle \mathrm{vir} \right\rangle
+    N_f + \beta \left\langle \mathrm{vir} \right\rangle
   } { 3 \, V }
   ,
   \\
-  \frac{ \partial \, p } { \partial (1/V) }
+  \frac{ \partial \, (\beta \, p) }
+       { \partial \, (1/V) }
   &=
-  p \, V
+  \beta \, p \, V
   -
-  \frac{1}{3} \left\langle
+  \frac{\beta}{3}
+  \left\langle
     \frac{ \partial \, \mathrm{vir} } { \partial \ln V }
   \right\rangle
   -
-  \frac{\beta}{9} \left\langle
-  \delta( \mathrm{vir} )^2
+  \frac{\beta^2}{9}
+  \left\langle
+  \Delta( \mathrm{vir} )^2
   \right\rangle
   ,
 \end{align*}
 %
-where $\beta = 1/(k_B \, T)$, and
+where
+%$\beta = 1/(k_B \, T)$, and
 the virial is defined as
 %
 \begin{equation*}
@@ -929,8 +941,9 @@ the virial is defined as
   =
   \mathbf F \cdot \mathbf r
   =
-  -3 \frac{ \partial \, U\left( \sqrt[3]{V} \, \mathbf R \right) }
-  { \partial (\ln V) }
+  -3 \,
+  \frac{ \partial \, U\left( \sqrt[3]{V} \, \mathbf R \right) }
+       { \partial \, (\ln V) }
   .
 \end{equation*}
 %
@@ -938,50 +951,56 @@ Thus, we may choose the instantaneous pressure, $p_t$,
 to be
 %
 \begin{equation*}
-  p_t
+  \beta \, p_t
   =
-  \frac{ k_B \, T \, N_f + \mathrm{vir} }
-  { 3 \, V }
+  \frac{ N_f + \beta \, \mathrm{vir} }
+       { 3 \, V }
   ,
 \end{equation*}
 %
 and compute the derivative as
 %
-\begin{equation*}
-  \frac{ \partial \, p } { \partial \ln V }
+\begin{equation}
+  \frac{ \partial \, ( \beta \, p ) }
+       { \partial \, ( \ln V ) }
   =
-  - \frac{1}{V}
-  \left[ \,
-    \overline{ p \, V }
-    - \frac{1}{3} \,
-    \overline{ \frac{ \partial \, \mathrm{vir} } { \partial \ln V } }
-    - \frac{\beta}{9} \, \mathrm{var} ( \mathrm{vir} )
-  \right]
+  -\frac{
+    \overline{ \beta \, p \, V }
+  }{V}
+  + \frac{\beta}{3 \, V} \,
+      \overline{ \frac{ \partial \, \mathrm{vir} } { \partial \ln V } }
+  + \frac{\beta^2}{9 \, V} \,
+      \mathrm{var} ( \mathrm{vir} )
   .
-\end{equation*}
+  \label{eq:dbpdlnV}
+\end{equation}
 %
 Note that we have included a factor of $V$
-in the trajectory averages in the square brackets
-such that the value,
-$\overline{p \, V}$,
-would approach a constant in the ideal-gas limit
+in the trajectory averages,
+such as $\overline{\beta \, p \, V}$,
+such that they
+may tend to constants in the ideal-gas limit
 even with a fluctuating volume.
 
 If the potential energy is pairwise,
 $U = \sum_{i < j} \phi(r_{ij})$,
 we have
 %
-\begin{align*}
+\begin{align}
   \mathrm{vir}
   &=
-  \sum_{i < j} \phi_1(r_{ij}),
+  \sum_{i < j} \phi_1(r_{ij})
+  ,
+  \label{eq:vir_pair}
   \\
   -\frac{ \partial \, \mathrm{vir} }
         { \partial \ln V }
   &=
   \frac{1}{3}
-  \sum_{i < j} \phi_2(r_{ij}),
-\end{align*}
+  \sum_{i < j} \phi_2(r_{ij})
+  ,
+  \label{eq:dvir_pair}
+\end{align}
 %
 where $\phi_1(r) = - r \, \phi'(r)$
 and $\phi_2(r) = -r \, \phi'_1(r)$.
@@ -1043,7 +1062,7 @@ $$
 where $C_6/(\epsilon \, \sigma^6)$ is $4$, $24$ and $48$,
 for $U$, $-\mathrm{vir}$ and $-\partial\,\mathrm{vir}/\partial \ln V$,
 respectively,
-and $C_{12}/(\epsilon \, sigma^{12})$ is
+and $C_{12}/(\epsilon \, \sigma^{12})$ is
 $4$, $48$ and $192$, respectively.
 
 
@@ -1052,6 +1071,98 @@ $4$, $48$ and $192$, respectively.
 \subsubsection{Chemical potential versus volume}
 
 We can also adjust the volume to calibrate the chemical potential.
+%
+By Widom's insertion method,
+the chemical potential can be computed from
+trials of inserting a particle at random positions,
+%
+\begin{equation*}
+  -\beta \, \mu
+  =
+  \ln \left[
+  \frac{V}{N+1}
+  \left\langle
+    \exp(-\beta \, \Delta U)
+  \right\rangle
+  \right]
+  ,
+\end{equation*}
+%
+where $\Delta U$
+is the increase of the potential energy
+caused by adding a particle,
+and we have ignored a constant shift due to the
+momenta integral.
+%
+Thus, assuming small derivation from the target value, $\mu^*$,
+the volume change in each step is given by
+%
+\begin{equation*}
+  \delta \ln V_t
+  =
+  \frac{1}{t} \cdot
+  \frac{
+    %-\beta \, \mu^*  + \beta \, \mu_t
+    1 - \frac{V}{N+1} \, \exp(-\beta \, \Delta U + \beta \, \mu^*)
+  }
+  {
+    \partial \, (-\beta \, \mu) / \partial \, (\ln V)
+  }
+  .
+\end{equation*}
+%
+
+
+We can obtain the derivative,
+$\partial \, (-\beta \, \mu) / \partial \, (\ln V)$,
+%with respect to volume change
+by direct differentiation,
+%
+\begin{equation*}
+  \frac{ \partial \, (-\beta \, \mu) }
+       { \partial \, (\ln V) }
+  =
+  1 +
+  \frac{\beta } { 3 } \,
+  \left[
+    \frac{ \langle \mathrm{vir}_+ \exp(-\beta \, \Delta U) \rangle }
+         { \langle \exp(-\beta \, \Delta U) \rangle }
+    -
+    \langle \mathrm{vir} \rangle
+  \right]
+  ,
+\end{equation*}
+%
+where $\mathrm{vir}_+ \equiv -3 \, \partial \, (U + \Delta U) / \partial \, (\ln V)$
+stands for the virial
+computed from the system with the additional particle.
+%
+However, for a single-component system,
+it is more convenient and computationally more stable
+to take advantage of the thermodynamic relation,
+%$$
+%\frac{ \partial \, P }
+%     { \partial \, \rho }
+%=
+%\rho \,
+%\frac{ \partial \, \mu }
+%     { \partial \, \rho }
+%,
+%$$
+%%
+%and compute
+\begin{equation*}
+  \frac{ \partial \, (-\beta \, \mu) }
+       { \partial \, (\ln V) }
+  =
+  -\frac{V}{N}
+  \frac{ \partial \, (\beta \, p) }
+       { \partial \, (\ln V) }
+  ,
+\end{equation*}
+%
+and use Eq. \eqref{eq:dbpdlnV}
+for $\partial \, (\beta\, p)/ \partial \, (\ln V)$.
 %
 
 
