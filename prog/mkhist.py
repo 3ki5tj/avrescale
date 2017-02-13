@@ -50,7 +50,7 @@ def showhelp():
   print "  --dE=:               set the bin size for the energy grid (for reweighting)"
   print "  -1, --drop1          drop the last frame"
   print "  --corr, --acf        compute the autocorrelation function"
-  print "  --fncorr=, --fnacf   set the output file name for the autocorrelation function"
+  print "  --fncorr=, --fnacf=  set the output file name for the autocorrelation function"
   print "  --corrmax=           set the maximal number of steps for the autocorrelation function"
   print "  --nohist             skipping histogram"
   exit(1)
@@ -414,7 +414,10 @@ def mkhist(fnin):
         colE = 2
       else:
         temp = float(arr[2])
-        if num == 3 and (temp >= 100 and temp <= 600): # step energy temperature
+        if num == 3 and (temp >= 100 and temp <= 600):
+          # for a WHAM simulation the format should be 
+          #  step energy temperature
+          # so the third column should be between 100K to 600K
           colT = 3
           colE = 2
         elif num == 4: # step x temperature energy
@@ -455,7 +458,9 @@ def getcorr(fnin):
   dx = [y - ave for y in x]
   xx = []
   imax = min(corrmax + 1, n - 1)
+  print imax
   for i in range(imax):
+    # compute autocoorelation of i steps apart
     xxv = sum(dx[j]*dx[j+i] for j in range(n - i))/(n - i)
     xx.append(xxv)
   var = xx[0]
@@ -473,9 +478,11 @@ def getcorr(fnin):
     #ss += (y2-y1)/log(y2/y1)
     sout += "%s %s\n" % (i*dt, xx[i]/xx[0])
   ss *= 2*dt
+  # autocorrelation time
+  tau = (ss / var - 1) / 2
 
   # add a tag line
-  sout = "# %s %s %s %s %s %s\n" % (n, ave, var, dt, len(xx) - 1, ss) + sout
+  sout = "# %s %s %s %s %s %s %s\n" % (n, ave, var, dt, len(xx) - 1, ss, tau) + sout
 
   if type(col) == str:
     scol = col
@@ -488,8 +495,10 @@ def getcorr(fnin):
     fnout = os.path.splitext(fnin)[0] + "_" + scol + ".acf"
 
   open(fnout, "w").write(sout)
-  print "saved correlation function to %s, n %s, ave %s, var %s, correlation integral %s" % (
-      fnout, n, ave, var, ss)
+  print "saved correlation function to %s, n %s, ave %s, var %s, " % (
+      fnout, n, ave, var),
+  print "correlation integral %s, autocorrelation time %s" % (
+      ss, tau)
 
 
 

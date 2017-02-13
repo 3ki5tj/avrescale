@@ -5,7 +5,7 @@
 #include "bpav.h"
 
 
-int n[2] = {200, 200};
+int n[2] = {100, 100};
 int nequil = 1000000;
 int nsteps = 100000000;
 double den[2] = {0.13, 0.43};

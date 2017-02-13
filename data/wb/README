@@ -1,14 +1,18 @@
-normal    template, normal testing
-reg       regular velocity scaling, constant scaling magnitude
-adp       adaptive velocity scaling
-fix       microcanonical enesmble
-can       canonical ensemble, Langevin
-can2      canonical ensemble, Langevin, half of the damping
-can_vrs   canonical ensemble, velocity rescaling
-600K      raising the temperature to 600K
-large     larger waterbox
-
-trace     directory for the equilibration test, used to for doc/fig/equil.gp
+Directory | Description
+----------+-------------------------
+normal    | template, normal testing
+reg       | regular velocity scaling, constant scaling magnitude, every 1000 steps
+reg100    | regular velocity scaling, every 100 steps
+adp       | adaptive velocity scaling
+fix       | microcanonical ensemble
+can       | canonical ensemble, Langevin
+can2      | canonical ensemble, Langevin, half of the damping
+can_vrs   | canonical ensemble, velocity rescaling
+600K      | raising the temperature to 600K
+large     | larger waterbox
+----------+---------------------------
+trace     | directory for the equilibration test, for doc/fig/equil.gp
+errz      | directory for the error test,  for doc/fig/errz.gp
 
 ## For the optimality test
 
