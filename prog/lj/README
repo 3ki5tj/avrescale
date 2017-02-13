@@ -5,7 +5,7 @@ Command to find Gamma (correlation integral)
 ./md -A 0.01 -G0.72 -t 1000000 -E-255.7 -D1e-100 > mag0.01.log
 ./md -A 0.001 -G0.72 -t 100000000 -E-255.7 -D1e-100 > mag0.001.log
 ./md -A 0.0005 -G0.72 -t 200000000 -E-255.7 -D1e-100 > mag0.0005.log
-The resulting Gamma value appears to be around 6464 (mag0.001.log).
+The resulting Gamma value appears to be around 6460 (mag0.001.log).
 
 ### Mimic regular velocity scaling
 
@@ -13,3 +13,6 @@ Use the bulk temperature, set dKdE = 1, with some magnitude
 ```
 ./md -A 0.01 -G1
 ```
+From -A0.00005, we get a raw Gamma value of 4760,
+which should be Gamma of kinetic energy divided by dKdE = 0.718
+The variance of the kinetic energy is about 103.

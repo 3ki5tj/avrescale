@@ -6,6 +6,7 @@
 
 int n = 108;
 long nsteps = 500000;
+
 double rho = 0.7;
 double tp = 1.5;
 double rcdef = 2.5;
@@ -21,6 +22,7 @@ double zfactor = 1.0; /* zooming factor */
 double mag = 0.0;
 double dKdE = 0.0;
 
+int nstlog = 1000; /* logging frequency */
 
 
 /* print help message and die */
@@ -36,7 +38,8 @@ static void help(void)
   fprintf(stderr, "  -Z:        set the zooming factor for the scaling magnitude, %g\n", zfactor);
   fprintf(stderr, "  -G:        set the explicit value of dKdE, %g\n", dKdE);
   fprintf(stderr, "  -A:        set the fixed scaling magnitude, %g\n", mag);
-  fprintf(stderr, " === Lennard-Jones Parameters ===\n");
+  fprintf(stderr, "  -g:        set the logging interval, %d\n", nstlog);
+  fprintf(stderr, "\n === [ Lennard-Jones Parameters ] ===\n\n");
   fprintf(stderr, "  -r:        set the density, %g\n", rho);
   fprintf(stderr, "  -T:        set the temperature, %g\n", tp);
   fprintf(stderr, "  -t:        set the number of steps, %ld\n", nsteps);
@@ -76,7 +79,7 @@ static int doargs(int argc, char **argv)
 
     /* this is a short option */
     for ( j = 1; (ch = argv[i][j]) != '\0'; j++ ) {
-      if ( strchr("nEDZAGrTtc", ch) != NULL ) {
+      if ( strchr("nEDZAGrTtcg", ch) != NULL ) {
         q = p = argv[i] + j + 1;
         if ( *p != '\0' ) {
           /* the argument follows the option immediately
@@ -110,6 +113,8 @@ static int doargs(int argc, char **argv)
           nsteps = atol(q);
         } else if ( ch == 'c' ) {
           rcdef = atof(q);
+        } else if ( ch == 'g' ) {
+          nstlog = atoi(q);
         }
         break; /* skip the remaining characters */
       } else if ( ch == 'F' ) {
@@ -294,7 +299,7 @@ int main(int argc, char **argv)
   for ( t = 1; t <= nsteps; t++ ) {
     lj_vv(lj, dt);
     lj->ekin = lj_ekin(lj->v, n);
-    if ( t % 1000 == 0 )
+    if ( t % nstlog == 0 )
       printf("%8ld\t%8.3f\t%8.3f\t%8.3f\n", t, lj->epot, lj->ekin, lj->epot + lj->ekin);
     if ( t > nsteps / 2 ) {
       cnt += 1;

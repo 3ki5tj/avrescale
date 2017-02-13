@@ -458,7 +458,6 @@ def getcorr(fnin):
   dx = [y - ave for y in x]
   xx = []
   imax = min(corrmax + 1, n - 1)
-  print imax
   for i in range(imax):
     # compute autocoorelation of i steps apart
     xxv = sum(dx[j]*dx[j+i] for j in range(n - i))/(n - i)

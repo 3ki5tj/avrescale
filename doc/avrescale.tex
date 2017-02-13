@@ -852,6 +852,7 @@ that corresponds to a target value, $y^*$, of an observable, $y$.
 %on the fly.
 %
 Then, the change of $x$ in each step is given by
+%
 \begin{equation}
   \delta x_t = \frac 1 t
   \cdot
@@ -863,11 +864,41 @@ Then, the change of $x$ in each step is given by
 %
 
 
-In many cases, the derivative, $y'(x)$,
+Below we list a few examples,
+in which the derivative, $y'(x)$,
 can be computed from rigorous expressions
-derived from statistical mechanics.
+derived from statistical mechanics,
 %
-Below, we list a few applications.
+If, however, such expression is unavailable,
+we can resort to a trial simulation
+with a constant magnitude, $k$,
+%
+\begin{equation}
+  \delta x_t =
+  k \, (y^* - y_t)
+  ,
+  \notag
+  %\label{eq:adjustxy_fixmag}
+\end{equation}
+%
+and then
+%
+\begin{equation}
+  y'(x^*)
+  \approx
+  k \, \tau_y \,
+  \frac{
+    \mathrm{var} (y)
+  }
+  {
+    \mathrm{var} (x)
+  }
+  ,
+\end{equation}
+%
+where $\tau_y$ is the integrated autocorrelation time of $y$.
+
+
 
 \subsubsection{Pressure versus volume}
 
@@ -982,88 +1013,6 @@ such that they
 may tend to constants in the ideal-gas limit
 even with a fluctuating volume.
 
-If the potential energy is pairwise,
-$U = \sum_{i < j} \phi(r_{ij})$,
-we have
-%
-\begin{align}
-  \mathrm{vir}
-  &=
-  \sum_{i < j} \phi_1(r_{ij})
-  ,
-  \label{eq:vir_pair}
-  \\
-  -\frac{ \partial \, \mathrm{vir} }
-        { \partial \ln V }
-  &=
-  \frac{1}{3}
-  \sum_{i < j} \phi_2(r_{ij})
-  ,
-  \label{eq:dvir_pair}
-\end{align}
-%
-where $\phi_1(r) = - r \, \phi'(r)$
-and $\phi_2(r) = -r \, \phi'_1(r)$.
-%
-For the Lennard-Jones potential, particularly, we have
-%
-\begin{align*}
-  \phi(r)
-  &=
-  4 \, \epsilon
-  \left[
-    \left( \frac{\sigma}{r} \right)^{12}
-    -
-    \left( \frac{\sigma}{r} \right)^{6}
-  \right]
-  ,
-  \\
-  \phi_1(r)
-  &=
-  4 \, \epsilon
-  \left[
-    12
-    \left( \frac{\sigma}{r} \right)^{12}
-    -
-    6
-    \left( \frac{\sigma}{r} \right)^{6}
-  \right]
-  ,
-  \\
-  \phi_2(r)
-  &=
-  4 \, \epsilon
-  \left[
-    144
-    \left( \frac{\sigma}{r} \right)^{12}
-    -
-    36
-    \left( \frac{\sigma}{r} \right)^{6}
-  \right]
-  .
-\end{align*}
-
-In simulating a finite system,
-we often have to truncate the potential at a cutoff distance,
-$r_c$, and thus need to include long-range tail corrections
-for Eqs. \eqref{eq:vir_pair} and \eqref{eq:dvir_pair},
-which can be written as
-%
-$$
-  \frac{ 2 \, \pi \, N^2 } { V }
-  \left(
-    \frac{ C_{12} } { 9 \, C_9 }
-    -
-    \frac{ C_6 } { 3 \, r_c^3 }
-  \right)
-  ,
-$$
-%
-where $C_6/(\epsilon \, \sigma^6)$ is $4$, $24$ and $48$,
-for $U$, $-\mathrm{vir}$ and $-\partial\,\mathrm{vir}/\partial \ln V$,
-respectively,
-and $C_{12}/(\epsilon \, \sigma^{12})$ is
-$4$, $48$ and $192$, respectively.
 
 
 
@@ -1103,7 +1052,7 @@ the volume change in each step is given by
   \frac{1}{t} \cdot
   \frac{
     %-\beta \, \mu^*  + \beta \, \mu_t
-    1 - \frac{V}{N+1} \, \exp(-\beta \, \Delta U + \beta \, \mu^*)
+    1 - \frac{V}{N+1} \, \exp(-\beta \, \Delta U_t + \beta \, \mu^*)
   }
   {
     \partial \, (-\beta \, \mu) / \partial \, (\ln V)
@@ -1165,6 +1114,46 @@ and use Eq. \eqref{eq:dbpdlnV}
 for $\partial \, (\beta\, p)/ \partial \, (\ln V)$.
 %
 
+
+\subsubsection{Variant of the Gibbs ensemble method}
+
+
+We can combine the above two examples
+to construct a variant of the Gibbs ensemble method\cite{frenkel}
+of studying the liquid-gas phase coexistence.
+%
+We will simultaneously simulate a simple fluid
+in two boxes, one in the gas and the other in the liquid phase.
+%
+We will adaptively adjust the volumes of the two boxes
+to reach a point at which the two boxes share
+the same pressure and chemical potential.
+%
+The updating formulas are
+\begin{align}
+  \delta \, \ln V_{1,t}
+  &=
+  \frac{1}{t} \cdot
+  \frac{ \rho_2 \, \Delta( \beta \, \mu_t ) - \Delta( \beta \, p_t ) }
+  { (\rho_2 - \rho_1) \, \partial (\beta \, p_1) / \partial \rho_1 }
+  ,
+  \label{eq:gibbs_p}
+  \\
+  \delta \, \ln V_{2,t}
+  &=
+  \frac{1}{t} \cdot
+  \frac{ \rho_1 \, \Delta( \beta \, \mu_t ) - \Delta( \beta \, p_t ) }
+  { (\rho_2 - \rho_1) \, \partial (\beta \, p_2) / \partial \rho_2 }
+  ,
+  \label{eq:gibbs_mu}
+\end{align}
+%
+where
+$\Delta( \beta \, p_t) = \beta (p_{t,1} - p_{t,2})$
+and
+$\Delta( \beta \, \mu_t) = \beta (\mu_{t,1} - \mu_{t,2})$.
+
+The details can be found in Appendix Eq. \ref{sec:gibbs}.
 
 %
 %Another example is the determination of the
@@ -1727,6 +1716,129 @@ A_{\tau*}
 $
 where $K_{\tau*}$
 is the block average of $K_t$.
+
+
+\section{\label{sec:gibbs}
+Variant of the Gibbs ensemble method
+}
+
+Eqs. \eqref{eq:gibbs_p} and \eqref{eq:gibbs_mu}
+come from the solution of
+%
+\begin{align*}
+  \frac{ -\Delta( \beta \, p_t ) } { t }
+  &=
+  \frac{ \partial \, (\beta \, p_1 ) }
+       { \partial \, \ln V_1 }
+  \,
+  \delta \, \ln V_{1,t}
+  -
+  \frac{ \partial \, (\beta \, p_2 ) }
+       { \partial \, \ln V_2 }
+  \,
+  \delta \, \ln V_{2,t}
+  ,
+  \\
+  \frac{ \Delta ( \beta \, \mu_t ) } { t }
+  &=
+  \frac{ \partial \, (-\beta \, \mu_1 ) }
+       { \partial \, \ln V_1 }
+  \,
+  \delta \, \ln V_{1,t}
+  -
+  \frac{ \partial \, (\beta \, \mu_2 ) }
+       { \partial \, \ln V_2 }
+  \,
+  \delta \, \ln V_{2,t}
+  .
+\end{align*}
+%
+
+\subsection{Virial and its derivative under a pairwise potential}
+
+If the potential energy is pairwise,
+$U = \sum_{i < j} \phi(r_{ij})$,
+we have
+%
+\begin{align}
+  \mathrm{vir}
+  &=
+  \sum_{i < j} \phi_1(r_{ij})
+  ,
+  \label{eq:vir_pair}
+  \\
+  -\frac{ \partial \, \mathrm{vir} }
+        { \partial \ln V }
+  &=
+  \frac{1}{3}
+  \sum_{i < j} \phi_2(r_{ij})
+  ,
+  \label{eq:dvir_pair}
+\end{align}
+%
+where $\phi_1(r) = - r \, \phi'(r)$
+and $\phi_2(r) = -r \, \phi'_1(r)$.
+%
+For the Lennard-Jones potential, particularly, we have
+%
+\begin{align*}
+  \phi(r)
+  &=
+  4 \, \epsilon
+  \left[
+    \left( \frac{\sigma}{r} \right)^{12}
+    -
+    \left( \frac{\sigma}{r} \right)^{6}
+  \right]
+  ,
+  \\
+  \phi_1(r)
+  &=
+  4 \, \epsilon
+  \left[
+    12
+    \left( \frac{\sigma}{r} \right)^{12}
+    -
+    6
+    \left( \frac{\sigma}{r} \right)^{6}
+  \right]
+  ,
+  \\
+  \phi_2(r)
+  &=
+  4 \, \epsilon
+  \left[
+    144
+    \left( \frac{\sigma}{r} \right)^{12}
+    -
+    36
+    \left( \frac{\sigma}{r} \right)^{6}
+  \right]
+  .
+\end{align*}
+
+In simulating a finite system,
+we often have to truncate the potential at a cutoff distance,
+$r_c$, and thus need to include long-range tail corrections
+for Eqs. \eqref{eq:vir_pair} and \eqref{eq:dvir_pair},
+which can be written as
+%
+$$
+  \frac{ 2 \, \pi \, N^2 } { V }
+  \left(
+    \frac{ C_{12} } { 9 \, C_9 }
+    -
+    \frac{ C_6 } { 3 \, r_c^3 }
+  \right)
+  ,
+$$
+%
+where $C_6/(\epsilon \, \sigma^6)$ is $4$, $24$ and $48$,
+for $U$, $-\mathrm{vir}$ and $-\partial\,\mathrm{vir}/\partial \ln V$,
+respectively,
+and $C_{12}/(\epsilon \, \sigma^{12})$ is
+$4$, $48$ and $192$, respectively.
+
 
 %\bibliographystyle{abbrv}
 \bibliography{simul}
