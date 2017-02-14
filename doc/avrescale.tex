@@ -300,8 +300,8 @@ In particular, the hypervolume enclosed by the hypersurface
     \Theta\bigl( E - H(\mathbf x) \bigr)
     \, d\mathbf x
   ,
-  %\notag
-  \label{eq:PhiE}
+  \notag
+  %\label{eq:PhiE}
 \end{equation}
 %
 defines a bulk or volume entropy\cite{
@@ -332,7 +332,8 @@ The derivative of the entropy
   \frac{ \Phi'(E) }
        { \Phi(E)  }
   .
-  \label{eq:betaE_def}
+  \notag
+  %\label{eq:betaE_def}
 \end{equation}
 %
 defines the corresponding temperature function, $T_\Phi(E)$,
@@ -839,33 +840,34 @@ more generally, $\gamma \approx 0.279\ln T - 1.255$.
 \subsection{Generalization}
 
 
-We may think the above adaptive velocity scaling scheme
-as a special application of the $1/t$ prescription.
+
+The above adaptive velocity scaling scheme
+is a special application of the $1/t$ prescription.
 %
 In this case we have adjusted the total energy
 to achieve the target temperature.
 %
 More generally, we may apply this technique
-to a pair of strongly correlated variables $x$ and $y$,
-to find the optimal value of a parameter, $x$,
-that corresponds to a target value, $y^*$, of an observable, $y$.
+to a pair of strongly correlated variables $X$ and $Y$,
+to find the optimal value of a parameter, $X$,
+that corresponds to a target value, $Y^*$, of an observable, $Y$.
 %on the fly.
 %
-Then, the change of $x$ in each step is given by
+Then, the change of $X$ in each step is given by
 %
 \begin{equation}
-  \delta x_t = \frac 1 t
+  \delta X_t = \frac 1 t
   \cdot
-  \frac{ y^* - y_t }
-       { y'(x^*) }
+  \frac{ Y^* - Y_t }
+       { Y'(X^*) }
   .
-  \label{eq:adjustxy}
+  \label{eq:invt_XY}
 \end{equation}
 %
 
 
 Below we list a few examples,
-in which the derivative, $y'(x)$,
+in which the derivative, $Y'(X)$,
 can be computed from rigorous expressions
 derived from statistical mechanics,
 %
@@ -874,29 +876,35 @@ we can resort to a trial simulation
 with a constant magnitude, $k$,
 %
 \begin{equation}
-  \delta x_t =
-  k \, (y^* - y_t)
+  \delta X_t =
+  k \, (Y^* - Y_t)
   ,
   \notag
-  %\label{eq:adjustxy_fixmag}
+  \label{eq:Berendsen_XY}
 \end{equation}
 %
 and then
 %
 \begin{equation}
-  y'(x^*)
+  Y'(X^*)
   \approx
-  k \, \tau_y \,
+  k \, \tau_Y \,
   \frac{
-    \mathrm{var} (y)
+    \mathrm{var} (Y)
   }
   {
-    \mathrm{var} (x)
+    \mathrm{var} (X)
   }
   ,
+  \label{eq:dYdX_estimate}
 \end{equation}
 %
-where $\tau_y$ is the integrated autocorrelation time of $y$.
+where $\tau_Y$ is the integrated autocorrelation time of $Y$.
+%
+For example, in the velocity scaling case ($X = E, Y = K$), we have
+$K'(E^*) \approx k \, \tau_K \, \mathrm{var} (K) / \mathrm{var} (E)$
+[note that the fluctuation of the total energy due to MD integration error
+should be ideally deducted from $\mathrm{var} (E)$].
 
 
 
@@ -920,8 +928,8 @@ $\mathbf R = \mathbf r / L$,
 stays constant before and after a volume change.
 %
 To ensure the positivity of volume,
-we change it by the logarithm, $x = \ln V$,
-and Eq. \eqref{eq:adjustxy} specifies
+we change it by the logarithm, $X = \ln V$,
+and Eq. \eqref{eq:invt_XY} specifies
 the change in each step as
 $$
 \delta \ln V_t
@@ -1100,15 +1108,19 @@ to take advantage of the thermodynamic relation,
 %$$
 %%
 %and compute
-\begin{equation*}
+\begin{equation}
   \frac{ \partial \, (-\beta \, \mu) }
        { \partial \, (\ln V) }
   =
   -\frac{V}{N}
   \frac{ \partial \, (\beta \, p) }
        { \partial \, (\ln V) }
+  =
+  \frac{ \partial \, (\beta \, p) }
+       { \partial \, \rho }
   ,
-\end{equation*}
+  \label{eq:dmu_dp}
+\end{equation}
 %
 and use Eq. \eqref{eq:dbpdlnV}
 for $\partial \, (\beta\, p)/ \partial \, (\ln V)$.
@@ -1119,7 +1131,8 @@ for $\partial \, (\beta\, p)/ \partial \, (\ln V)$.
 
 
 We can combine the above two examples
-to construct a variant of the Gibbs ensemble method\cite{frenkel}
+to construct a variant of the Gibbs ensemble method\cite{
+  panagiotopoulos1987, panagiotopoulos1988, frenkel}
 of studying the liquid-gas phase coexistence.
 %
 We will simultaneously simulate a simple fluid
@@ -1149,11 +1162,13 @@ The updating formulas are
 \end{align}
 %
 where
-$\Delta( \beta \, p_t) = \beta (p_{t,1} - p_{t,2})$
+$\Delta( \beta \, p_t) \equiv \beta \, p_{t,1} - \beta \, p_{t,2})$,
+$\Delta( \beta \, \mu_t) \equiv \beta \, \mu_{t,1} - \beta \, \mu_{t,2}$,
 and
-$\Delta( \beta \, \mu_t) = \beta (\mu_{t,1} - \mu_{t,2})$.
-
-The details can be found in Appendix Eq. \ref{sec:gibbs}.
+$\partial \, (\beta \, p) / \partial \rho$
+can be found from Eq. \eqref{eq:dmu_dp}.
+%
+The details can be found in Appendix \ref{sec:gibbs}.
 
 %
 %Another example is the determination of the
@@ -1718,6 +1733,347 @@ where $K_{\tau*}$
 is the block average of $K_t$.
 
 
+
+\section{\label{sec:error}
+  Optimal scaling magnitude
+  from stochastic differential equation
+  %Eq. \eqref{eq:dE_opt}
+}
+
+Here we present an alternative derivation of Eq. \eqref{eq:dE_opt}
+using the method of stochastic differential equation.
+
+Let $X_t$ be the value of the adjustable $X$ at step $t$,
+then the aim of velocity scaling is to converge $X_t$
+to the desired value of $X^*$.
+%
+We assume that we can form an independent estimate of $X^*$
+in step $t$, $\mathcal X_t$,
+which means, equivalently, an independent correction
+to the current value of $X$ is given by
+$\Delta \mathcal X_t = \mathcal X_t - X_{t-1}$.
+%
+%The correction can be used in velocity scaling
+%to guide the amount of energy change.
+%
+If the independent correction were exact,
+then it would suffice to perform
+only one adjustment of $X$
+with the change, $\delta X_t = X_t - X_{t-1}$,
+being identical to the correction.
+%
+But since
+the independent correction from an MD simulation
+always contains random error,
+the adjustment must be done continually.
+%
+We can, however, minimize the error, $X_\tmax$,
+at the simulation end, $t = \tmax$,
+by accepting the correction with some
+optimal time-dependent magnitude, $\alpha(t)$,
+as
+%
+\begin{equation}
+  \delta X_t
+  =
+  \alpha(t) \, \Delta \mathcal X_t
+  =
+  \alpha(t) \, \left( \mathcal X_t - X_{t - 1} \right)
+  .
+  \label{eq:Xupdate}
+\end{equation}
+%
+%Our aim is to minimize
+%the expected error of the total energy, $X_\tmax$,
+%at the end of the simulation, $t = \tmax$.
+
+To find the optimal $\alpha(t)$,
+we will switch to the continuous-time framework.
+%
+We define the error of the total energy at step $t$ as
+$x(t) = X_{t-1} - X^*$,
+then $\dot x(t) \approx \delta X_t$,
+and Eq. \eqref{eq:Xupdate} can be approximated as
+%
+\begin{equation}
+  \dot x(t)
+  =
+  -\alpha(t) \, x(t) + \alpha(t) \, \xi(t)
+  ,
+  \label{eq:x_diffeq}
+\end{equation}
+%
+where $\xi(t) \equiv \mathcal X_t - X^*$
+denotes the random fluctuation of the independent estimate at step $t$.
+%
+The solution of Eq. \eqref{eq:x_diffeq} is
+%
+\begin{equation}
+  x(t)
+  =
+  x(1) \, e^{ -A(t) }
+  +
+  \int_1^t \dot u_t(\tau) \, \xi(\tau) \, d\tau
+  ,
+  %\label{eq:x_sol}
+  \notag
+\end{equation}
+%
+where
+\begin{align*}
+  A(t)
+  &=
+  \int_1^t \alpha(s) \, ds
+  ,
+\\
+  u_t(\tau)
+  &= \exp\left(
+    -\int_\tau^t \alpha(s) \, ds
+  \right)
+  .
+  \notag
+\end{align*}
+%
+Thus, the average error at the end of simulation $t = \tmax$
+is given by
+%
+\begin{align}
+  \left\langle
+    x(\tmax)
+  \right\rangle
+  &=
+  \left\langle
+    x(1)
+  \right\rangle
+  \, e^{ -A(t) }
+  ,
+  \label{eq:abserr}
+\end{align}
+%
+and the square error
+can be measured as
+%
+\begin{align}
+  \left\langle
+    x^2(\tmax)
+  \right\rangle
+  &=
+  \left\langle
+    x^2(1)
+  \right\rangle
+  \, e^{ -2 \, A(t) }
+  \notag \\
+  &+
+  \int_1^{\tmax}
+  \int_1^{\tmax}
+  \dot u_{\tmax}(t) \, \dot u_{\tmax}(t') \,
+  \left\langle
+    \xi(t) \, \xi(t')
+  \right\rangle
+  \, dt \, dt'
+  .
+  \label{eq:err_functional}
+\end{align}
+%
+Below we will find the optimal functional form of $\alpha(t)$
+that minimizes the square error.
+
+
+
+%\subsection{\label{sec:whitenoise}
+%White-noise approximation
+%}
+
+For a very long simulation,
+we may approximate $\xi(t)$ as an equivalent white noise,
+such that
+\begin{equation}
+  \left\langle \xi(t) \, \xi(t') \right\rangle
+  = \Gamma \, \delta(t - t')
+  ,
+  \notag
+  %\label{eq:noise_corr}
+\end{equation}
+where
+\begin{equation}
+  \Gamma
+  =
+  \int_{-\infty}^\infty
+  \left\langle
+    \xi(t) \, \xi(0)
+  \right\rangle
+  \, dt
+  =
+  2 \, \tau \,
+  \left\langle
+    \xi^2(0)
+  \right\rangle
+  ,
+  \label{eq:Gamma_def}
+\end{equation}
+with
+$\tau_\xi$ being the integrated autocorrelation time
+of $\left\langle \xi(t) \, \xi(0) \right\rangle$
+%
+Note that this is justifiable only
+if the simulation length, $\tmax$, is much longer than
+the autocorrelation time of $\xi(t)$,
+as shown in Fig. \ref{fig:errz}.
+%
+Under this assumption,
+Eq. \eqref{eq:err_functional} is simplified as
+%
+\begin{equation}
+  \left\langle
+    x^2(\tmax)
+  \right\rangle
+  =
+  \left\langle
+    x^2(1)
+  \right\rangle
+  \, e^{ -2 \, A(t) }
+  +
+  \Gamma
+  \int_1^{\tmax}
+    \dot u_{\tmax}^2(t) \, dt
+  .
+  \label{eq:err_functional_wn}
+\end{equation}
+%
+This expression is a functional of $\alpha(t)$,
+or equivalently, a functional of $u_{\tmax}(t)$.
+%
+To minimize it under a fixed value of $A(\tmax)$,
+which implies fixed values of $u_{\tmax}(1)$ and $u_{t_m}(t_m)$,
+we get, from the Euler-Lagrange equation,
+$$
+\dot u_{\tmax}(t) = \mathrm{const},
+$$
+which leads to the solution,
+$u_{\tmax}(t) = (t + t_0) / (t_m + t_0)$,
+with $c$ and $t_0$ being two constants.
+%
+As a result, we get the optimal scaling magnitude
+%
+\begin{equation}
+  \alpha(t) = \frac{ 1 } { t + t_0 }
+  ,
+  \notag
+  %\label{eq:alpha_opt}
+\end{equation}
+%
+and the error is
+%
+$$%\begin{equation}
+  \left\langle
+    x^2(\tmax)
+  \right\rangle
+  =
+  \frac{
+    \left\langle x^2(1) \right\rangle
+    \, (1 + t_0)^2
+    + \Gamma \, (\tmax - 1)
+  }
+  {
+    (\tmax + t_0)^2
+  }
+  ,
+$$%\end{equation}
+
+We can further determine the optimal value of $t_0$ as
+$$
+t_0 = \frac{ \Gamma } { \left\langle x^2(1) \right\rangle } - 1,
+$$
+%
+with the minimal error being $\Gamma / (\tmax + t_0)$.
+%
+However, for a long simulation, the influence of $t_0$
+is small, and for convenience we may approximately use
+$$
+\alpha(t) \approx \frac 1 t,
+$$
+which recovers Eq. \eqref{eq:dE_opt}.
+
+\subsection{Constant time schedule}
+
+The above framework also yields the saturation error
+for an adaptive simulation under a constant updating magnitude,
+in which the adjustable, $X$,
+follows the generalized Berendsen algorithm,
+Eq. \eqref{eq:Berendsen_XY},
+instead of Eq. \eqref{eq:invt_XY}.
+%
+Although such simulations are non-ideal for asymptotic convergence,
+they can help determine the values of $\Gamma$
+and $Y'(X)$ of an unknown system.
+%
+Then the effective updating magnitude
+is given by $\alpha(t) = k \, Y'(X)$.
+%
+In the asymptotic limit, $\tmax \to \infty$
+we then have
+from Eq. \eqref{eq:err_functional_wn},
+%
+\begin{equation}
+  \mathrm{var}(X)
+  =
+  \left\langle x^2(\tmax) \right\rangle
+  =
+  \frac{1}{2} \, \Gamma \, k \, Y'(X)
+  %=
+  %\tau \, \left\langle \xi^2 \right\rangle \, k \, Y'(X)
+  .
+  \label{eq:varX_sat}
+\end{equation}
+%
+On the other hand,
+from the differential relation
+$\delta Y \approx Y'(X) \delta X$,
+we have
+%
+\begin{equation}
+  \mathrm{var} (Y)
+  \approx
+  [Y'(x)]^2
+  \left\langle
+  \xi^2(0)
+  \right\rangle
+  .
+  \label{eq:varY_varX}
+\end{equation}
+%
+From Eqs. \eqref{eq:varX_sat}, \eqref{eq:varY_varX}, and \eqref{eq:Gamma_def}
+we get Eq. \eqref{eq:dYdX_estimate}.
+
+
+\subsection{Modified inverse-time schedule}
+
+We can further show that Eq. \eqref{eq:dE_mod}
+%corresponds to a modified schedule
+%$\alpha(t) = z/t$,
+results in an expected error of
+\begin{equation}
+  \left\langle
+  x^2(\tmax)
+  \right\rangle
+  =
+  \frac{ \langle x^2(1) \rangle } { \tmax^{2z} }
+  +
+  \frac{ \Gamma \, z^2 } { 2 \, z - 1 }
+  \frac{
+    \tmax^{2 \, z - 1} - 1
+  }
+  {
+    \tmax^{2 \, z}
+  }
+  ,
+  \notag
+  %\label{eq:err_zovert}
+\end{equation}
+which is minimal at $z = 1$ for a long simulation.
+
+
+
 \section{\label{sec:gibbs}
 Variant of the Gibbs ensemble method
 }
@@ -1746,7 +2102,7 @@ come from the solution of
   \,
   \delta \, \ln V_{1,t}
   -
-  \frac{ \partial \, (\beta \, \mu_2 ) }
+  \frac{ \partial \, (-\beta \, \mu_2 ) }
        { \partial \, \ln V_2 }
   \,
   \delta \, \ln V_{2,t}
